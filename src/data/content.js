@@ -140,6 +140,7 @@ export const projects = [
       'Aim-and-launch core loop with scoring',
       'Level layouts that reward precision',
     ],
+    media: [{ type: 'video', src: 'peggle.mp4', caption: 'Gameplay capture' }],
     live: null,
     repo: null,
   },
