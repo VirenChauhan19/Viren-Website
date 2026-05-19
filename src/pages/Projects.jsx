@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ProjectCard from '../components/ProjectCard'
+import Reveal from '../components/Reveal'
 import { projects } from '../data/content'
 
 const filters = [
@@ -15,26 +16,30 @@ export default function Projects() {
   return (
     <section className="block">
       <div className="container">
-        <div className="section-head">
-          <span className="kicker">Portfolio</span>
-          <h2>Everything I’ve built</h2>
-          <p>
-            From gameplay systems and 3D environments to AI assistants used by students
-            and a doctor’s patients.
-          </p>
-        </div>
+        <Reveal>
+          <div className="section-head">
+            <span className="kicker">Portfolio</span>
+            <h2>Everything I’ve built</h2>
+            <p>
+              From gameplay systems and 3D environments to AI assistants used by students
+              and a doctor’s patients.
+            </p>
+          </div>
+        </Reveal>
 
-        <div className="cta-row" style={{ marginBottom: 36 }}>
-          {filters.map((f) => (
-            <button
-              key={f.key}
-              className={`btn ${active === f.key ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setActive(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <Reveal delay={0.08}>
+          <div className="cta-row" style={{ marginBottom: 36 }}>
+            {filters.map((f) => (
+              <button
+                key={f.key}
+                className={`btn ${active === f.key ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setActive(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </Reveal>
 
         <div className="project-grid">
           {shown.map((p, i) => (

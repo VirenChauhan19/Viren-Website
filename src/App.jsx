@@ -2,11 +2,14 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ScrollScene from './components/ScrollScene'
+import ScrollProgress from './components/ScrollProgress'
 import Home from './pages/Home'
 import Projects from './pages/Projects'
 import ProjectDetail from './pages/ProjectDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import { attachScrollState } from './lib/scrollState'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -17,9 +20,14 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  useEffect(() => {
+    attachScrollState()
+  }, [])
+
   return (
     <>
-      <div className="bg-canvas" />
+      <ScrollScene />
+      <ScrollProgress />
       <ScrollToTop />
       <Navbar />
       <main>

@@ -1,68 +1,83 @@
 import { motion } from 'framer-motion'
 import { profile, education, experience } from '../data/content'
 import Media from '../components/Media'
+import Reveal from '../components/Reveal'
+
+function TimelineItem({ children, index }) {
+  return (
+    <motion.div
+      className="t-item"
+      initial={{ opacity: 0, x: 40 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 export default function About() {
   return (
     <section className="block">
       <div className="container">
-        <div className="section-head">
-          <span className="kicker">About</span>
-          <h2>Game developer, AI tinkerer, endurance athlete</h2>
-        </div>
+        <Reveal>
+          <div className="section-head">
+            <span className="kicker">About</span>
+            <h2>Game developer, AI tinkerer, endurance athlete</h2>
+          </div>
+        </Reveal>
 
         <div className="about-grid">
-          <motion.div
-            className="photo-frame"
-            initial={{ opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <img src={`${import.meta.env.BASE_URL}${profile.photo}`} alt={profile.name} />
-          </motion.div>
-
-          <div>
-            {profile.about.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-
-            <h3 style={{ margin: '34px 0 16px', fontSize: '1.15rem' }}>Education</h3>
-            <div className="timeline">
-              {education.map((e, i) => (
-                <div className="t-item" key={i}>
-                  <h4>{e.school}</h4>
-                  <div className="org">
-                    {e.degree} · {e.location}
-                  </div>
-                  <p>{e.detail}</p>
-                </div>
-              ))}
+          <Reveal from="left">
+            <div className="photo-frame">
+              <img src={`${import.meta.env.BASE_URL}${profile.photo}`} alt={profile.name} />
             </div>
+          </Reveal>
 
-            <h3 style={{ margin: '34px 0 16px', fontSize: '1.15rem' }}>
-              Films & Field Work
-            </h3>
-            <div className="timeline">
-              {experience.map((x, i) => (
-                <div className="t-item" key={i}>
-                  <h4>{x.role}</h4>
-                  <div className="org">{x.org}</div>
-                  <p>{x.detail}</p>
-                  {x.media && x.media.length > 0 && (
-                    <div className="media-stack" style={{ marginTop: 16 }}>
-                      {x.media.map((m, j) => (
-                        <figure key={j}>
-                          <Media item={m} />
-                          {m.caption && <figcaption>{m.caption}</figcaption>}
-                        </figure>
-                      ))}
+          <Reveal from="right" delay={0.1}>
+            <div>
+              {profile.about.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+
+              <h3 style={{ margin: '34px 0 16px', fontSize: '1.15rem' }}>Education</h3>
+              <div className="timeline">
+                {education.map((e, i) => (
+                  <TimelineItem key={i} index={i}>
+                    <h4>{e.school}</h4>
+                    <div className="org">
+                      {e.degree} · {e.location}
                     </div>
-                  )}
-                </div>
-              ))}
+                    <p>{e.detail}</p>
+                  </TimelineItem>
+                ))}
+              </div>
+
+              <h3 style={{ margin: '34px 0 16px', fontSize: '1.15rem' }}>
+                Films & Field Work
+              </h3>
+              <div className="timeline">
+                {experience.map((x, i) => (
+                  <TimelineItem key={i} index={i}>
+                    <h4>{x.role}</h4>
+                    <div className="org">{x.org}</div>
+                    <p>{x.detail}</p>
+                    {x.media && x.media.length > 0 && (
+                      <div className="media-stack" style={{ marginTop: 16 }}>
+                        {x.media.map((m, j) => (
+                          <figure key={j}>
+                            <Media item={m} />
+                            {m.caption && <figcaption>{m.caption}</figcaption>}
+                          </figure>
+                        ))}
+                      </div>
+                    )}
+                  </TimelineItem>
+                ))}
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
