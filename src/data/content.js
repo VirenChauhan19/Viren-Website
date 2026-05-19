@@ -31,25 +31,86 @@ export const experience = [
   {
     role: 'Anti-Doping Volunteer (Upcoming)',
     org: 'FIFA World Cup 2026',
+    dates: '2026',
     detail:
       'Selected to volunteer in anti-doping operations at the FIFA World Cup 2026, supporting doping control procedures to help ensure clean, fair competition and protect the integrity of the game.',
   },
   {
-    role: 'Tournament Volunteer',
-    org: 'FIFA Club World Cup',
-    detail:
-      'Volunteered at the FIFA Club World Cup, supporting tournament operations and on-the-ground event delivery.',
+    role: 'Professional Playmaker, Apprenticeship',
+    org: 'Georgia World Congress Center Authority',
+    dates: 'Mar 2026 - Present',
+    bullets: [
+      'Collaborated with team members and event staff to ensure smooth operations, quickly adapting to changes in a fast-paced, high-volume environment.',
+      'Provided direct guest support by answering questions, giving directions, and helping resolve issues to maintain a positive event experience.',
+    ],
   },
   {
-    role: 'Race Director, 55 km Category',
-    org: 'La Ultra: The High',
+    role: 'SCADHome Office Assistant',
+    org: 'Savannah College of Art and Design',
+    dates: 'Dec 2025 - Present',
+    bullets: [
+      'Provide front desk support for residence life operations and assist students with housing services and campus resources.',
+      'Manage student inquiries and housing check-ins/check-outs through StarRez, and coordinate with residence life staff to resolve concerns.',
+      'Support major campus housing events and assist community directors with administrative operations.',
+    ],
+  },
+  {
+    role: 'Student Athlete',
+    org: 'Savannah College of Art and Design',
+    dates: 'Dec 2024 - Present · Full time',
     detail:
-      'Directed the 55 km category of one of the world’s toughest 555 km ultra-marathons, held at high altitude in Ladakh.',
+      'Train and compete as a SCAD student athlete while carrying a full academic load.',
+  },
+  {
+    role: 'SCADfit Front Desk',
+    org: 'Savannah College of Art and Design',
+    dates: 'Aug 2025 - Dec 2025 · Part time',
+    detail:
+      'Ran front desk operations for the campus fitness center, supporting students and members.',
+  },
+  {
+    role: 'Intramurals and Recreational Assistant',
+    org: 'Savannah College of Art and Design',
+    dates: 'Aug 2025 - Nov 2025 · Part time',
+    detail:
+      'Assisted with intramural sports and recreational programming, supporting event setup and participant experience.',
+  },
+  {
+    role: 'International Student Ambassador',
+    org: 'Savannah College of Art and Design',
+    dates: 'Mar 2025 - Sep 2025 · Part time',
+    location: 'Atlanta, Georgia, United States',
+    detail:
+      'Represented and supported international students, helping them navigate campus life and resources.',
+  },
+  {
+    role: 'Event Operations Volunteer',
+    org: 'FIFA Club World Cup',
+    dates: 'May 2025 - Jul 2025',
+    location: 'Atlanta, Georgia, United States',
+    bullets: [
+      'Supported the Ceremonies and Fan Operations team during tournament matches.',
+      'Assisted fans with navigation, seating guidance, and event information inside the stadium.',
+      'Contributed to crowd coordination and fan experience, ensuring smooth operations during matches and ceremonies.',
+      "Collaborated with event staff and volunteers to support one of the world's largest international football tournaments.",
+    ],
+  },
+  {
+    role: 'Race Director (55 km) & Core Crew Member',
+    org: 'La Ultra: The High',
+    dates: 'Jan 2016 - Nov 2019',
+    bullets: [
+      "Logistics & Operations: Directed the 55 km category for the 10th edition of one of the world's most extreme ultramarathons, managing operations between 12,000 ft and 15,500 ft elevation.",
+      'Risk Mitigation: Conducted primary health assessments for all participants to ensure fitness for high-altitude exertion and monitored medical reporting throughout the race.',
+      'Stakeholder Management: Led a multi-functional team including medical personnel and aid station volunteers, ensuring real-time communication across remote Himalayan terrain.',
+      'Protocol Enforcement: Managed the sensitive process of athlete disqualification based on cut-off times, prioritizing participant safety and race integrity through effective communication and conflict resolution.',
+    ],
     media: [{ type: 'youtube', src: 'qswe4uUq1lc', caption: 'La Ultra: The High' }],
   },
   {
     role: 'Assistant Production Executive',
     org: 'Moving Mountains Within (Documentary Film)',
+    dates: '2019',
     detail:
       'Contributed to an award-winning documentary covering the 2019 La Ultra ultra-marathon in Ladakh.',
     media: [{ type: 'youtube', src: 'FJnZ0Qukpjo', caption: 'Moving Mountains Within' }],
@@ -57,6 +118,7 @@ export const experience = [
   {
     role: 'Video Editor',
     org: 'Run2Fly Initiative',
+    dates: '2019',
     detail:
       'Produced promotional films for an organization empowering underprivileged girls in rural India through running.',
     media: [{ type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' }],

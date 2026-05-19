@@ -62,7 +62,19 @@ export default function About() {
                   <TimelineItem key={i} index={i}>
                     <h4>{x.role}</h4>
                     <div className="org">{x.org}</div>
-                    <p>{x.detail}</p>
+                    {(x.dates || x.location) && (
+                      <div className="t-dates">
+                        {[x.dates, x.location].filter(Boolean).join(' · ')}
+                      </div>
+                    )}
+                    {x.detail && <p>{x.detail}</p>}
+                    {x.bullets && x.bullets.length > 0 && (
+                      <ul className="t-bullets">
+                        {x.bullets.map((b, j) => (
+                          <li key={j}>{b}</li>
+                        ))}
+                      </ul>
+                    )}
                     {x.media && x.media.length > 0 && (
                       <div className="media-stack" style={{ marginTop: 16 }}>
                         {x.media.map((m, j) => (

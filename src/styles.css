@@ -316,8 +316,28 @@ section.block { padding: 96px 0; }
 .t-item::before { content: ''; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
 .t-item:last-child { padding-bottom: 0; }
 .t-item h4 { font-size: 1.05rem; }
-.t-item .org { color: var(--accent); font-size: 0.92rem; margin: 2px 0 6px; }
+.t-item .org { color: var(--accent); font-size: 0.92rem; margin: 2px 0 2px; }
+.t-item .t-dates {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
 .t-item p { color: var(--muted); font-size: 0.92rem; margin: 0; }
+.t-bullets { list-style: none; margin: 8px 0 0; padding: 0; }
+.t-bullets li {
+  position: relative;
+  padding: 4px 0 4px 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.t-bullets li::before {
+  content: '▹';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
 
 /* ---------- Contact ---------- */
 .contact-block { display: flex; align-items: center; min-height: 84vh; }
