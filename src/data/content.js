@@ -60,16 +60,6 @@ export const experience = [
     dates: 'Dec 2024 - Present · Full time',
   },
   {
-    role: 'SCADfit Front Desk',
-    org: 'Savannah College of Art and Design',
-    dates: 'Aug 2025 - Dec 2025 · Part time',
-  },
-  {
-    role: 'Intramurals and Recreational Assistant',
-    org: 'Savannah College of Art and Design',
-    dates: 'Aug 2025 - Nov 2025 · Part time',
-  },
-  {
     role: 'International Student Ambassador',
     org: 'Savannah College of Art and Design',
     dates: 'Mar 2025 - Sep 2025 · Part time',
