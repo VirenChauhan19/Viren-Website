@@ -29,6 +29,25 @@ export const education = [
 
 export const experience = [
   {
+    role: 'Anti-Doping Volunteer (Upcoming)',
+    org: 'FIFA World Cup 2026',
+    detail:
+      'Selected to volunteer in anti-doping operations at the FIFA World Cup 2026, supporting doping control procedures to help ensure clean, fair competition and protect the integrity of the game.',
+  },
+  {
+    role: 'Tournament Volunteer',
+    org: 'FIFA Club World Cup',
+    detail:
+      'Volunteered at the FIFA Club World Cup, supporting tournament operations and on-the-ground event delivery.',
+  },
+  {
+    role: 'Race Director, 55 km Category',
+    org: 'La Ultra: The High',
+    detail:
+      'Directed the 55 km category of one of the world’s toughest 555 km ultra-marathons, held at high altitude in Ladakh.',
+    media: [{ type: 'youtube', src: 'qswe4uUq1lc', caption: 'La Ultra: The High' }],
+  },
+  {
     role: 'Assistant Production Executive',
     org: 'Moving Mountains Within (Documentary Film)',
     detail:
@@ -36,20 +55,11 @@ export const experience = [
     media: [{ type: 'youtube', src: 'FJnZ0Qukpjo', caption: 'Moving Mountains Within' }],
   },
   {
-    role: 'Race Director, 55 km Category',
-    org: 'La Ultra: The High',
-    detail:
-      'Directed the 55 km category of one of the world’s toughest 555 km ultra-marathons, held at high altitude in Ladakh.',
-  },
-  {
     role: 'Video Editor',
     org: 'Run2Fly Initiative',
     detail:
       'Produced promotional films for an organization empowering underprivileged girls in rural India through running.',
-    media: [
-      { type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' },
-      { type: 'youtube', src: 'qswe4uUq1lc', caption: 'Run2Fly Field Film' },
-    ],
+    media: [{ type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' }],
   },
 ]
 

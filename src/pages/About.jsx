@@ -55,7 +55,7 @@ export default function About() {
               </div>
 
               <h3 style={{ margin: '34px 0 16px', fontSize: '1.15rem' }}>
-                Films & Field Work
+                Experience & Volunteering
               </h3>
               <div className="timeline">
                 {experience.map((x, i) => (
