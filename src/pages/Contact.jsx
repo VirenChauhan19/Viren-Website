@@ -19,8 +19,8 @@ export default function Contact() {
             Open to game dev & applied AI opportunities
           </h2>
           <p>
-            Internships, collaborations, or just want to talk shop about games and AI —
-            I’d love to hear from you.
+            Internships, collaborations, or just want to talk shop about games and
+            AI? I’d love to hear from you.
           </p>
           <div className="cta-row" style={{ justifyContent: 'center' }}>
             <a className="btn btn-primary" href={`mailto:${profile.email}`}>

@@ -89,7 +89,7 @@ export default function Home() {
               <span className="kicker">Selected work</span>
               <h2>Games, AI tools & creative tech</h2>
               <p>
-                A mix of game development and applied AI — including tools built for real
+                A mix of game development and applied AI, including tools built for real
                 people: students and a doctor’s patients.
               </p>
             </div>
