@@ -17,7 +17,8 @@
       "Bash(xargs -n1 basename)",
       "Bash(git rm *)",
       "Bash(git add *)",
-      "Bash(grep -aF '$\\(')"
+      "Bash(grep -aF '$\\(')",
+      "Bash(git commit -q -m ' *)"
     ]
   },
   "disabledMcpjsonServers": [
