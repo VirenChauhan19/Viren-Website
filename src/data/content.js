@@ -161,6 +161,7 @@ export const projects = [
       'Lighting and atmosphere driven mood',
       'Environment art and texturing practice',
     ],
+    media: [{ type: 'video', src: 'game236.mp4', caption: 'Environment walkthrough' }],
     live: null,
     repo: null,
   },
