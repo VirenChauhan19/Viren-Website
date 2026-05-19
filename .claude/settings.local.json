@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:gentle-badass.web.app)",
+      "WebFetch(domain:virenchauhan19.github.io)",
+      "WebFetch(domain:chauhanviren08.wixsite.com)",
+      "Bash(curl -sL -o headshot.jpeg \"https://static.wixstatic.com/media/671ed9_56dd6ed251e14579b03c63de0908442b~mv2.jpeg\")",
+      "WebSearch",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -sL \"https://chauhanviren08.wixsite.com/viren-chauhan\" -A \"Mozilla/5.0\")",
+      "Bash(curl -sL \"https://chauhanviren08.wixsite.com/viren-chauhan\" -A \"Mozilla/5.0\" -o /tmp/wix.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL https://chauhanviren08.wixsite.com/viren-chauhan/__TRACKED_VAR__ -A Mozilla/5.0)",
+      "Bash(grep -v \"^file.mp4$\")",
+      "Bash(xargs -n1 basename)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(grep -aF '$\\(')"
+    ]
+  },
+  "disabledMcpjsonServers": [
+    "ruflo"
+  ]
+}
