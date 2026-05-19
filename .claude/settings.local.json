@@ -18,7 +18,13 @@
       "Bash(git rm *)",
       "Bash(git add *)",
       "Bash(grep -aF '$\\(')",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "Bash(gh run *)",
+      "Bash(gh api *)",
+      "Bash(MSYS_NO_PATHCONV=1 gh api -X POST repos/VirenChauhan19/Viren-Website/pages -f build_type=workflow)",
+      "Bash(MSYS_NO_PATHCONV=1 gh api repos/VirenChauhan19/Viren-Website/pages)",
+      "Bash(gh workflow *)",
+      "Bash(curl -sL \"https://virenchauhan19.github.io/Viren-Website/\")"
     ]
   },
   "disabledMcpjsonServers": [
