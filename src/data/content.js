@@ -58,30 +58,22 @@ export const experience = [
     role: 'Student Athlete',
     org: 'Savannah College of Art and Design',
     dates: 'Dec 2024 - Present · Full time',
-    detail:
-      'Train and compete as a SCAD student athlete while carrying a full academic load.',
   },
   {
     role: 'SCADfit Front Desk',
     org: 'Savannah College of Art and Design',
     dates: 'Aug 2025 - Dec 2025 · Part time',
-    detail:
-      'Ran front desk operations for the campus fitness center, supporting students and members.',
   },
   {
     role: 'Intramurals and Recreational Assistant',
     org: 'Savannah College of Art and Design',
     dates: 'Aug 2025 - Nov 2025 · Part time',
-    detail:
-      'Assisted with intramural sports and recreational programming, supporting event setup and participant experience.',
   },
   {
     role: 'International Student Ambassador',
     org: 'Savannah College of Art and Design',
     dates: 'Mar 2025 - Sep 2025 · Part time',
     location: 'Atlanta, Georgia, United States',
-    detail:
-      'Represented and supported international students, helping them navigate campus life and resources.',
   },
   {
     role: 'Event Operations Volunteer',

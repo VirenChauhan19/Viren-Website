@@ -25,7 +25,8 @@
       "Bash(MSYS_NO_PATHCONV=1 gh api repos/VirenChauhan19/Viren-Website/pages)",
       "Bash(gh workflow *)",
       "Bash(curl -sL \"https://virenchauhan19.github.io/Viren-Website/\")",
-      "PowerShell(Get-ChildItem *)"
+      "PowerShell(Get-ChildItem *)",
+      "Bash(git push *)"
     ]
   },
   "disabledMcpjsonServers": [
