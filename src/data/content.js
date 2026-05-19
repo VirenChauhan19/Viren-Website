@@ -40,7 +40,6 @@ export const experience = [
     org: 'La Ultra: The High',
     detail:
       'Directed the 55 km category of one of the world’s toughest 555 km ultra-marathons, held at high altitude in Ladakh.',
-    media: [{ type: 'video', src: 'la-ultra-race.mp4', caption: 'La Ultra: The High' }],
   },
   {
     role: 'Video Editor',

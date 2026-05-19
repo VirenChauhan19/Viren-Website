@@ -1,13 +1,13 @@
 :root {
-  --bg: #07070c;
-  --bg-soft: #0e0e18;
+  --bg: #0a0b09;
+  --bg-soft: #12130f;
   --panel: rgba(255, 255, 255, 0.04);
-  --border: rgba(255, 255, 255, 0.09);
-  --text: #ecedf3;
-  --muted: #9aa0b4;
-  --ai: #6c8cff;
-  --game: #ff6b9d;
-  --accent: #7af8d0;
+  --border: rgba(255, 255, 255, 0.10);
+  --text: #f0efe8;
+  --muted: #a4a596;
+  --ai: #2dd4a7;
+  --game: #ff7a6b;
+  --accent: #f5c451;
   --maxw: 1180px;
 }
 
@@ -35,7 +35,7 @@ img { max-width: 100%; display: block; }
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 70% 18%, #16172d 0%, var(--bg) 58%);
+  background: radial-gradient(circle at 70% 18%, #18190f 0%, var(--bg) 58%);
 }
 .scroll-scene canvas { pointer-events: none; }
 
@@ -51,7 +51,7 @@ main, .nav, .footer { position: relative; z-index: 1; }
   z-index: 100;
   transform-origin: 0%;
   background: linear-gradient(90deg, var(--ai), var(--accent) 50%, var(--game));
-  box-shadow: 0 0 14px rgba(122, 248, 208, 0.6);
+  box-shadow: 0 0 14px rgba(245, 196, 81, 0.6);
 }
 
 /* ---------- Scroll hint ---------- */
@@ -337,14 +337,14 @@ section.block { padding: 96px 0; }
   transform: rotateX(var(--rx)) rotateY(var(--ry));
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out, box-shadow 0.3s;
-  box-shadow: 0 40px 90px -50px rgba(108, 140, 255, 0.6);
+  box-shadow: 0 40px 90px -50px rgba(45, 212, 167, 0.6);
 }
 .contact-glow {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     420px circle at var(--mx) var(--my),
-    rgba(122, 248, 208, 0.16),
+    rgba(245, 196, 81, 0.16),
     transparent 60%
   );
   pointer-events: none;
@@ -378,7 +378,7 @@ section.block { padding: 96px 0; }
 .field input:focus,
 .field textarea:focus {
   border-color: var(--accent);
-  background: rgba(122, 248, 208, 0.06);
+  background: rgba(245, 196, 81, 0.06);
 }
 .field label {
   position: absolute;
@@ -415,7 +415,7 @@ section.block { padding: 96px 0; }
   font-size: 1.8rem;
   color: #06121c;
   background: linear-gradient(120deg, var(--ai), var(--accent));
-  box-shadow: 0 0 30px rgba(122, 248, 208, 0.5);
+  box-shadow: 0 0 30px rgba(245, 196, 81, 0.5);
 }
 .form-success h3 { font-size: 1.4rem; margin-bottom: 6px; }
 .form-success p { color: var(--muted); margin-bottom: 22px; }

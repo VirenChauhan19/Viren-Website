@@ -24,7 +24,7 @@ export default function About() {
         <Reveal>
           <div className="section-head">
             <span className="kicker">About</span>
-            <h2>Game developer, AI tinkerer, endurance athlete</h2>
+            <h2>Game developer, applied AI builder, endurance athlete</h2>
           </div>
         </Reveal>
 

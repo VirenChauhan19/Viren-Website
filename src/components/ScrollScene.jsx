@@ -6,10 +6,10 @@ import { scrollState } from '../lib/scrollState'
 
 const lerp = THREE.MathUtils.lerp
 
-// Color theme that morphs across the scroll: AI blue -> mint -> game pink.
-const C_A = new THREE.Color('#6c8cff')
-const C_B = new THREE.Color('#7af8d0')
-const C_C = new THREE.Color('#ff6b9d')
+// Color theme that morphs across the scroll: emerald -> gold -> coral.
+const C_A = new THREE.Color('#2dd4a7')
+const C_B = new THREE.Color('#f5c451')
+const C_C = new THREE.Color('#ff7a6b')
 function themeColor(p, out) {
   if (p < 0.5) out.copy(C_A).lerp(C_B, p / 0.5)
   else out.copy(C_B).lerp(C_C, (p - 0.5) / 0.5)
@@ -49,7 +49,7 @@ function ParticleField() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.045} color="#9fb4ff" transparent opacity={0.7} sizeAttenuation />
+      <pointsMaterial size={0.045} color="#9be3cf" transparent opacity={0.7} sizeAttenuation />
     </points>
   )
 }
@@ -82,8 +82,8 @@ function MorphCore() {
     <Icosahedron ref={mesh} args={[1.55, 8]} position={[0, 0, 0]}>
       <MeshDistortMaterial
         ref={mat}
-        color="#6c8cff"
-        emissive="#1a2a6a"
+        color="#2dd4a7"
+        emissive="#0f4a3a"
         emissiveIntensity={0.5}
         roughness={0.15}
         metalness={0.9}
@@ -105,7 +105,7 @@ function OrbitRing({ radius, axis, speed, baseTilt }) {
   return (
     <group ref={ref} rotation={[baseTilt, 0.4, 0]}>
       <Torus args={[radius, 0.01, 16, 140]}>
-        <meshStandardMaterial color="#7af8d0" emissive="#7af8d0" emissiveIntensity={0.8} />
+        <meshStandardMaterial color="#f5c451" emissive="#f5c451" emissiveIntensity={0.8} />
       </Torus>
     </group>
   )
@@ -136,8 +136,8 @@ function Lights() {
   return (
     <>
       <ambientLight intensity={0.45} />
-      <pointLight ref={l1} position={[5, 5, 5]} intensity={1.5} color="#7af8d0" />
-      <pointLight ref={l2} position={[-6, -3, -4]} intensity={1.3} color="#ff6b9d" />
+      <pointLight ref={l1} position={[5, 5, 5]} intensity={1.5} color="#f5c451" />
+      <pointLight ref={l2} position={[-6, -3, -4]} intensity={1.3} color="#ff7a6b" />
     </>
   )
 }
