@@ -73,6 +73,8 @@ export function drawSky(ctx, viewW, viewH, time) {
   ctx.fillStyle = hg
   ctx.fillRect(0, 0, viewW, viewH)
 
+  drawAuroraRibbons(ctx, viewW, viewH, time)
+
   // Stars layer (cheap pseudo-random)
   for (let i = 0; i < 30; i++) {
     const x = ((i * 91.73) % viewW + (time * 0.002 + i)) % viewW
@@ -88,6 +90,31 @@ export function drawSky(ctx, viewW, viewH, time) {
   drawCloudLayer(ctx, viewW, viewH, time, 0.022, 0.31, 0.06, 5, 90)
   drawCloudLayer(ctx, viewW, viewH, time, -0.016, 0.55, 0.035, 6, 120)
   drawFogSheets(ctx, viewW, viewH, time)
+}
+
+function drawAuroraRibbons(ctx, viewW, viewH, time) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'screen'
+  for (let r = 0; r < 3; r++) {
+    const yBase = viewH * (0.12 + r * 0.075)
+    const amp = 18 + r * 7
+    const alpha = 0.035 + r * 0.018
+    const grd = ctx.createLinearGradient(0, yBase - 40, viewW, yBase + 80)
+    grd.addColorStop(0, 'rgba(94, 232, 255, 0)')
+    grd.addColorStop(0.38, r === 1 ? `rgba(255, 110, 199, ${alpha})` : `rgba(94, 232, 255, ${alpha})`)
+    grd.addColorStop(0.7, `rgba(108, 245, 169, ${alpha * 0.8})`)
+    grd.addColorStop(1, 'rgba(94, 232, 255, 0)')
+    ctx.strokeStyle = grd
+    ctx.lineWidth = 22 + r * 10
+    ctx.beginPath()
+    for (let x = -80; x <= viewW + 80; x += 28) {
+      const y = yBase + Math.sin(x / 160 + time / (4200 + r * 900) + r) * amp
+      if (x === -80) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+  }
+  ctx.restore()
 }
 
 function drawDistantSkyline(ctx, viewW, viewH, time) {
@@ -123,6 +150,20 @@ function drawDistantSkyline(ctx, viewW, viewH, time) {
     ctx.fillRect(Math.round(x), Math.round(y), 2, 7)
     ctx.fillStyle = `rgba(255, 154, 90, ${pulse * 0.7})`
     ctx.fillRect(Math.round(x + 9), Math.round(y + 18), 2, 5)
+  }
+  ctx.restore()
+
+  ctx.save()
+  ctx.globalAlpha = 0.18
+  ctx.fillStyle = '#02040a'
+  const foregroundY = viewH * 0.82
+  const drift2 = (time / 110) % 140
+  for (let i = -2; i < 12; i++) {
+    const x = i * 140 - drift2
+    const h = 72 + ((i * 47) % 95)
+    ctx.fillRect(x, foregroundY - h, 42, h)
+    ctx.fillRect(x + 55, foregroundY - h * 0.7, 26, h * 0.7)
+    ctx.fillRect(x + 92, foregroundY - h * 1.15, 36, h * 1.15)
   }
   ctx.restore()
 }
@@ -269,6 +310,7 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
   }
 
   drawFloorConduits(ctx, time)
+  drawRunwayLights(ctx, time)
 
   // Zone labels (faint, in world space)
   ctx.save()
@@ -285,6 +327,8 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
   ctx.restore()
 
   // Sun beam — animated radial gradient panning across the floor.
+  drawDistrictHolograms(ctx, time)
+
   const t = time / 14000
   const beamCol = 16 + Math.sin(t) * 12
   const beamRow = 11 + Math.cos(t * 0.7) * 5
@@ -322,6 +366,65 @@ function drawFloorConduits(ctx, time) {
       drawConduitSegment(ctx, from, to, color, time, i + rowIndex * 7)
     }
   })
+}
+
+function drawRunwayLights(ctx, time) {
+  const points = [
+    ...Array.from({ length: 13 }, (_, i) => ({ col: 3 + i * 2.1, row: 2.1, color: COLORS.cyan })),
+    ...Array.from({ length: 13 }, (_, i) => ({ col: 3 + i * 2.1, row: 20.1, color: COLORS.warm })),
+    ...Array.from({ length: 8 }, (_, i) => ({ col: 1.4, row: 4 + i * 2, color: COLORS.green })),
+    ...Array.from({ length: 8 }, (_, i) => ({ col: 30.7, row: 4 + i * 2, color: COLORS.gold })),
+  ]
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]
+    const c = isoTileCenter(p.col, p.row)
+    const pulse = 0.35 + 0.45 * ((Math.sin(time / 520 + i * 0.8) + 1) / 2)
+    const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 18)
+    g.addColorStop(0, p.color + Math.floor(160 * pulse).toString(16).padStart(2, '0'))
+    g.addColorStop(1, p.color + '00')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.ellipse(c.x, c.y, 18, 8, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = p.color
+    ctx.globalAlpha = pulse
+    ctx.fillRect(Math.round(c.x - 1), Math.round(c.y - 1), 2, 2)
+    ctx.globalAlpha = 1
+  }
+  ctx.restore()
+}
+
+function drawDistrictHolograms(ctx, time) {
+  const labels = [
+    { text: 'AI LABS', col: 7.6, row: 3.2, color: COLORS.cyan },
+    { text: 'SIMULATION DECK', col: 23.2, row: 3.9, color: COLORS.green },
+    { text: 'ARCADE DOCKS', col: 7.4, row: 13.4, color: COLORS.warm },
+    { text: 'RECRUIT SIGNAL', col: 24.9, row: 13.2, color: COLORS.gold },
+  ]
+
+  ctx.save()
+  ctx.font = '800 10px ui-monospace, Menlo, Consolas, monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  for (const label of labels) {
+    const p = isoTileCenter(label.col, label.row)
+    const y = p.y - 38 + Math.sin(time / 900 + label.col) * 2
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.fillStyle = label.color
+    ctx.globalAlpha = 0.42 + 0.16 * Math.sin(time / 700 + label.row)
+    ctx.fillText(label.text, p.x, y)
+    ctx.strokeStyle = label.color + '55'
+    ctx.beginPath()
+    ctx.moveTo(p.x - 38, y + 10)
+    ctx.lineTo(p.x + 38, y + 10)
+    ctx.stroke()
+    ctx.restore()
+  }
+  ctx.restore()
 }
 
 function drawConduitSegment(ctx, from, to, color, time, seed) {
@@ -1474,6 +1577,21 @@ export function drawForegroundAtmosphere(ctx, viewW, viewH, time) {
     ctx.fill()
   }
 
+  for (let i = 0; i < 42; i++) {
+    const seed = i * 73
+    const x = ((seed + time / (7 + (i % 5))) % (viewW + 160)) - 80
+    const y = ((seed * 1.9 + time / (15 + (i % 4))) % (viewH + 120)) - 60
+    const len = 26 + (i % 4) * 11
+    ctx.strokeStyle = i % 6 === 0 ? 'rgba(255, 154, 90, 0.07)' : 'rgba(173, 220, 235, 0.065)'
+    ctx.lineWidth = i % 7 === 0 ? 1.2 : 0.7
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(x - len * 0.42, y + len)
+    ctx.stroke()
+  }
+
+  drawAnamorphicFlares(ctx, viewW, viewH, time)
+
   for (let i = 0; i < 4; i++) {
     const w = viewW * (0.42 + i * 0.04)
     const x = ((time / (42 + i * 11) + i * 230) % (viewW + w)) - w
@@ -1487,5 +1605,93 @@ export function drawForegroundAtmosphere(ctx, viewW, viewH, time) {
     ctx.fill()
   }
 
+  ctx.restore()
+}
+
+function drawAnamorphicFlares(ctx, viewW, viewH, time) {
+  const flares = [
+    { x: viewW * 0.25 + Math.sin(time / 2100) * 40, y: viewH * 0.28, color: 'rgba(94, 232, 255, 0.13)' },
+    { x: viewW * 0.63 + Math.sin(time / 2600 + 2) * 36, y: viewH * 0.42, color: 'rgba(255, 154, 90, 0.10)' },
+    { x: viewW * 0.78 + Math.sin(time / 2400 + 4) * 30, y: viewH * 0.66, color: 'rgba(255, 209, 102, 0.09)' },
+  ]
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'screen'
+  for (const f of flares) {
+    const g = ctx.createLinearGradient(f.x - 180, f.y, f.x + 180, f.y)
+    g.addColorStop(0, 'rgba(255,255,255,0)')
+    g.addColorStop(0.5, f.color)
+    g.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(f.x - 180, f.y - 1, 360, 2)
+  }
+  ctx.restore()
+}
+
+export function drawDataShard(ctx, shard, camX, camY, time) {
+  const p = isoTileCenter(shard.col, shard.row)
+  const x = p.x - camX
+  const y = p.y - camY - 18 + Math.sin(time / 420 + shard.col) * 4
+  const color = shard.kind === 'game' ? COLORS.warm : shard.kind === 'career' ? COLORS.gold : COLORS.cyan
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 28)
+  g.addColorStop(0, color + 'aa')
+  g.addColorStop(1, color + '00')
+  ctx.fillStyle = g
+  ctx.beginPath()
+  ctx.arc(x, y, 28, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(time / 900 + shard.col)
+  ctx.fillStyle = '#071019'
+  ctx.strokeStyle = color
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(0, -9)
+  ctx.lineTo(8, 0)
+  ctx.lineTo(0, 9)
+  ctx.lineTo(-8, 0)
+  ctx.closePath()
+  ctx.fill()
+  ctx.stroke()
+  ctx.fillStyle = color
+  ctx.fillRect(-2, -2, 4, 4)
+  ctx.restore()
+
+  ctx.fillStyle = color + '77'
+  ctx.beginPath()
+  ctx.ellipse(x, y + 22, 12, 4, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
+export function drawScanPulse(ctx, player, camX, camY, age) {
+  const center = isoTileCenter(player.col - 0.5, player.row - 0.5)
+  const x = center.x - camX
+  const y = center.y - camY
+  const t = Math.min(1, age / 1200)
+  const radius = 40 + t * 420
+  const alpha = Math.max(0, 1 - t)
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = `rgba(94, 232, 255, ${0.42 * alpha})`
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.ellipse(x, y, radius, radius * 0.46, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = `rgba(255, 209, 102, ${0.24 * alpha})`
+  ctx.lineWidth = 1
+  ctx.setLineDash([10, 10])
+  ctx.lineDashOffset = -age / 18
+  ctx.beginPath()
+  ctx.ellipse(x, y, radius * 0.72, radius * 0.32, 0, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.setLineDash([])
   ctx.restore()
 }

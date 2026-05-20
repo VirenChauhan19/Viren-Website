@@ -31,6 +31,8 @@ import {
   drawDroneNPC,
   drawAmbientDust,
   drawForegroundAtmosphere,
+  drawDataShard,
+  drawScanPulse,
   drawQuestMarker,
   COLORS,
 } from './render.js'
@@ -51,8 +53,42 @@ const PLAYER_SPEED = 5.5 // tiles per second
 const PLAYER_HALF = 0.18 // collision half-extent in tile units
 const CAMERA_LERP = 0.14
 const PROJECT_QUEST_IDS = projects.map((p) => `project:${p.slug}`)
+const SHARD_STORAGE_KEY = 'viren_exe_data_shards_v1'
+const DATA_SHARDS = [
+  { id: 'ai-core', col: 11.5, row: 8.5, kind: 'ai', name: 'AI Core Fragment' },
+  { id: 'calendar-key', col: 18.5, row: 8.2, kind: 'ai', name: 'Calendar Key' },
+  { id: 'arcade-token', col: 10.4, row: 18.6, kind: 'game', name: 'Arcade Token' },
+  { id: 'physics-chip', col: 16.4, row: 18.8, kind: 'game', name: 'Physics Chip' },
+  { id: 'recruit-signal', col: 24.7, row: 17.2, kind: 'career', name: 'Recruit Signal' },
+]
+const WORLD_TICKER = [
+  'MIDNIGHT BUILD: neon storm rolling over the AI labs.',
+  'ARCADE DOCKS: cabinets warming up, input latency nominal.',
+  'ARIA: recruiter-question model is listening offline.',
+  'SIMULATION DECK: project beacons synced to quest log.',
+  'RECRUIT SIGNAL: final terminal waiting for a serious player.',
+]
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
+
+function loadCollectedShards() {
+  try {
+    const raw = localStorage.getItem(SHARD_STORAGE_KEY)
+    if (!raw) return new Set()
+    const arr = JSON.parse(raw)
+    return Array.isArray(arr) ? new Set(arr) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function saveCollectedShards(set) {
+  try {
+    localStorage.setItem(SHARD_STORAGE_KEY, JSON.stringify([...set]))
+  } catch {
+    /* ignore disabled storage */
+  }
+}
 
 function ObjectiveFeed({ items }) {
   if (!items.length) return null
@@ -65,6 +101,30 @@ function ObjectiveFeed({ items }) {
           {item.detail && <span className="ot-detail">{item.detail}</span>}
         </div>
       ))}
+    </div>
+  )
+}
+
+function FunHud({ xp, shards, totalShards, ticker, onScan }) {
+  return (
+    <div className="fun-hud">
+      <div className="vibe-chip">
+        <span>Vibe</span>
+        <strong>Neon Storm</strong>
+      </div>
+      <div className="fun-stat">
+        <span>XP</span>
+        <strong>{xp}</strong>
+      </div>
+      <div className="fun-stat">
+        <span>Data</span>
+        <strong>{shards}/{totalShards}</strong>
+      </div>
+      <button className="scan-btn" onClick={onScan}>
+        <span>Q</span>
+        Scan
+      </button>
+      <div className="world-ticker">{ticker}</div>
     </div>
   )
 }
@@ -136,11 +196,11 @@ function IntroScreen({ onStart }) {
       <div className="intro-card" onClick={(e) => e.stopPropagation()}>
         <div className="intro-tag"><span className="pulse" /> Isometric playable portfolio · v0.7</div>
         <h1 className="intro-title">
-          New game: <em>recruit {profile.name}</em>
+          Midnight build: <em>recruit {profile.name}</em>
         </h1>
         <p className="intro-sub">
-          You've spawned into Viren's studio. {QUESTS.length} quests on the map. Each one
-          you finish drops a "Quest Completed" reward toward your final objective.
+          Step into Viren's neon studio after hours. {QUESTS.length} quest stations are live,
+          the arcade floor is awake, and every reviewed project pushes you toward the final recruit signal.
         </p>
 
         <div className="intro-controls">
@@ -338,8 +398,16 @@ export default function GameWorld() {
   const [trackerCollapsed, setTrackerCollapsed] = useState(false)
   const [hoveredStationKey, setHoveredStationKey] = useState(null)
   const [objectiveFeed, setObjectiveFeed] = useState([])
+  const [collectedShards, setCollectedShards] = useState(() => loadCollectedShards())
+  const collectedShardsRef = useRef(collectedShards)
+  const [scanPulseAt, setScanPulseAt] = useState(0)
+  const [tickerIndex, setTickerIndex] = useState(0)
 
   useEffect(() => { setIsTouch(isTouchDevice()) }, [])
+
+  useEffect(() => {
+    collectedShardsRef.current = collectedShards
+  }, [collectedShards])
 
   useEffect(() => {
     pausedRef.current = phase !== 'play' || overlay !== null || pendingCompletion !== null
@@ -364,6 +432,26 @@ export default function GameWorld() {
     })
   }, [pushObjective])
 
+  const triggerScan = useCallback(() => {
+    const now = performance.now()
+    setScanPulseAt(now)
+    pushObjective({
+      kind: 'new',
+      kicker: 'SCAN PULSE',
+      title: 'Quest signals revealed',
+      detail: 'Look for bright stations and floating data shards.',
+      duration: 2600,
+    })
+  }, [pushObjective])
+
+  useEffect(() => {
+    if (phase !== 'play') return undefined
+    const id = setInterval(() => {
+      setTickerIndex((i) => (i + 1) % WORLD_TICKER.length)
+    }, 5200)
+    return () => clearInterval(id)
+  }, [phase])
+
   // ──── Keyboard input ────
   useEffect(() => {
     const down = (e) => {
@@ -375,10 +463,13 @@ export default function GameWorld() {
       }
       const tag = (e.target && e.target.tagName) || ''
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'e', ' '].includes(k)) {
+      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'e', 'q', ' '].includes(k)) {
         e.preventDefault()
       }
       keysRef.current[k] = true
+      if (k === 'q' && phase === 'play' && !overlay && !pendingCompletion) {
+        triggerScan()
+      }
       if (k === 'e' || k === ' ') {
         if (phase === 'play' && !overlay && !pendingCompletion && interactRef.current) {
           openStation(interactRef.current)
@@ -397,7 +488,7 @@ export default function GameWorld() {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
     }
-  }, [phase, overlay, pendingCompletion])
+  }, [phase, overlay, pendingCompletion, triggerScan])
 
   // ──── Resize handling ────
   useEffect(() => {
@@ -600,6 +691,25 @@ export default function GameWorld() {
         const phaseT = (Math.sin(dronePosRef.current.phase) + 1) / 2
         dronePosRef.current.col = 5 + phaseT * 22
         dronePosRef.current.row = 11.5 + Math.sin(dronePosRef.current.phase * 1.7) * 0.5
+
+        for (const shard of DATA_SHARDS) {
+          if (collectedShardsRef.current.has(shard.id)) continue
+          const dist = Math.hypot(p.col - shard.col, p.row - shard.row)
+          if (dist < 0.75) {
+            const next = new Set(collectedShardsRef.current)
+            next.add(shard.id)
+            collectedShardsRef.current = next
+            setCollectedShards(next)
+            saveCollectedShards(next)
+            pushObjective({
+              kind: 'complete',
+              kicker: 'DATA SHARD FOUND',
+              title: shard.name,
+              detail: `+15 XP - ${next.size}/${DATA_SHARDS.length} world secrets recovered.`,
+              duration: 3000,
+            })
+          }
+        }
       }
 
       // Camera (always interpolating so it settles after overlay closes)
@@ -702,6 +812,17 @@ export default function GameWorld() {
         }
       }
 
+      for (const shard of DATA_SHARDS) {
+        if (!collectedShards.has(shard.id)) {
+          drawDataShard(ctx, shard, camX, camY, t)
+        }
+      }
+
+      const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
+      if (scanAge >= 0 && scanAge < 1200) {
+        drawScanPulse(ctx, playerRef.current, camX, camY, scanAge)
+      }
+
       // Quest markers (drawn on top, but skip when overlay is open or station is the active one)
       if (phase === 'play') {
         for (const s of STATION_BLOCKS) {
@@ -721,7 +842,7 @@ export default function GameWorld() {
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion, hoveredStationKey])
+  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion, hoveredStationKey, collectedShards, scanPulseAt, pushObjective])
 
   const joyMove = useCallback((x, y) => { joyRef.current.x = x; joyRef.current.y = y }, [])
 
@@ -741,6 +862,7 @@ export default function GameWorld() {
   }
 
   const finalMissionUnlocked = PROJECT_QUEST_IDS.every((id) => completedSet.has(id))
+  const xpTotal = QUESTS.filter((q) => completedSet.has(q.id)).length * 100 + collectedShards.size * 15
 
   return (
     <div className="stage">
@@ -759,6 +881,13 @@ export default function GameWorld() {
                 <div className="sub">{profile.title}</div>
               </div>
             </div>
+            <FunHud
+              xp={xpTotal}
+              shards={collectedShards.size}
+              totalShards={DATA_SHARDS.length}
+              ticker={WORLD_TICKER[tickerIndex]}
+              onScan={triggerScan}
+            />
             <Minimap playerRef={playerRef} completedSet={completedSet} />
           </div>
 
@@ -784,6 +913,7 @@ export default function GameWorld() {
               <div className="hud-controls-hint">
                 <span><span className="k">W</span><span className="k">A</span><span className="k">S</span><span className="k">D</span> walk</span>
                 <span><span className="k">E</span> interact</span>
+                <span><span className="k">Q</span> scan</span>
                 <span style={{ color: 'var(--ink-ghost)' }}>· follow the glowing markers</span>
               </div>
             )}
