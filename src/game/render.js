@@ -83,8 +83,67 @@ export function drawSky(ctx, viewW, viewH, time) {
   }
 
   // Cloud layers — two depths, scrolling at different speeds.
-  drawCloudLayer(ctx, viewW, viewH, time, 0.012, 0.20, 0.10, 6, 60)
-  drawCloudLayer(ctx, viewW, viewH, time, 0.022, 0.32, 0.05, 4, 90)
+  drawDistantSkyline(ctx, viewW, viewH, time)
+  drawCloudLayer(ctx, viewW, viewH, time, 0.012, 0.17, 0.10, 7, 60)
+  drawCloudLayer(ctx, viewW, viewH, time, 0.022, 0.31, 0.06, 5, 90)
+  drawCloudLayer(ctx, viewW, viewH, time, -0.016, 0.55, 0.035, 6, 120)
+  drawFogSheets(ctx, viewW, viewH, time)
+}
+
+function drawDistantSkyline(ctx, viewW, viewH, time) {
+  const horizon = viewH * 0.74
+  const drift = (time / 180) % 96
+
+  ctx.save()
+  ctx.globalAlpha = 0.42
+  ctx.fillStyle = '#050811'
+  ctx.beginPath()
+  ctx.moveTo(0, viewH)
+  for (let i = -2; i < 18; i++) {
+    const x = i * 96 - drift
+    const top = horizon - 28 - ((i * 31) % 72)
+    ctx.lineTo(x, horizon)
+    ctx.lineTo(x + 16, top + 14)
+    ctx.lineTo(x + 36, top)
+    ctx.lineTo(x + 58, top + 18)
+    ctx.lineTo(x + 96, horizon)
+  }
+  ctx.lineTo(viewW, viewH)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  for (let i = 0; i < 13; i++) {
+    const x = ((i * 137 + time / 65) % (viewW + 220)) - 110
+    const y = horizon - 58 + ((i * 19) % 76)
+    const pulse = 0.35 + 0.25 * Math.sin(time / 700 + i)
+    ctx.fillStyle = `rgba(94, 232, 255, ${pulse})`
+    ctx.fillRect(Math.round(x), Math.round(y), 2, 7)
+    ctx.fillStyle = `rgba(255, 154, 90, ${pulse * 0.7})`
+    ctx.fillRect(Math.round(x + 9), Math.round(y + 18), 2, 5)
+  }
+  ctx.restore()
+}
+
+function drawFogSheets(ctx, viewW, viewH, time) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'screen'
+  for (let i = 0; i < 5; i++) {
+    const w = viewW * (0.32 + i * 0.05)
+    const x = ((i * 260 + time / (55 + i * 18)) % (viewW + w)) - w
+    const y = viewH * (0.44 + i * 0.095)
+    const grd = ctx.createLinearGradient(x, y, x + w, y)
+    grd.addColorStop(0, 'rgba(94, 232, 255, 0)')
+    grd.addColorStop(0.5, i % 2 ? 'rgba(255, 154, 90, 0.055)' : 'rgba(94, 232, 255, 0.06)')
+    grd.addColorStop(1, 'rgba(94, 232, 255, 0)')
+    ctx.fillStyle = grd
+    ctx.beginPath()
+    ctx.ellipse(x + w / 2, y, w / 2, 32 + i * 6, 0, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
 }
 
 function drawCloudLayer(ctx, viewW, viewH, time, speed, bandTop, alpha, count, baseW) {
@@ -209,6 +268,8 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
     }
   }
 
+  drawFloorConduits(ctx, time)
+
   // Zone labels (faint, in world space)
   ctx.save()
   ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace'
@@ -246,6 +307,56 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
 
 // ───────────────── Walls (extruded around perimeter) ─────────────────
 
+function drawFloorConduits(ctx, time) {
+  const rows = [
+    STATION_BLOCKS.filter((s) => s.row < 10),
+    STATION_BLOCKS.filter((s) => s.row >= 10),
+  ]
+
+  rows.forEach((rowStations, rowIndex) => {
+    const color = rowIndex === 0 ? COLORS.cyan : COLORS.warm
+    const sorted = [...rowStations].sort((a, b) => a.col - b.col)
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const from = isoTileCenter(sorted[i].col + 1, sorted[i].row + 2.25)
+      const to = isoTileCenter(sorted[i + 1].col + 1, sorted[i + 1].row + 2.25)
+      drawConduitSegment(ctx, from, to, color, time, i + rowIndex * 7)
+    }
+  })
+}
+
+function drawConduitSegment(ctx, from, to, color, time, seed) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = color + '36'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(from.x, from.y)
+  ctx.lineTo(to.x, to.y)
+  ctx.stroke()
+
+  ctx.strokeStyle = color + '88'
+  ctx.lineWidth = 0.8
+  ctx.setLineDash([8, 14])
+  ctx.lineDashOffset = -time / 55 - seed * 9
+  ctx.beginPath()
+  ctx.moveTo(from.x, from.y)
+  ctx.lineTo(to.x, to.y)
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  const t = ((time / 1250) + seed * 0.17) % 1
+  const x = from.x + (to.x - from.x) * t
+  const y = from.y + (to.y - from.y) * t
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 22)
+  g.addColorStop(0, color + 'dd')
+  g.addColorStop(1, color + '00')
+  ctx.fillStyle = g
+  ctx.beginPath()
+  ctx.arc(x, y, 22, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
 export function drawWalls(ctx, camX, camY) {
   ctx.save()
   ctx.translate(-camX, -camY)
@@ -273,32 +384,189 @@ export function drawWalls(ctx, camX, camY) {
 
 // ───────────────── Stations ─────────────────
 
-export function drawStation(ctx, station, camX, camY, time, isNear) {
+export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted = false) {
   ctx.save()
   ctx.translate(-camX, -camY)
 
   const accent = pickAccent(station.accent)
+  const active = isNear
   // Soft ground glow under the station.
   const groundCenter = isoTileCenter(station.col + 1, station.row + 2.1)
-  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, 130, accent, isNear ? 0.55 : 0.3, time)
+  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, active ? 170 : 130, accent, active ? 0.72 : 0.3, time)
+  drawStationQuestPad(ctx, station, accent, time, active, isCompleted)
 
   switch (station.kind) {
-    case 'arcade':    drawArcadeIso(ctx, station, time, isNear); break
-    case 'aiDesk':    drawAIDeskIso(ctx, station, time, isNear); break
-    case 'aria':      drawAriaIso(ctx, station, time, isNear); break
-    case 'tv':        drawTVIso(ctx, station, time, isNear); break
-    case 'pedestal':  drawPedestalIso(ctx, station, time, isNear); break
-    case 'trophy':    drawTrophyIso(ctx, station, time, isNear); break
-    case 'phone':     drawPhoneIso(ctx, station, time, isNear); break
-    case 'skillTree': drawSkillTreeIso(ctx, station, time, isNear); break
+    case 'arcade':    drawArcadeIso(ctx, station, time, active); break
+    case 'aiDesk':    drawAIDeskIso(ctx, station, time, active); break
+    case 'aria':      drawAriaIso(ctx, station, time, active); break
+    case 'tv':        drawTVIso(ctx, station, time, active); break
+    case 'pedestal':  drawPedestalIso(ctx, station, time, active); break
+    case 'trophy':    drawTrophyIso(ctx, station, time, active); break
+    case 'phone':     drawPhoneIso(ctx, station, time, active); break
+    case 'skillTree': drawSkillTreeIso(ctx, station, time, active); break
   }
+
+  drawStationBeacon(ctx, station, accent, time, active, isCompleted)
+  if (isCompleted) drawCompletedSeal(ctx, station, time)
 
   // Floating label when near.
-  if (isNear) {
+  if (active) {
     const top = isoTileCenter(station.col + 1, station.row)
-    drawFloatingLabel(ctx, top.x, top.y - 100, station.label, station.subtitle, accent, time)
+    drawStationIntelCard(ctx, top.x, top.y - 118, station, accent, time, isCompleted)
   }
 
+  ctx.restore()
+}
+
+function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
+  const p = isoProject(station.col - 0.22, station.row - 0.18)
+  const w = TILE_W * 2.44
+  const h = TILE_H * 2.36
+  const cx = p.x + w / 2
+  const cy = p.y + h / 2
+  const pulse = 0.6 + 0.4 * Math.sin(time / 520 + station.col)
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = color + (active ? 'cc' : isCompleted ? '88' : '44')
+  ctx.lineWidth = active ? 1.6 : 0.9
+  ctx.beginPath()
+  ctx.moveTo(cx, p.y)
+  ctx.lineTo(p.x + w, cy)
+  ctx.lineTo(cx, p.y + h)
+  ctx.lineTo(p.x, cy)
+  ctx.closePath()
+  ctx.stroke()
+
+  const scan = ((time / 900 + station.col * 0.07) % 1)
+  const sx1 = p.x + w * scan
+  ctx.strokeStyle = color + (active ? 'aa' : '3a')
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(sx1 - 42, cy - 22)
+  ctx.lineTo(sx1 + 42, cy + 22)
+  ctx.stroke()
+
+  if (active || isCompleted) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, active ? 96 : 72)
+    g.addColorStop(0, color + (active ? '30' : '1c'))
+    g.addColorStop(1, color + '00')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, active ? 110 : 82, active ? 48 : 35, 0, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4
+    const px = cx + Math.cos(a) * w * 0.42
+    const py = cy + Math.sin(a) * h * 0.42
+    ctx.fillStyle = color
+    ctx.globalAlpha = (active ? 0.8 : 0.35) + pulse * 0.2
+    ctx.fillRect(Math.round(px), Math.round(py), 2, 2)
+  }
+  ctx.globalAlpha = 1
+  ctx.restore()
+}
+
+function drawStationBeacon(ctx, station, color, time, active, isCompleted) {
+  const c = isoTileCenter(station.col + 1, station.row + 1)
+  const h = active ? 120 : 86
+  const alpha = active ? 0.2 : isCompleted ? 0.12 : 0.08
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  const g = ctx.createLinearGradient(c.x, c.y - h, c.x, c.y)
+  g.addColorStop(0, color + '00')
+  g.addColorStop(0.36, color + Math.round(alpha * 255).toString(16).padStart(2, '0'))
+  g.addColorStop(1, color + '00')
+  ctx.fillStyle = g
+  ctx.beginPath()
+  ctx.moveTo(c.x - 22, c.y)
+  ctx.lineTo(c.x + 22, c.y)
+  ctx.lineTo(c.x + 8, c.y - h)
+  ctx.lineTo(c.x - 8, c.y - h)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+}
+
+function stationIntel(station) {
+  if (station.key === 'project:study-command-center') return 'RAG assistant, syllabus parsing, calendar sync'
+  if (station.key === 'project:la-ultra-running-plans') return 'AI running plans for doctor-led patient care'
+  if (station.key === 'project:top-down-shooter') return 'Wave combat, enemy AI, responsive game feel'
+  if (station.key === 'project:peggle') return 'Physics bounce loop, scoring, collision systems'
+  if (station.key === 'project:3d-environment') return 'Real-time environment art, lighting, atmosphere'
+  if (station.key === 'contact') return 'Final mission: open recruitment channel'
+  return station.subtitle || 'Quest station online'
+}
+
+function drawStationIntelCard(ctx, cx, baseY, station, color, time, isCompleted) {
+  const bob = Math.sin(time / 400) * 2
+  const y = baseY + bob
+  const title = station.label
+  const subtitle = isCompleted ? 'Reviewed - revisit mission' : stationIntel(station)
+
+  ctx.save()
+  ctx.font = '800 12px ui-monospace, Menlo, Consolas, monospace'
+  const titleW = ctx.measureText(title).width
+  ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace'
+  const subW = ctx.measureText(subtitle).width
+  const w = Math.min(260, Math.max(156, titleW, subW) + 28)
+  const h = 54
+  const bx = cx - w / 2
+  const by = y - h - 6
+
+  ctx.fillStyle = 'rgba(8, 10, 16, 0.96)'
+  roundRect(ctx, bx, by, w, h, 8)
+  ctx.fill()
+  ctx.strokeStyle = color + 'dd'
+  ctx.lineWidth = 1
+  roundRect(ctx, bx, by, w, h, 8)
+  ctx.stroke()
+
+  ctx.fillStyle = color
+  ctx.globalAlpha = 0.16 + 0.08 * Math.sin(time / 260)
+  ctx.fillRect(bx + 1, by + h - 7, w - 2, 2)
+  ctx.globalAlpha = 1
+
+  ctx.font = '700 9px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillStyle = isCompleted ? COLORS.green : color
+  ctx.textAlign = 'left'
+  ctx.fillText(isCompleted ? 'QUEST REVIEWED' : 'QUEST AVAILABLE', bx + 12, by + 13)
+  ctx.font = '800 12px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillStyle = COLORS.ink
+  ctx.fillText(title, bx + 12, by + 30)
+  ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillStyle = COLORS.inkDim
+  ctx.fillText(subtitle.slice(0, 36), bx + 12, by + 44)
+
+  ctx.fillStyle = 'rgba(8, 10, 16, 0.96)'
+  ctx.beginPath()
+  ctx.moveTo(cx - 5, by + h)
+  ctx.lineTo(cx + 5, by + h)
+  ctx.lineTo(cx, by + h + 6)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawCompletedSeal(ctx, station, time) {
+  const c = isoTileCenter(station.col + 1, station.row + 0.35)
+  const y = c.y - 92 + Math.sin(time / 500 + station.col) * 2
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = COLORS.green + 'aa'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.arc(c.x, y, 12, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.fillStyle = COLORS.green
+  ctx.font = '800 8px ui-monospace, Menlo, Consolas, monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('OK', c.x, y)
   ctx.restore()
 }
 
@@ -1003,7 +1271,7 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
   const accent = isCompleted ? COLORS.green : pickAccent(station.accent)
 
   // Halo
-  const haloR = 16
+  const haloR = isCompleted ? 14 : 19
   const haloG = ctx.createRadialGradient(x, y + 6, 0, x, y + 6, haloR)
   haloG.addColorStop(0, accent + 'cc')
   haloG.addColorStop(1, accent + '00')
@@ -1012,14 +1280,31 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
   ctx.arc(x, y + 6, haloR, 0, Math.PI * 2)
   ctx.fill()
 
+  ctx.save()
+  ctx.translate(x, y + 6)
+  ctx.rotate(Math.sin(time / 800 + station.col) * 0.08)
+  ctx.strokeStyle = accent + (isCompleted ? '88' : 'dd')
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, -16)
+  ctx.lineTo(13, 0)
+  ctx.lineTo(0, 16)
+  ctx.lineTo(-13, 0)
+  ctx.closePath()
+  ctx.stroke()
+  ctx.restore()
+
   // Glyph
-  ctx.font = '900 18px ui-monospace, Menlo, Consolas, monospace'
+  ctx.font = isCompleted
+    ? '800 9px ui-monospace, Menlo, Consolas, monospace'
+    : '900 18px ui-monospace, Menlo, Consolas, monospace'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
+  const glyph = isCompleted ? 'OK' : '!'
   ctx.fillStyle = '#0c0d12'
-  ctx.fillText(isCompleted ? '✓' : '!', x, y + 6 + 1)
+  ctx.fillText(glyph, x, y + 6 + 1)
   ctx.fillStyle = accent
-  ctx.fillText(isCompleted ? '✓' : '!', x, y + 6)
+  ctx.fillText(glyph, x, y + 6)
   ctx.textAlign = 'left'
   ctx.restore()
 }
@@ -1151,19 +1436,56 @@ export function drawDroneNPC(ctx, isoX, isoY, time) {
 
 // Ambient dust particles drifting over the camera viewport.
 export function drawAmbientDust(ctx, viewW, viewH, time) {
-  const count = 32
+  const count = 58
   for (let i = 0; i < count; i++) {
     const seed = i * 12.9898
     const baseX = ((seed * 78.233) % 1) * viewW
     const baseY = ((seed * 41.221) % 1) * viewH
-    const drift = (time / 25 + i * 60) % (viewW + 200) - 100
+    const drift = (time / (20 + (i % 5) * 6) + i * 60) % (viewW + 200) - 100
     const x = (baseX + drift) % viewW
     const y = baseY + Math.sin(time / 1200 + i) * 8
-    const size = (i % 3 === 0) ? 1.4 : 0.9
-    const alpha = 0.08 + (i % 4) * 0.04
-    ctx.fillStyle = `rgba(94, 232, 255, ${alpha})`
+    const size = (i % 6 === 0) ? 1.8 : (i % 3 === 0) ? 1.2 : 0.8
+    const alpha = 0.06 + (i % 5) * 0.035
+    const warm = i % 7 === 0
+    ctx.fillStyle = warm ? `rgba(255, 154, 90, ${alpha})` : `rgba(94, 232, 255, ${alpha})`
     ctx.beginPath()
     ctx.arc(x, y, size, 0, Math.PI * 2)
     ctx.fill()
   }
+}
+
+export function drawForegroundAtmosphere(ctx, viewW, viewH, time) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'screen'
+
+  for (let i = 0; i < 3; i++) {
+    const x = viewW * (0.18 + i * 0.31) + Math.sin(time / 3000 + i) * 38
+    const grd = ctx.createLinearGradient(x - 70, 0, x + 40, viewH)
+    grd.addColorStop(0, 'rgba(94, 232, 255, 0)')
+    grd.addColorStop(0.45, i % 2 ? 'rgba(255, 154, 90, 0.04)' : 'rgba(94, 232, 255, 0.05)')
+    grd.addColorStop(1, 'rgba(94, 232, 255, 0)')
+    ctx.fillStyle = grd
+    ctx.beginPath()
+    ctx.moveTo(x - 90, 0)
+    ctx.lineTo(x + 20, 0)
+    ctx.lineTo(x + 110, viewH)
+    ctx.lineTo(x - 80, viewH)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  for (let i = 0; i < 4; i++) {
+    const w = viewW * (0.42 + i * 0.04)
+    const x = ((time / (42 + i * 11) + i * 230) % (viewW + w)) - w
+    const y = viewH * (0.78 + i * 0.05)
+    const g = ctx.createRadialGradient(x + w / 2, y, 0, x + w / 2, y, w / 2)
+    g.addColorStop(0, 'rgba(173, 204, 220, 0.045)')
+    g.addColorStop(1, 'rgba(173, 204, 220, 0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.ellipse(x + w / 2, y, w / 2, 34, 0, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  ctx.restore()
 }

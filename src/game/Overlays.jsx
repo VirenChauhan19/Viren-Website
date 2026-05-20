@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { profile, education, experience, projects } from '../data/content.js'
 import { ariaAnswer, SUGGESTED_QUESTIONS } from './aria.js'
-import { assetUrl, youtubeEmbedUrl, youtubeThumb, youtubeWatchUrl } from './assets.js'
+import { assetUrl, youtubeThumb, youtubeWatchUrl } from './assets.js'
 import { QUEST_BY_ID } from '../data/quests.js'
 
 // ───────────────────── Shared shell ─────────────────────
 
-function OverlayShell({ tint = 'ai', onClose, children }) {
+function OverlayShell({ tint = 'ai', onClose, children, mode = '' }) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose()
@@ -18,7 +18,7 @@ function OverlayShell({ tint = 'ai', onClose, children }) {
   return (
     <div className="overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div
-        className={`overlay-panel tinted-${tint}`}
+        className={`overlay-panel tinted-${tint} ${mode}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button className="overlay-close" onClick={onClose} aria-label="Close">×</button>
@@ -34,30 +34,29 @@ function MediaCard({ m, alt }) {
   const [failed, setFailed] = useState(false)
 
   if (m.type === 'youtube') {
-    if (failed) {
-      // Fallback: clickable thumbnail that opens YouTube directly.
-      return (
-        <a className="overlay-media yt-fallback" href={youtubeWatchUrl(m.src)} target="_blank" rel="noreferrer">
-          <img src={youtubeThumb(m.src)} alt={m.caption || alt} onError={(e) => { e.currentTarget.style.display = 'none' }} />
-          <div className="yt-play">▶ Watch on YouTube</div>
-        </a>
-      )
-    }
     return (
-      <div className="overlay-media">
-        <iframe
-          src={youtubeEmbedUrl(m.src)}
-          title={m.caption || alt}
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-          onError={() => setFailed(true)}
+      <a className="overlay-media yt-fallback" href={youtubeWatchUrl(m.src)} target="_blank" rel="noreferrer">
+        <img
+          src={youtubeThumb(m.src)}
+          alt={m.caption || alt}
+          onError={(e) => { e.currentTarget.style.display = 'none'; setFailed(true) }}
         />
-      </div>
+        <div className="yt-play">{failed ? 'Open video' : 'Watch video'}</div>
+      </a>
     )
   }
 
   if (m.type === 'video') {
+    if (failed) {
+      return (
+        <a className="overlay-media video-fallback" href={assetUrl(m.src)} target="_blank" rel="noreferrer">
+          <div className="vf-poster">
+            <span>{m.caption || alt}</span>
+            <strong>Open video</strong>
+          </div>
+        </a>
+      )
+    }
     return (
       <div className="overlay-media">
         <video
@@ -69,9 +68,6 @@ function MediaCard({ m, alt }) {
           preload="metadata"
           onError={() => setFailed(true)}
         />
-        {failed && (
-          <div className="media-error">Video unavailable. <a href={assetUrl(m.src)} target="_blank" rel="noreferrer">Open in new tab →</a></div>
-        )}
       </div>
     )
   }
@@ -93,57 +89,105 @@ function MediaCard({ m, alt }) {
 
 // ───────────────────── Project overlay (Quest panel) ─────────────────────
 
+function projectOutcome(p) {
+  const outcomes = {
+    'study-command-center':
+      'A deployed study hub that turns course documents into searchable answers, calendar-ready deadlines, and a cleaner student workflow.',
+    'la-ultra-running-plans':
+      'A doctor-informed patient tool built for real-world care, with personalized running plans and progress management in one place.',
+    'top-down-shooter':
+      'A playable combat prototype showing responsive movement, wave pressure, enemy behavior, and tuned feedback.',
+    peggle:
+      'A physics-first arcade loop with ball bounce dynamics, peg clearing, score chasing, and precision-based level layouts.',
+    '3d-environment':
+      'A real-time environment study focused on composition, lighting, mood, and readable atmosphere inside a game engine.',
+  }
+  return outcomes[p.slug] || p.summary
+}
+
 export function ProjectOverlay({ slug, onClose }) {
   const p = projects.find((x) => x.slug === slug)
   if (!p) return null
   const tint = p.type === 'ai' ? 'ai' : 'game'
   const quest = QUEST_BY_ID[`project:${p.slug}`]
+  const outcome = projectOutcome(p)
+  const reward = quest?.reward || (p.type === 'ai' ? '+120 XP - Applied AI' : '+120 XP - Game Dev')
 
   return (
-    <OverlayShell tint={tint} onClose={onClose}>
-      <div className={`quest-banner ${tint}`}>
-        <span className="qb-tag">QUEST · {p.type === 'ai' ? 'APPLIED AI' : 'GAME DEV'} · {p.year}</span>
-        {quest && <span className="qb-objective">▶ {quest.objective}</span>}
-      </div>
-      <h2 className="overlay-title">{p.name}</h2>
-      <p className="overlay-role">{p.role}</p>
-      <p className="overlay-summary">{p.summary}</p>
-
-      <div className="overlay-body">
-        {(p.description || []).map((para, i) => <p key={i}>{para}</p>)}
-      </div>
-
-      {p.media && p.media.length > 0 && (
-        <>
-          <div className="overlay-section-title">▶ Demo footage</div>
-          {p.media.map((m, i) => <MediaCard key={i} m={m} alt={p.name} />)}
-        </>
-      )}
-
-      {p.highlights && p.highlights.length > 0 && (
-        <>
-          <div className="overlay-section-title">◆ Highlights</div>
-          <ul className="overlay-highlights">
-            {p.highlights.map((h, i) => <li key={i}>{h}</li>)}
-          </ul>
-        </>
-      )}
-
-      {p.tech && p.tech.length > 0 && (
-        <>
-          <div className="overlay-section-title">⚙ Stack</div>
-          <div className="overlay-pills">
-            {p.tech.map((t) => <span className="overlay-pill" key={t}>{t}</span>)}
-          </div>
-        </>
-      )}
-
-      {(p.live || p.repo) && (
-        <div className="overlay-cta">
-          {p.live && <a className="primary" href={p.live} target="_blank" rel="noreferrer">Live demo →</a>}
-          {p.repo && <a href={p.repo} target="_blank" rel="noreferrer">View code</a>}
+    <OverlayShell tint={tint} mode="mission-panel" onClose={onClose}>
+      <div className={`mission-screen ${tint}`}>
+        <div className="mission-topbar">
+          <span>MISSION SELECT</span>
+          <span>{p.type === 'ai' ? 'APPLIED AI' : 'GAME DEV'} / {p.year}</span>
         </div>
-      )}
+
+        <div className="mission-hero">
+          <div>
+            <div className="mission-kicker">{quest?.title || 'Portfolio Quest'}</div>
+            <h2 className="overlay-title mission-title">{p.name}</h2>
+            <p className="mission-objective">
+              <span>Objective</span>
+              {quest?.objective || p.summary}
+            </p>
+          </div>
+          <div className="mission-rank">
+            <span>RANK</span>
+            <strong>{p.type === 'ai' ? 'A+' : 'S'}</strong>
+          </div>
+        </div>
+
+        <div className="mission-meta-grid">
+          <div><span>Role</span><strong>{p.role}</strong></div>
+          <div><span>Reward</span><strong>{reward}</strong></div>
+          <div><span>Tools Used</span><strong>{(p.tech || []).join(' / ')}</strong></div>
+          <div><span>Status</span><strong>Ready for review</strong></div>
+        </div>
+
+        <div className="mission-columns">
+          <section className="mission-section">
+            <h3>What I built</h3>
+            <p className="overlay-summary">{p.summary}</p>
+            <div className="overlay-body">
+              {(p.description || []).map((para, i) => <p key={i}>{para}</p>)}
+            </div>
+          </section>
+
+          <section className="mission-section outcome">
+            <h3>Result / outcome</h3>
+            <p>{outcome}</p>
+            {p.highlights && p.highlights.length > 0 && (
+              <ul className="overlay-highlights">
+                {p.highlights.map((h, i) => <li key={i}>{h}</li>)}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        {p.tech && p.tech.length > 0 && (
+          <div className="mission-section compact">
+            <h3>Loadout</h3>
+            <div className="overlay-pills">
+              {p.tech.map((t) => <span className="overlay-pill" key={t}>{t}</span>)}
+            </div>
+          </div>
+        )}
+
+        {p.media && p.media.length > 0 && (
+          <div className="mission-section compact">
+            <h3>Screenshots / videos</h3>
+            <div className="mission-media-grid">
+              {p.media.map((m, i) => <MediaCard key={i} m={m} alt={p.name} />)}
+            </div>
+          </div>
+        )}
+
+        {(p.live || p.repo) && (
+          <div className="overlay-cta mission-actions">
+            {p.live && <a className="primary" href={p.live} target="_blank" rel="noreferrer">Launch demo</a>}
+            {p.repo && <a href={p.repo} target="_blank" rel="noreferrer">View code</a>}
+          </div>
+        )}
+      </div>
     </OverlayShell>
   )
 }

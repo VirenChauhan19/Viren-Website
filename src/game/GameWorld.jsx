@@ -18,6 +18,7 @@ import {
   WORLD_ISO_H,
   WORLD_OFFSET_X,
   isoProject,
+  isoUnproject,
   isoTileCenter,
   drawExtrudedBox,
 } from './iso.js'
@@ -29,6 +30,7 @@ import {
   drawPlayer,
   drawDroneNPC,
   drawAmbientDust,
+  drawForegroundAtmosphere,
   drawQuestMarker,
   COLORS,
 } from './render.js'
@@ -43,13 +45,29 @@ import {
 import { SkillTreeOverlay } from './SkillTree.jsx'
 import { QuestTracker, QuestCompleted } from './QuestSystem.jsx'
 import { QUESTS, QUEST_BY_ID, loadCompletedQuests, saveCompletedQuests } from '../data/quests.js'
-import { profile } from '../data/content.js'
+import { profile, projects } from '../data/content.js'
 
 const PLAYER_SPEED = 5.5 // tiles per second
 const PLAYER_HALF = 0.18 // collision half-extent in tile units
 const CAMERA_LERP = 0.14
+const PROJECT_QUEST_IDS = projects.map((p) => `project:${p.slug}`)
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
+
+function ObjectiveFeed({ items }) {
+  if (!items.length) return null
+  return (
+    <div className="objective-feed" aria-live="polite">
+      {items.map((item) => (
+        <div className={`objective-toast ${item.kind}`} key={item.id}>
+          <span className="ot-kicker">{item.kicker}</span>
+          <span className="ot-title">{item.title}</span>
+          {item.detail && <span className="ot-detail">{item.detail}</span>}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -318,12 +336,33 @@ export default function GameWorld() {
   const [completedSet, setCompletedSet] = useState(() => loadCompletedQuests())
   const [pendingCompletion, setPendingCompletion] = useState(null)
   const [trackerCollapsed, setTrackerCollapsed] = useState(false)
+  const [hoveredStationKey, setHoveredStationKey] = useState(null)
+  const [objectiveFeed, setObjectiveFeed] = useState([])
 
   useEffect(() => { setIsTouch(isTouchDevice()) }, [])
 
   useEffect(() => {
     pausedRef.current = phase !== 'play' || overlay !== null || pendingCompletion !== null
   }, [phase, overlay, pendingCompletion])
+
+  const pushObjective = useCallback((item) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    const nextItem = { id, ...item }
+    setObjectiveFeed((items) => [...items.slice(-2), nextItem])
+    setTimeout(() => {
+      setObjectiveFeed((items) => items.filter((x) => x.id !== id))
+    }, item.duration || 4200)
+  }, [])
+
+  const startPlay = useCallback(() => {
+    setPhase('play')
+    pushObjective({
+      kind: 'new',
+      kicker: 'NEW OBJECTIVE',
+      title: 'Choose a quest station',
+      detail: 'Follow the markers, hover a station, or open the quest log.',
+    })
+  }, [pushObjective])
 
   // ──── Keyboard input ────
   useEffect(() => {
@@ -382,6 +421,69 @@ export default function GameWorld() {
   }, [])
 
   // ──── Collision in tile coords ────
+  const stationFromPointer = useCallback((clientX, clientY) => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    const screenX = clientX - rect.left
+    const screenY = clientY - rect.top
+    const world = isoUnproject(screenX + cameraRef.current.x, screenY + cameraRef.current.y)
+
+    let best = null
+    let bestDist = Infinity
+    for (const s of STATION_BLOCKS) {
+      const centerCol = s.col + 1
+      const centerRow = s.row + 1
+      const insideFootprint =
+        world.col >= s.col - 0.35 &&
+        world.col <= s.col + 2.35 &&
+        world.row >= s.row - 0.35 &&
+        world.row <= s.row + 2.55
+      const d = Math.hypot(centerCol - world.col, centerRow - world.row)
+      if ((insideFootprint || d < 1.85) && d < bestDist) {
+        best = s
+        bestDist = d
+      }
+    }
+    return best
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const onMove = (e) => {
+      if (phase !== 'play' || overlay || pendingCompletion || isTouch) {
+        setHoveredStationKey(null)
+        canvas.style.cursor = ''
+        return
+      }
+      const station = stationFromPointer(e.clientX, e.clientY)
+      setHoveredStationKey(station?.key || null)
+      canvas.style.cursor = station ? 'pointer' : ''
+    }
+
+    const onLeave = () => {
+      setHoveredStationKey(null)
+      canvas.style.cursor = ''
+    }
+
+    const onClick = (e) => {
+      if (phase !== 'play' || overlay || pendingCompletion || isTouch) return
+      const station = stationFromPointer(e.clientX, e.clientY)
+      if (station) openStation(station)
+    }
+
+    canvas.addEventListener('mousemove', onMove)
+    canvas.addEventListener('mouseleave', onLeave)
+    canvas.addEventListener('click', onClick)
+    return () => {
+      canvas.removeEventListener('mousemove', onMove)
+      canvas.removeEventListener('mouseleave', onLeave)
+      canvas.removeEventListener('click', onClick)
+    }
+  }, [phase, overlay, pendingCompletion, stationFromPointer, isTouch])
+
   function collidesAt(col, row) {
     const half = PLAYER_HALF
     const corners = [
@@ -412,10 +514,25 @@ export default function GameWorld() {
       next.add(wasOverlay)
       setCompletedSet(next)
       saveCompletedQuests(next)
+      const completedQuest = QUEST_BY_ID[wasOverlay]
+      const allProjectsDone = PROJECT_QUEST_IDS.every((id) => next.has(id))
+      const nextProjectId = PROJECT_QUEST_IDS.find((id) => !next.has(id))
+      const nextProjectQuest = nextProjectId ? QUEST_BY_ID[nextProjectId] : null
+
+      pushObjective({
+        kind: wasOverlay.startsWith('project:') ? 'complete' : 'achievement',
+        kicker: wasOverlay.startsWith('project:') ? 'PROJECT REVIEWED' : 'QUEST UPDATED',
+        title: completedQuest.title,
+        detail: allProjectsDone
+          ? 'Final objective unlocked: Recruit Viren.'
+          : nextProjectQuest
+            ? `Next objective: ${nextProjectQuest.title}`
+            : 'New objective available in the quest log.',
+      })
       // Small delay so the close animation can play first
       setTimeout(() => setPendingCompletion(wasOverlay), 120)
     }
-  }, [overlay, completedSet])
+  }, [overlay, completedSet, pushObjective])
 
   // ──── Game loop ────
   useEffect(() => {
@@ -560,7 +677,8 @@ export default function GameWorld() {
           ctx.restore()
         } else if (it.kind === 'station') {
           const isNear = interactRef.current && interactRef.current.key === it.station.key
-          drawStation(ctx, it.station, camX, camY, t, isNear)
+          const isHovered = hoveredStationKey === it.station.key
+          drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSet.has(it.station.key))
         } else if (it.kind === 'player') {
           const playerIsoP = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
           drawPlayer(
@@ -590,18 +708,20 @@ export default function GameWorld() {
           if (!QUEST_BY_ID[s.key]) continue
           const isCompleted = completedSet.has(s.key)
           const isNear = interactRef.current && interactRef.current.key === s.key
-          if (isNear) continue // floating label already covers info
+          const isHovered = hoveredStationKey === s.key
+          if (isNear || isHovered) continue // floating label already covers info
           drawQuestMarker(ctx, s, camX, camY, t, isCompleted)
         }
       }
 
       drawAmbientDust(ctx, viewW, viewH, t)
+      drawForegroundAtmosphere(ctx, viewW, viewH, t)
 
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion])
+  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion, hoveredStationKey])
 
   const joyMove = useCallback((x, y) => { joyRef.current.x = x; joyRef.current.y = y }, [])
 
@@ -619,6 +739,8 @@ export default function GameWorld() {
     }
     return null
   }
+
+  const finalMissionUnlocked = PROJECT_QUEST_IDS.every((id) => completedSet.has(id))
 
   return (
     <div className="stage">
@@ -643,10 +765,12 @@ export default function GameWorld() {
           <QuestTracker
             activeKey={nearbyKey}
             completedSet={completedSet}
+            finalUnlocked={finalMissionUnlocked}
             collapsed={trackerCollapsed}
             onToggleCollapsed={() => setTrackerCollapsed((v) => !v)}
             onQuestClick={(id) => setOverlay(id)}
           />
+          <ObjectiveFeed items={objectiveFeed} />
 
           <div className="hud-bottom">
             {nearbyMeta ? (
@@ -684,7 +808,7 @@ export default function GameWorld() {
       )}
 
       {phase === 'boot' && <BootScreen onDone={() => setPhase('intro')} />}
-      {phase === 'intro' && <IntroScreen onStart={() => setPhase('play')} />}
+      {phase === 'intro' && <IntroScreen onStart={startPlay} />}
       {renderOverlay()}
       {pendingCompletion && (
         <QuestCompleted questId={pendingCompletion} onDismiss={() => setPendingCompletion(null)} />
