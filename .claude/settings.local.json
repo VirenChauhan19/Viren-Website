@@ -26,7 +26,16 @@
       "Bash(gh workflow *)",
       "Bash(curl -sL \"https://virenchauhan19.github.io/Viren-Website/\")",
       "PowerShell(Get-ChildItem *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(rm -f \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/Footer.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/HeroGalaxy.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/Media.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/Navbar.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/ProjectCard.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/Reveal.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/ScrollProgress.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components/ScrollScene.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages/About.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages/Contact.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages/Home.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages/ProjectDetail.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages/Projects.jsx\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/lib/scrollState.js\")",
+      "Bash(rmdir \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/components\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/pages\" \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/lib\")",
+      "Bash(mkdir -p \"C:/Users/Administrator/Desktop/Github_AI201/Viren-Website/src/game\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/Viren-Website/)",
+      "Bash(curl -s http://localhost:5173/Viren-Website/src/game/GameWorld.jsx -o /dev/null -w \"GameWorld: %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:5173/Viren-Website/src/game/render.js -o /dev/null -w \"render: %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:5173/Viren-Website/src/game/aria.js -o /dev/null -w \"aria: %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:5173/Viren-Website/src/game/Overlays.jsx -o /dev/null -w \"Overlays: %{http_code}\\\\n\")",
+      "Bash(cmd.exe *)"
     ]
   },
   "disabledMcpjsonServers": [
