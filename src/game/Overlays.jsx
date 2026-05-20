@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { profile, education, experience, projects } from '../data/content.js'
 import { ariaAnswer, SUGGESTED_QUESTIONS } from './aria.js'
+import { assetUrl, youtubeEmbedUrl, youtubeThumb, youtubeWatchUrl } from './assets.js'
+import { QUEST_BY_ID } from '../data/quests.js'
 
 // ───────────────────── Shared shell ─────────────────────
 
@@ -26,17 +28,83 @@ function OverlayShell({ tint = 'ai', onClose, children }) {
   )
 }
 
-// ───────────────────── Project overlay ─────────────────────
+// ───────────────────── Media renderer (with fallback) ─────────────────────
+
+function MediaCard({ m, alt }) {
+  const [failed, setFailed] = useState(false)
+
+  if (m.type === 'youtube') {
+    if (failed) {
+      // Fallback: clickable thumbnail that opens YouTube directly.
+      return (
+        <a className="overlay-media yt-fallback" href={youtubeWatchUrl(m.src)} target="_blank" rel="noreferrer">
+          <img src={youtubeThumb(m.src)} alt={m.caption || alt} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+          <div className="yt-play">▶ Watch on YouTube</div>
+        </a>
+      )
+    }
+    return (
+      <div className="overlay-media">
+        <iframe
+          src={youtubeEmbedUrl(m.src)}
+          title={m.caption || alt}
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    )
+  }
+
+  if (m.type === 'video') {
+    return (
+      <div className="overlay-media">
+        <video
+          src={assetUrl(m.src)}
+          controls
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onError={() => setFailed(true)}
+        />
+        {failed && (
+          <div className="media-error">Video unavailable. <a href={assetUrl(m.src)} target="_blank" rel="noreferrer">Open in new tab →</a></div>
+        )}
+      </div>
+    )
+  }
+
+  if (m.type === 'image') {
+    return (
+      <div className="overlay-media">
+        {!failed ? (
+          <img src={assetUrl(m.src)} alt={m.caption || alt} onError={() => setFailed(true)} />
+        ) : (
+          <div className="media-error">Image unavailable.</div>
+        )}
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ───────────────────── Project overlay (Quest panel) ─────────────────────
 
 export function ProjectOverlay({ slug, onClose }) {
   const p = projects.find((x) => x.slug === slug)
   if (!p) return null
   const tint = p.type === 'ai' ? 'ai' : 'game'
-  const accent = p.type === 'ai' ? 'AI · APPLIED INTELLIGENCE' : 'GAME · INTERACTIVE'
+  const quest = QUEST_BY_ID[`project:${p.slug}`]
 
   return (
     <OverlayShell tint={tint} onClose={onClose}>
-      <div className={`overlay-tag ${p.type === 'ai' ? 'ai' : 'game'}`}>{accent} · {p.year}</div>
+      <div className={`quest-banner ${tint}`}>
+        <span className="qb-tag">QUEST · {p.type === 'ai' ? 'APPLIED AI' : 'GAME DEV'} · {p.year}</span>
+        {quest && <span className="qb-objective">▶ {quest.objective}</span>}
+      </div>
       <h2 className="overlay-title">{p.name}</h2>
       <p className="overlay-role">{p.role}</p>
       <p className="overlay-summary">{p.summary}</p>
@@ -47,29 +115,14 @@ export function ProjectOverlay({ slug, onClose }) {
 
       {p.media && p.media.length > 0 && (
         <>
-          <div className="overlay-section-title">Demo</div>
-          {p.media.map((m, i) => (
-            <div className="overlay-media" key={i}>
-              {m.type === 'video' && (
-                <video src={`/${m.src}`} controls autoPlay muted loop playsInline />
-              )}
-              {m.type === 'youtube' && (
-                <iframe
-                  src={`https://www.youtube.com/embed/${m.src}?modestbranding=1&rel=0`}
-                  title={m.caption || p.name}
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )}
-              {m.type === 'image' && <img src={`/${m.src}`} alt={m.caption || p.name} />}
-            </div>
-          ))}
+          <div className="overlay-section-title">▶ Demo footage</div>
+          {p.media.map((m, i) => <MediaCard key={i} m={m} alt={p.name} />)}
         </>
       )}
 
       {p.highlights && p.highlights.length > 0 && (
         <>
-          <div className="overlay-section-title">Highlights</div>
+          <div className="overlay-section-title">◆ Highlights</div>
           <ul className="overlay-highlights">
             {p.highlights.map((h, i) => <li key={i}>{h}</li>)}
           </ul>
@@ -78,7 +131,7 @@ export function ProjectOverlay({ slug, onClose }) {
 
       {p.tech && p.tech.length > 0 && (
         <>
-          <div className="overlay-section-title">Stack</div>
+          <div className="overlay-section-title">⚙ Stack</div>
           <div className="overlay-pills">
             {p.tech.map((t) => <span className="overlay-pill" key={t}>{t}</span>)}
           </div>
@@ -95,130 +148,194 @@ export function ProjectOverlay({ slug, onClose }) {
   )
 }
 
-// ───────────────────── About overlay ─────────────────────
+// ───────────────────── About (NPC dialogue) ─────────────────────
 
 export function AboutOverlay({ onClose }) {
+  const dialogue = [
+    profile.tagline,
+    ...profile.about,
+  ]
+  const [pageIdx, setPageIdx] = useState(0)
+  const [typed, setTyped] = useState('')
+  const fullText = dialogue[pageIdx] || ''
+
+  useEffect(() => {
+    setTyped('')
+    let i = 0
+    const id = setInterval(() => {
+      i += 2
+      setTyped(fullText.slice(0, i))
+      if (i >= fullText.length) clearInterval(id)
+    }, 14)
+    return () => clearInterval(id)
+  }, [pageIdx, fullText])
+
+  const advance = () => {
+    if (typed.length < fullText.length) {
+      setTyped(fullText) // skip typing on first click
+      return
+    }
+    if (pageIdx < dialogue.length - 1) setPageIdx(pageIdx + 1)
+  }
+
+  const isLast = pageIdx === dialogue.length - 1
+
   return (
     <OverlayShell tint="info" onClose={onClose}>
-      <div className="overlay-tag info">PROFILE · ABOUT</div>
-      <h2 className="overlay-title">{profile.name}</h2>
-      <p className="overlay-role">{profile.title}</p>
-
-      <div className="about-grid">
-        <div className="about-photo">
-          <img src={`/${profile.photo}`} alt={profile.name} />
+      <div className="npc-dialogue" onClick={advance}>
+        <div className="npc-portrait">
+          <img src={assetUrl(profile.photo)} alt={profile.name} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+          <div className="npc-portrait-fallback">V</div>
+          <div className="npc-portrait-frame" />
         </div>
-        <div className="about-text">
-          <p>{profile.tagline}</p>
-          {profile.about.map((para, i) => <p key={i}>{para}</p>)}
-          <div className="about-meta">
-            {education.map((e, i) => (
-              <div className="row" key={i}>
-                <span className="k">Education</span>
-                <span>{e.degree} — {e.school}</span>
-              </div>
-            ))}
-            <div className="row"><span className="k">Email</span><span>{profile.email}</span></div>
-            <div className="row"><span className="k">GitHub</span>
-              <span>
-                <a href={profile.links.find((l) => l.label === 'GitHub')?.url} target="_blank" rel="noreferrer">
-                  github.com/VirenChauhan19
-                </a>
-              </span>
-            </div>
+        <div className="npc-textbox">
+          <div className="npc-name">
+            <span className="dot" />
+            {profile.name}
+            <span className="npc-title">{profile.title}</span>
           </div>
+          <div className="npc-text">{typed}<span className="npc-cursor" /></div>
+          <div className="npc-foot">
+            <span className="page-pips">
+              {dialogue.map((_, i) => (
+                <span key={i} className={`pip ${i === pageIdx ? 'active' : ''} ${i < pageIdx ? 'seen' : ''}`} />
+              ))}
+            </span>
+            <span className="npc-next">{typed.length < fullText.length ? '⏵ skip' : isLast ? '⏵ continue' : '⏵ next'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-meta">
+        {education.map((e, i) => (
+          <div className="row" key={i}>
+            <span className="k">EDU</span>
+            <span>{e.degree} — {e.school} ({e.location})</span>
+          </div>
+        ))}
+        <div className="row"><span className="k">MAIL</span><span>{profile.email}</span></div>
+        <div className="row"><span className="k">REPO</span>
+          <span>
+            <a href={profile.links.find((l) => l.label === 'GitHub')?.url} target="_blank" rel="noreferrer">
+              github.com/VirenChauhan19
+            </a>
+          </span>
         </div>
       </div>
     </OverlayShell>
   )
 }
 
-// ───────────────────── Trophy / experience overlay ─────────────────────
+// ───────────────────── Mission Log (was Trophy / Experience) ─────────────────────
 
 export function TrophyOverlay({ onClose }) {
   return (
     <OverlayShell tint="info" onClose={onClose}>
-      <div className="overlay-tag info">EXPERIENCE · TIMELINE</div>
-      <h2 className="overlay-title">Trophy Cabinet</h2>
-      <p className="overlay-role">Work, leadership, and the long-form stuff.</p>
+      <div className="mission-log-head">
+        <div className="overlay-tag info">▌ MISSION LOG · CAREER</div>
+        <h2 className="overlay-title">Mission Log</h2>
+        <p className="overlay-role">Past deployments, leadership ops, and side quests.</p>
+      </div>
 
-      <ul className="timeline">
-        {experience.map((exp, i) => (
-          <li key={i}>
-            <div className="t-role">{exp.role}</div>
-            <div className="t-org">{exp.org}</div>
-            <div className="t-dates">
-              {exp.dates}{exp.location ? ` · ${exp.location}` : ''}
-            </div>
-            {exp.detail && <div className="t-detail">{exp.detail}</div>}
-            {exp.bullets && exp.bullets.length > 0 && (
-              <ul className="t-bullets">
-                {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
-              </ul>
-            )}
-          </li>
-        ))}
+      <ul className="mission-list">
+        {experience.map((exp, i) => {
+          const status = exp.dates && /present|upcoming/i.test(exp.dates) ? 'active' : 'complete'
+          return (
+            <li key={i} className={`mission ${status}`}>
+              <div className="mission-marker">
+                <div className="mission-marker-icon">{status === 'active' ? '●' : '✓'}</div>
+              </div>
+              <div className="mission-body">
+                <div className="mission-status">
+                  {status === 'active' ? 'ACTIVE' : 'CLEARED'} · {exp.dates}
+                </div>
+                <div className="mission-role">{exp.role}</div>
+                <div className="mission-org">@ {exp.org}{exp.location ? ` · ${exp.location}` : ''}</div>
+                {exp.detail && <div className="mission-detail">{exp.detail}</div>}
+                {exp.bullets && exp.bullets.length > 0 && (
+                  <ul className="mission-bullets">
+                    {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                  </ul>
+                )}
+              </div>
+            </li>
+          )
+        })}
       </ul>
     </OverlayShell>
   )
 }
 
-// ───────────────────── Showreel overlay ─────────────────────
+// ───────────────────── Showreel ─────────────────────
 
 export function ShowreelOverlay({ onClose }) {
-  // Pull experience entries that have media (the film/video ones).
   const reels = experience.filter((e) => e.media && e.media.length > 0)
   return (
     <OverlayShell tint="info" onClose={onClose}>
-      <div className="overlay-tag info">SHOWREEL · FILM</div>
+      <div className="overlay-tag info">▶ SHOWREEL · FILM</div>
       <h2 className="overlay-title">Film & Video Work</h2>
       <p className="overlay-role">Documentary, ultramarathon, and impact-driven projects.</p>
 
       {reels.map((r, i) => (
-        <div key={i} style={{ marginBottom: 28 }}>
+        <div key={i} className="reel-block">
           <div className="overlay-section-title">{r.role} — {r.org} ({r.dates})</div>
-          {r.detail && <p style={{ color: 'var(--ink-dim)', fontSize: 14, lineHeight: 1.55, margin: '4px 0 12px' }}>{r.detail}</p>}
-          {r.media.map((m, j) => (
-            <div className="overlay-media" key={j}>
-              {m.type === 'youtube' && (
-                <iframe
-                  src={`https://www.youtube.com/embed/${m.src}?modestbranding=1&rel=0`}
-                  title={m.caption || r.role}
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )}
-              {m.type === 'video' && <video src={`/${m.src}`} controls playsInline />}
-              {m.type === 'image' && <img src={`/${m.src}`} alt={m.caption || r.role} />}
-            </div>
-          ))}
+          {r.detail && <p className="reel-detail">{r.detail}</p>}
+          <div className="reel-grid">
+            {r.media.map((m, j) => <MediaCard key={j} m={m} alt={r.role} />)}
+          </div>
         </div>
       ))}
     </OverlayShell>
   )
 }
 
-// ───────────────────── Contact overlay ─────────────────────
+// ───────────────────── Recruitment Terminal (was Contact) ─────────────────────
 
 export function ContactOverlay({ onClose }) {
   const githubLink = profile.links.find((l) => l.label === 'GitHub')?.url
+  const [printed, setPrinted] = useState('')
+  const lines = [
+    '> ESTABLISHING SECURE CHANNEL...',
+    '> AUTH: recruiter@your-studio',
+    '> TARGET: viren.chauhan@scad',
+    '> STATUS: ONLINE · accepting transmissions',
+    '',
+    '   "Open to game-dev, applied-AI, and creative-tech roles."',
+    '   "Based in Atlanta, GA. Reply window: ~24h."',
+    '',
+    '> AWAITING INPUT.',
+  ].join('\n')
+
+  useEffect(() => {
+    let i = 0
+    const id = setInterval(() => {
+      i += 2
+      setPrinted(lines.slice(0, i))
+      if (i >= lines.length) clearInterval(id)
+    }, 18)
+    return () => clearInterval(id)
+  }, [lines])
+
   return (
     <OverlayShell tint="game" onClose={onClose}>
-      <div className="overlay-tag game">CONTACT · OPEN A LINE</div>
-      <h2 className="overlay-title">Let's work together.</h2>
-      <p className="overlay-summary">
-        Recruiting for game dev or applied AI roles? I'd love to hear about it.
-        Drop a line below or reach out directly.
-      </p>
-
-      <div className="overlay-cta" style={{ marginTop: 8 }}>
-        <a className="primary" href={`mailto:${profile.email}?subject=Hello%20Viren`}>
-          ✉  Email {profile.email}
-        </a>
-        {githubLink && <a href={githubLink} target="_blank" rel="noreferrer">⌥  GitHub</a>}
+      <div className="terminal">
+        <div className="terminal-head">
+          <span className="dot red" /><span className="dot yel" /><span className="dot grn" />
+          <span className="terminal-title">recruit.exe — RECRUITMENT TERMINAL</span>
+        </div>
+        <pre className="terminal-body">
+{printed}<span className="terminal-cursor" />
+        </pre>
       </div>
 
-      <div className="overlay-section-title">Quick facts</div>
+      <div className="overlay-cta" style={{ marginTop: 18 }}>
+        <a className="primary" href={`mailto:${profile.email}?subject=Hello%20Viren%20—%20recruiting`}>
+          ✉  TRANSMIT — {profile.email}
+        </a>
+        {githubLink && <a href={githubLink} target="_blank" rel="noreferrer">⌥  Open source / repo</a>}
+      </div>
+
+      <div className="overlay-section-title">▌ Quick facts</div>
       <ul className="overlay-highlights">
         <li>Based in Atlanta, GA · Studying at SCAD</li>
         <li>Open to game dev, applied-AI, and creative-tech internships / roles</li>
@@ -261,7 +378,6 @@ export function AriaOverlay({ onClose }) {
     setInput('')
     setTyping(true)
 
-    // Simulated thinking delay for character — bounded between 350–900ms.
     const delay = 350 + Math.min(550, q.length * 12)
     setTimeout(() => {
       const ans = ariaAnswer(q)

@@ -103,9 +103,66 @@ export const experience = [
     dates: '2019',
     detail:
       'Produced promotional films for an organization empowering underprivileged girls in rural India through running.',
-    media: [{ type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' }],
+    media: [
+      { type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' },
+      { type: 'image', src: 'run2fly-1.jpg', caption: 'On location · Run2Fly' },
+      { type: 'image', src: 'run2fly-2.jpg', caption: 'Behind the scenes' },
+    ],
   },
 ]
+
+// ───────── Skills (perk tree) ─────────
+// branch: 'game' | 'ai' | 'tools' | 'soft'. level: 1–5 (filled dots).
+export const skills = [
+  // Game Dev branch
+  { id: 'gameplay-prog', branch: 'game', name: 'Gameplay Programming', level: 4,
+    desc: 'Player movement, aiming, projectile systems, combat feel.' },
+  { id: 'enemy-ai', branch: 'game', name: 'Enemy AI', level: 3,
+    desc: 'Wave spawning, behavior states, escalating difficulty curves.' },
+  { id: '3d-env', branch: 'game', name: '3D Environment Art', level: 3,
+    desc: 'Modeling, texturing, lighting, mood-driven scene composition.' },
+  { id: 'physics', branch: 'game', name: '2D / 3D Physics', level: 4,
+    desc: 'Collision response, bounce dynamics, deterministic systems.' },
+  { id: 'level-design', branch: 'game', name: 'Level Design', level: 3,
+    desc: 'Layouts that reward precision and reinforce the core loop.' },
+
+  // Applied AI branch
+  { id: 'rag', branch: 'ai', name: 'Retrieval-Augmented Chat', level: 4,
+    desc: 'TF-IDF + embeddings over user-uploaded docs; grounded answers.' },
+  { id: 'doc-parse', branch: 'ai', name: 'Document Parsing', level: 3,
+    desc: 'Extracting structured data (deadlines, policies) from PDFs and notes.' },
+  { id: 'plan-gen', branch: 'ai', name: 'AI Plan Generation', level: 3,
+    desc: 'Personalized running/activity plans from patient profiles.' },
+  { id: 'api-glue', branch: 'ai', name: 'API Integration', level: 4,
+    desc: 'Google Calendar, Firebase, third-party services as first-class glue.' },
+  { id: 'ai-ethics', branch: 'ai', name: 'Applied AI Ethics', level: 3,
+    desc: 'Minor coursework — agentic design, intelligent tools, creative computing.' },
+
+  // Tools branch
+  { id: 'react', branch: 'tools', name: 'React', level: 4,
+    desc: 'Hooks, refs, RAF-driven canvas apps, accessible UI patterns.' },
+  { id: 'cs', branch: 'tools', name: 'C# / Engine Scripting', level: 3,
+    desc: 'Gameplay scripting in mainstream game engines.' },
+  { id: 'flutter', branch: 'tools', name: 'Flutter / Web', level: 3,
+    desc: 'Cross-platform deployment — see La Ultra patient app.' },
+  { id: 'firebase', branch: 'tools', name: 'Firebase', level: 3,
+    desc: 'Auth, Firestore, hosting for the clinical app.' },
+  { id: 'git', branch: 'tools', name: 'Git', level: 4,
+    desc: 'Branching, PR hygiene, code review, careful merges.' },
+
+  // Endurance / Soft branch
+  { id: 'leadership', branch: 'soft', name: 'Field Leadership', level: 5,
+    desc: 'Race director, 55km category at La Ultra — multi-functional teams.' },
+  { id: 'ops', branch: 'soft', name: 'Logistics & Ops', level: 5,
+    desc: 'High-altitude (12k–15k ft) race operations and medical reporting.' },
+  { id: 'endurance', branch: 'soft', name: 'Endurance', level: 5,
+    desc: 'Long-form ultra-sport background. Finishes what he starts.' },
+  { id: 'comms', branch: 'soft', name: 'Communication', level: 4,
+    desc: 'International student ambassador; guest-facing event ops.' },
+  { id: 'crisis', branch: 'soft', name: 'Crisis Management', level: 4,
+    desc: 'Athlete cut-off enforcement, on-the-fly disqualifications, real-time medical.' },
+]
+
 
 // type: 'ai' | 'game' sets the accent color and 3D shape per project.
 export const projects = [

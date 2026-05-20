@@ -35,7 +35,13 @@
       "Bash(curl -s http://localhost:5173/Viren-Website/src/game/render.js -o /dev/null -w \"render: %{http_code}\\\\n\")",
       "Bash(curl -s http://localhost:5173/Viren-Website/src/game/aria.js -o /dev/null -w \"aria: %{http_code}\\\\n\")",
       "Bash(curl -s http://localhost:5173/Viren-Website/src/game/Overlays.jsx -o /dev/null -w \"Overlays: %{http_code}\\\\n\")",
-      "Bash(cmd.exe *)"
+      "Bash(cmd.exe *)",
+      "Bash(curl -s http://localhost:5173/Viren-Website/)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(curl -s -o /dev/null -w \"  %{http_code}  %{url_effective}\\\\n\" http://localhost:4174/Viren-Website/)",
+      "Bash(curl -s -o /dev/null -w '  %{http_code}  /Viren-Website/__TRACKED_VAR__\\\\n' http://localhost:4174/Viren-Website/__TRACKED_VAR__)",
+      "Bash(curl -s -o /dev/null -w \"  %{http_code}  /peggle.mp4 \\(no base\\)\\\\n\" \"http://localhost:4174/peggle.mp4\")",
+      "Bash(curl -s http://localhost:4174/Viren-Website/)"
     ]
   },
   "disabledMcpjsonServers": [

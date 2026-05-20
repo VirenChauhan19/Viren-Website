@@ -1,20 +1,35 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import {
-  TILE,
-  WORLD_W,
-  WORLD_H,
   PLAYER_SPAWN,
   STATION_BLOCKS,
+  WORLD_W,
+  WORLD_H,
+  TILES,
   isWall,
   isStationBlocked,
   nearestInteractable,
 } from './world.js'
 import {
+  TILE_W,
+  TILE_H,
+  HALF_W,
+  HALF_H,
+  WORLD_ISO_W,
+  WORLD_ISO_H,
+  WORLD_OFFSET_X,
+  isoProject,
+  isoTileCenter,
+  drawExtrudedBox,
+} from './iso.js'
+import {
+  drawSky,
   drawFloor,
+  drawWalls,
   drawStation,
   drawPlayer,
+  drawDroneNPC,
   drawAmbientDust,
-  drawInteractSparkle,
+  drawQuestMarker,
   COLORS,
 } from './render.js'
 import {
@@ -25,53 +40,47 @@ import {
   ShowreelOverlay,
   AriaOverlay,
 } from './Overlays.jsx'
+import { SkillTreeOverlay } from './SkillTree.jsx'
+import { QuestTracker, QuestCompleted } from './QuestSystem.jsx'
+import { QUESTS, QUEST_BY_ID, loadCompletedQuests, saveCompletedQuests } from '../data/quests.js'
 import { profile } from '../data/content.js'
 
-const WORLD_PX_W = WORLD_W * TILE
-const WORLD_PX_H = WORLD_H * TILE
-const PLAYER_SPEED = 140 // px / sec
-const PLAYER_HALF = 5 // collision half-width (small box; lets the player tuck up to stations)
+const PLAYER_SPEED = 5.5 // tiles per second
+const PLAYER_HALF = 0.18 // collision half-extent in tile units
 const CAMERA_LERP = 0.14
 
-function clamp(v, lo, hi) {
-  return Math.max(lo, Math.min(hi, v))
-}
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
-  return (
-    'ontouchstart' in window ||
-    (navigator && (navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0))
-  )
+  return 'ontouchstart' in window || (navigator && (navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0))
 }
 
 // ──────────────────── Boot sequence ────────────────────
 
 const BOOT_LINES = [
-  { text: 'VIREN.exe BIOS v0.4.7  ·  © Viren Chauhan', cls: '' },
-  { text: 'Detecting recruiter…', cls: 'ok', delay: 240 },
-  { text: 'Loading studio geometry [36 × 22 tiles]', cls: 'ok', delay: 200 },
-  { text: 'Mounting arcade cabinets [3]', cls: 'ok', delay: 180 },
-  { text: 'Mounting AI workstations [2]', cls: 'ok', delay: 180 },
-  { text: 'Booting ARIA · retrieval-engine v0.4', cls: 'ok', delay: 220 },
-  { text: 'Calibrating particle systems', cls: 'ok', delay: 180 },
+  { text: 'VIREN.exe BIOS v0.7.0  ·  © Viren Chauhan', cls: '' },
+  { text: 'Detecting recruiter…', cls: 'ok', delay: 220 },
+  { text: 'Loading isometric world [32 × 22 tiles]', cls: 'ok', delay: 200 },
+  { text: 'Mounting 11 quest stations', cls: 'ok', delay: 180 },
+  { text: 'Booting ARIA · retrieval-engine v0.4', cls: 'ok', delay: 200 },
+  { text: 'Loading quest log…', cls: 'ok', delay: 180 },
+  { text: 'Calibrating sun beam + cloud layer', cls: 'ok', delay: 180 },
+  { text: 'Spawning ambient drone', cls: 'ok', delay: 160 },
   { text: 'Ready.', cls: '', delay: 240 },
 ]
 
 function BootScreen({ onDone }) {
   const [shown, setShown] = useState(0)
   const [fading, setFading] = useState(false)
-  const skipped = useRef(false)
+  const skippedRef = useRef(false)
 
   useEffect(() => {
-    if (skipped.current) return
+    if (skippedRef.current) return
     if (shown >= BOOT_LINES.length) {
-      const t = setTimeout(() => setFading(true), 480)
+      const t1 = setTimeout(() => setFading(true), 480)
       const t2 = setTimeout(() => onDone(), 480 + 380)
-      return () => {
-        clearTimeout(t)
-        clearTimeout(t2)
-      }
+      return () => { clearTimeout(t1); clearTimeout(t2) }
     }
     const d = BOOT_LINES[shown].delay ?? 180
     const t = setTimeout(() => setShown((s) => s + 1), d)
@@ -79,7 +88,7 @@ function BootScreen({ onDone }) {
   }, [shown, onDone])
 
   const skip = () => {
-    skipped.current = true
+    skippedRef.current = true
     setFading(true)
     setTimeout(() => onDone(), 200)
   }
@@ -89,13 +98,11 @@ function BootScreen({ onDone }) {
       <div className="boot-inner">
         <div className="boot-title">VIREN.exe</div>
         {BOOT_LINES.slice(0, shown).map((l, i) => (
-          <div key={i} className={`boot-line ${l.cls}`}>
-            {`> ${l.text}`}
-          </div>
+          <div key={i} className={`boot-line ${l.cls}`}>{`> ${l.text}`}</div>
         ))}
         {shown >= BOOT_LINES.length && (
           <div className="boot-line" style={{ marginTop: 12 }}>
-            Press anywhere to enter the studio<span className="boot-cursor" />
+            Press anywhere to enter the world<span className="boot-cursor" />
           </div>
         )}
       </div>
@@ -109,40 +116,30 @@ function IntroScreen({ onStart }) {
   return (
     <div className="intro" onClick={onStart}>
       <div className="intro-card" onClick={(e) => e.stopPropagation()}>
-        <div className="intro-tag"><span className="pulse" /> Playable portfolio · v1.0</div>
+        <div className="intro-tag"><span className="pulse" /> Isometric playable portfolio · v0.7</div>
         <h1 className="intro-title">
-          You just walked into <em>{profile.name}'s</em> studio.
+          New game: <em>recruit {profile.name}</em>
         </h1>
         <p className="intro-sub">
-          {profile.title}. Walk around the floor, peek at the arcade cabinets, sit at the AI desks,
-          and talk to ARIA if you've got questions.
+          You've spawned into Viren's studio. {QUESTS.length} quests on the map. Each one
+          you finish drops a "Quest Completed" reward toward your final objective.
         </p>
 
         <div className="intro-controls">
           <div className="row">
-            <div className="keys">
-              <span className="kk">W</span><span className="kk">A</span><span className="kk">S</span><span className="kk">D</span>
-            </div>
-            <span className="lab">move around</span>
+            <div className="keys"><span className="kk">W</span><span className="kk">A</span><span className="kk">S</span><span className="kk">D</span></div>
+            <span className="lab">move (iso-relative)</span>
           </div>
           <div className="row">
-            <div className="keys">
-              <span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span>
-            </div>
+            <div className="keys"><span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span></div>
             <span className="lab">also works</span>
           </div>
-          <div className="row">
-            <span className="kk">E</span>
-            <span className="lab">interact with stations</span>
-          </div>
-          <div className="row">
-            <span className="kk">Esc</span>
-            <span className="lab">close any panel</span>
-          </div>
+          <div className="row"><span className="kk">E</span><span className="lab">interact / open quest</span></div>
+          <div className="row"><span className="kk">Esc</span><span className="lab">close panel</span></div>
         </div>
 
         <button className="intro-start" onClick={onStart}>
-          Enter the studio
+          Begin quest line
           <span className="arrow">→</span>
         </button>
       </div>
@@ -152,7 +149,7 @@ function IntroScreen({ onStart }) {
 
 // ──────────────────── Minimap ────────────────────
 
-function Minimap({ playerRef }) {
+function Minimap({ playerRef, completedSet }) {
   const ref = useRef(null)
   const rafRef = useRef(0)
 
@@ -169,10 +166,8 @@ function Minimap({ playerRef }) {
 
     const draw = () => {
       ctx.clearRect(0, 0, w, h)
-      // Background
       ctx.fillStyle = '#0a0c12'
       ctx.fillRect(0, 0, w, h)
-      // Border
       ctx.strokeStyle = 'rgba(255,255,255,0.06)'
       ctx.lineWidth = 1
       ctx.strokeRect(0.5, 0.5, w - 1, h - 1)
@@ -180,13 +175,11 @@ function Minimap({ playerRef }) {
       const sx = w / WORLD_W
       const sy = h / WORLD_H
 
-      // Zone tints
       ctx.fillStyle = 'rgba(94, 232, 255, 0.06)'
       ctx.fillRect(0, 2 * sy, w, 8 * sy)
       ctx.fillStyle = 'rgba(255, 154, 90, 0.06)'
       ctx.fillRect(0, 13 * sy, w, 7 * sy)
 
-      // Walls
       ctx.fillStyle = 'rgba(255, 255, 255, 0.18)'
       for (let r = 0; r < WORLD_H; r++) {
         for (let c = 0; c < WORLD_W; c++) {
@@ -194,9 +187,10 @@ function Minimap({ playerRef }) {
         }
       }
 
-      // Stations
       for (const s of STATION_BLOCKS) {
+        const completed = completedSet.has(s.key)
         const color =
+          completed ? '#6cf5a9' :
           s.accent === 'cyan' ? COLORS.cyan :
           s.accent === 'warm' ? COLORS.warm :
           s.accent === 'green' ? COLORS.green : COLORS.gold
@@ -204,20 +198,16 @@ function Minimap({ playerRef }) {
         ctx.fillRect(s.col * sx, s.row * sy, sx * 2, sy * 2)
       }
 
-      // Player
       const p = playerRef.current
       if (p) {
-        const pcol = p.x / TILE
-        const prow = p.y / TILE
         ctx.fillStyle = '#fff'
         ctx.beginPath()
-        ctx.arc(pcol * sx, prow * sy, 2.4, 0, Math.PI * 2)
+        ctx.arc(p.col * sx, p.row * sy, 2.6, 0, Math.PI * 2)
         ctx.fill()
-        // Halo
         ctx.strokeStyle = 'rgba(255,255,255,0.45)'
         ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.arc(pcol * sx, prow * sy, 5, 0, Math.PI * 2)
+        ctx.arc(p.col * sx, p.row * sy, 5, 0, Math.PI * 2)
         ctx.stroke()
       }
 
@@ -225,11 +215,11 @@ function Minimap({ playerRef }) {
     }
     draw()
     return () => cancelAnimationFrame(rafRef.current)
-  }, [playerRef])
+  }, [playerRef, completedSet])
 
   return (
     <div className="minimap" aria-hidden>
-      <div className="minimap-label">STUDIO MAP</div>
+      <div className="minimap-label">WORLD MAP</div>
       <canvas ref={ref} className="minimap-canvas" />
     </div>
   )
@@ -246,17 +236,13 @@ function VirtualJoystick({ onMove }) {
   useEffect(() => {
     const base = baseRef.current
     if (!base) return
-
-    const r = 50 // max stick travel from center
+    const r = 50
     const reset = () => {
       activeRef.current = false
       idRef.current = null
-      if (stickRef.current) {
-        stickRef.current.style.transform = `translate(-50%, -50%)`
-      }
+      if (stickRef.current) stickRef.current.style.transform = `translate(-50%, -50%)`
       onMove(0, 0)
     }
-
     const startAt = (touch) => {
       activeRef.current = true
       idRef.current = touch.identifier ?? 'mouse'
@@ -269,26 +255,14 @@ function VirtualJoystick({ onMove }) {
       let dx = clientX - cx
       let dy = clientY - cy
       const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist > r) {
-        dx = (dx / dist) * r
-        dy = (dy / dist) * r
-      }
-      if (stickRef.current) {
-        stickRef.current.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`
-      }
-      // Normalize to -1..1, with deadzone
+      if (dist > r) { dx = (dx / dist) * r; dy = (dy / dist) * r }
+      if (stickRef.current) stickRef.current.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`
       const deadzone = 10
       const m = Math.max(0, Math.sqrt(dx * dx + dy * dy) - deadzone) / (r - deadzone)
       const angle = Math.atan2(dy, dx)
       onMove(Math.cos(angle) * m, Math.sin(angle) * m)
     }
-
-    const onTouchStart = (e) => {
-      if (activeRef.current) return
-      e.preventDefault()
-      const t = e.changedTouches[0]
-      startAt(t)
-    }
+    const onTouchStart = (e) => { if (activeRef.current) return; e.preventDefault(); startAt(e.changedTouches[0]) }
     const onTouchMove = (e) => {
       if (!activeRef.current) return
       const t = Array.from(e.changedTouches).find((x) => x.identifier === idRef.current) || e.changedTouches[0]
@@ -303,11 +277,6 @@ function VirtualJoystick({ onMove }) {
     base.addEventListener('touchmove', onTouchMove, { passive: false })
     base.addEventListener('touchend', onTouchEnd)
     base.addEventListener('touchcancel', onTouchEnd)
-    // Mouse fallback for testing
-    base.addEventListener('mousedown', (e) => { startAt(e) ; window.addEventListener('mousemove', mouseMove) ; window.addEventListener('mouseup', mouseUp, { once: true }) })
-    const mouseMove = (e) => activeRef.current && moveTo(e.clientX, e.clientY)
-    const mouseUp = () => { window.removeEventListener('mousemove', mouseMove); reset() }
-
     return () => {
       base.removeEventListener('touchstart', onTouchStart)
       base.removeEventListener('touchmove', onTouchMove)
@@ -329,54 +298,50 @@ function VirtualJoystick({ onMove }) {
 export default function GameWorld() {
   const canvasRef = useRef(null)
   const playerRef = useRef({
-    x: PLAYER_SPAWN.col * TILE + TILE / 2,
-    y: PLAYER_SPAWN.row * TILE + TILE / 2,
-    dir: 'down',
-    anim: 0,
-    moving: false,
+    col: PLAYER_SPAWN.col, row: PLAYER_SPAWN.row,
+    dir: 'down', anim: 0, moving: false,
   })
   const cameraRef = useRef({ x: 0, y: 0 })
   const keysRef = useRef({})
   const joyRef = useRef({ x: 0, y: 0 })
-  const interactRef = useRef(null) // currently in-range station
-  const pausedRef = useRef(true) // paused during boot / intro / overlay
+  const interactRef = useRef(null)
+  const pausedRef = useRef(true)
   const rafRef = useRef(0)
   const lastTRef = useRef(performance.now())
+  const dronePosRef = useRef({ col: 6, row: 11, phase: 0 })
 
-  const [phase, setPhase] = useState('boot') // boot | intro | play
-  const [overlay, setOverlay] = useState(null) // null | station-key
+  const [phase, setPhase] = useState('boot')
+  const [overlay, setOverlay] = useState(null)
   const [nearbyKey, setNearbyKey] = useState(null)
   const [nearbyMeta, setNearbyMeta] = useState(null)
   const [isTouch, setIsTouch] = useState(false)
+  const [completedSet, setCompletedSet] = useState(() => loadCompletedQuests())
+  const [pendingCompletion, setPendingCompletion] = useState(null)
+  const [trackerCollapsed, setTrackerCollapsed] = useState(false)
+
+  useEffect(() => { setIsTouch(isTouchDevice()) }, [])
 
   useEffect(() => {
-    setIsTouch(isTouchDevice())
-  }, [])
-
-  // Pause game when overlays open or out of play phase.
-  useEffect(() => {
-    pausedRef.current = phase !== 'play' || overlay !== null
-  }, [phase, overlay])
+    pausedRef.current = phase !== 'play' || overlay !== null || pendingCompletion !== null
+  }, [phase, overlay, pendingCompletion])
 
   // ──── Keyboard input ────
   useEffect(() => {
     const down = (e) => {
       const k = e.key.toLowerCase()
-      // Escape always closes overlays, even when typing in the chat.
       if (k === 'escape') {
         if (overlay) setOverlay(null)
+        if (pendingCompletion) setPendingCompletion(null)
         return
       }
-      // Ignore game keys while focused inside text inputs.
       const tag = (e.target && e.target.tagName) || ''
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'e', ' '].includes(k)) {
         e.preventDefault()
       }
       keysRef.current[k] = true
-
       if (k === 'e' || k === ' ') {
-        if (phase === 'play' && !overlay && interactRef.current) {
+        if (phase === 'play' && !overlay && !pendingCompletion && interactRef.current) {
           openStation(interactRef.current)
         }
       }
@@ -393,7 +358,7 @@ export default function GameWorld() {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
     }
-  }, [phase, overlay])
+  }, [phase, overlay, pendingCompletion])
 
   // ──── Resize handling ────
   useEffect(() => {
@@ -416,29 +381,41 @@ export default function GameWorld() {
     return () => window.removeEventListener('resize', resize)
   }, [])
 
-  // ──── Collision check (world pixels) ────
-  function collidesAt(x, y) {
-    // Test corners of player's small AABB.
+  // ──── Collision in tile coords ────
+  function collidesAt(col, row) {
     const half = PLAYER_HALF
     const corners = [
-      [x - half, y - half + 4],
-      [x + half, y - half + 4],
-      [x - half, y + half],
-      [x + half, y + half],
+      [col - half, row - half],
+      [col + half, row - half],
+      [col - half, row + half],
+      [col + half, row + half],
     ]
-    for (const [cx, cy] of corners) {
-      const col = Math.floor(cx / TILE)
-      const row = Math.floor(cy / TILE)
-      if (isWall(col, row)) return true
-      if (isStationBlocked(col, row)) return true
+    for (const [cc, rr] of corners) {
+      const c = Math.floor(cc)
+      const r = Math.floor(rr)
+      if (isWall(c, r)) return true
+      if (isStationBlocked(c, r)) return true
     }
     return false
   }
 
-  // ──── Open a station's overlay ────
   function openStation(s) {
     setOverlay(s.key)
   }
+
+  // ──── On overlay close, mark quest complete if applicable ────
+  const handleCloseOverlay = useCallback(() => {
+    const wasOverlay = overlay
+    setOverlay(null)
+    if (wasOverlay && QUEST_BY_ID[wasOverlay] && !completedSet.has(wasOverlay)) {
+      const next = new Set(completedSet)
+      next.add(wasOverlay)
+      setCompletedSet(next)
+      saveCompletedQuests(next)
+      // Small delay so the close animation can play first
+      setTimeout(() => setPendingCompletion(wasOverlay), 120)
+    }
+  }, [overlay, completedSet])
 
   // ──── Game loop ────
   useEffect(() => {
@@ -450,144 +427,195 @@ export default function GameWorld() {
       const dt = Math.min(0.05, (now - lastTRef.current) / 1000)
       lastTRef.current = now
 
+      // Update player + interactable (only when not paused)
       if (!pausedRef.current) {
-        // ── Input vector
-        let vx = 0
-        let vy = 0
+        // Input vector in SCREEN cardinal directions. We rotate 45° into tile space
+        // so the visual movement matches what the player presses.
+        let sx = 0
+        let sy = 0
         const k = keysRef.current
-        if (k['w'] || k['arrowup']) vy -= 1
-        if (k['s'] || k['arrowdown']) vy += 1
-        if (k['a'] || k['arrowleft']) vx -= 1
-        if (k['d'] || k['arrowright']) vx += 1
-        // Joystick override (additive but normalized later)
-        vx += joyRef.current.x
-        vy += joyRef.current.y
-        const mag = Math.sqrt(vx * vx + vy * vy)
-        if (mag > 1) {
-          vx /= mag
-          vy /= mag
-        }
-        const moving = mag > 0.05
+        if (k['w'] || k['arrowup']) sy -= 1
+        if (k['s'] || k['arrowdown']) sy += 1
+        if (k['a'] || k['arrowleft']) sx -= 1
+        if (k['d'] || k['arrowright']) sx += 1
+        sx += joyRef.current.x
+        sy += joyRef.current.y
+        const mag = Math.sqrt(sx * sx + sy * sy)
+        if (mag > 1) { sx /= mag; sy /= mag }
+        // Rotate screen-space input into tile-space movement:
+        //   dCol =  sx + sy  (right + down both increase col)
+        //   dRow = -sx + sy  (down increases row, right decreases row)
+        const dCol = (sx + sy)
+        const dRow = (-sx + sy)
+        const moveMag = Math.sqrt(dCol * dCol + dRow * dRow)
+        const moving = moveMag > 0.05
         const p = playerRef.current
-        // Direction
         if (moving) {
-          if (Math.abs(vx) > Math.abs(vy)) p.dir = vx > 0 ? 'right' : 'left'
-          else p.dir = vy > 0 ? 'down' : 'up'
+          // Direction inferred from the dominant SCREEN axis (intuitive sprite facing).
+          if (Math.abs(sx) > Math.abs(sy)) p.dir = sx > 0 ? 'right' : 'left'
+          else p.dir = sy > 0 ? 'down' : 'up'
         }
-        // Movement (axis-separated for sliding along walls)
-        const dx = vx * PLAYER_SPEED * dt
-        const dy = vy * PLAYER_SPEED * dt
-        const nx = p.x + dx
-        if (!collidesAt(nx, p.y)) p.x = nx
-        const ny = p.y + dy
-        if (!collidesAt(p.x, ny)) p.y = ny
-        // Clamp inside world
-        p.x = clamp(p.x, TILE + PLAYER_HALF, WORLD_PX_W - TILE - PLAYER_HALF)
-        p.y = clamp(p.y, TILE + PLAYER_HALF, WORLD_PX_H - TILE - PLAYER_HALF)
-        // Animation
+        // Movement (axis separated for sliding).
+        const step = PLAYER_SPEED * dt
+        const normCol = moveMag > 0 ? dCol / moveMag : 0
+        const normRow = moveMag > 0 ? dRow / moveMag : 0
+        const stepCol = normCol * step * moveMag
+        const stepRow = normRow * step * moveMag
+        const newCol = p.col + stepCol
+        if (!collidesAt(newCol, p.row)) p.col = newCol
+        const newRow = p.row + stepRow
+        if (!collidesAt(p.col, newRow)) p.row = newRow
+        p.col = clamp(p.col, 1.2, WORLD_W - 1.2)
+        p.row = clamp(p.row, 1.2, WORLD_H - 1.2)
         p.anim = (p.anim + (moving ? dt * 6 : 0)) % 4
         p.moving = moving
 
         // Nearby interactable
-        const ncol = p.x / TILE
-        const nrow = p.y / TILE
-        const near = nearestInteractable(ncol, nrow, 1.4)
+        const near = nearestInteractable(p.col, p.row, 2.0)
         interactRef.current = near
         if ((near?.key || null) !== nearbyKey) {
           setNearbyKey(near?.key || null)
           setNearbyMeta(near || null)
         }
+
+        // Drone NPC patrol — simple oscillation between two waypoints.
+        dronePosRef.current.phase += dt * 0.6
+        const phaseT = (Math.sin(dronePosRef.current.phase) + 1) / 2
+        dronePosRef.current.col = 5 + phaseT * 22
+        dronePosRef.current.row = 11.5 + Math.sin(dronePosRef.current.phase * 1.7) * 0.5
       }
 
-      // ── Camera follow (always interpolates so it settles after overlay closes)
+      // Camera (always interpolating so it settles after overlay closes)
       const viewW = canvas.clientWidth
       const viewH = canvas.clientHeight
-      const targetX = playerRef.current.x - viewW / 2
-      const targetY = playerRef.current.y - viewH / 2
+      const playerIso = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
+      const targetX = playerIso.x + HALF_W - viewW / 2
+      const targetY = playerIso.y + HALF_H - viewH / 2
       cameraRef.current.x += (targetX - cameraRef.current.x) * CAMERA_LERP
       cameraRef.current.y += (targetY - cameraRef.current.y) * CAMERA_LERP
-      // Clamp camera so we don't see past the world walls (allow a small margin).
-      const margin = 24
-      if (WORLD_PX_W > viewW) {
-        cameraRef.current.x = clamp(cameraRef.current.x, -margin, WORLD_PX_W - viewW + margin)
-      } else {
-        cameraRef.current.x = -(viewW - WORLD_PX_W) / 2
-      }
-      if (WORLD_PX_H > viewH) {
-        cameraRef.current.y = clamp(cameraRef.current.y, -margin, WORLD_PX_H - viewH + margin)
-      } else {
-        cameraRef.current.y = -(viewH - WORLD_PX_H) / 2
-      }
+
+      // Clamp camera so we don't pan past the world bounds (with margin).
+      const margin = 80
+      const minX = -margin
+      const maxX = WORLD_ISO_W + margin - viewW
+      const minY = -200 // allow sky room above
+      const maxY = WORLD_ISO_H + margin - viewH
+      if (maxX > minX) cameraRef.current.x = clamp(cameraRef.current.x, minX, maxX)
+      else cameraRef.current.x = (WORLD_ISO_W - viewW) / 2
+      if (maxY > minY) cameraRef.current.y = clamp(cameraRef.current.y, minY, maxY)
+      else cameraRef.current.y = (WORLD_ISO_H - viewH) / 2
 
       // ── Render
       const camX = cameraRef.current.x
       const camY = cameraRef.current.y
       const t = now
 
+      drawSky(ctx, viewW, viewH, t)
       drawFloor(ctx, camX, camY, viewW, viewH, t)
 
-      // Stations + player in Y-sorted order so closer-to-camera items overlap correctly.
+      // Build depth-sorted item list
       const items = []
+      // Walls
+      for (let r = 0; r < WORLD_H; r++) {
+        for (let c = 0; c < WORLD_W; c++) {
+          if (TILES[r][c] === 'h') {
+            items.push({
+              depth: c + r + 1,
+              kind: 'wall',
+              col: c, row: r,
+            })
+          }
+        }
+      }
+      // Stations
       for (const s of STATION_BLOCKS) {
         items.push({
-          y: (s.row + 2) * TILE, // bottom edge of footprint
-          render: () => drawStation(ctx, s, camX, camY, t, interactRef.current && interactRef.current.key === s.key),
-          interactCenter: s,
+          depth: s.col + s.row + 2, // center of 2×2
+          kind: 'station',
+          station: s,
         })
       }
+      // Player
       items.push({
-        y: playerRef.current.y,
-        render: () => drawPlayer(
-          ctx,
-          playerRef.current.x - camX,
-          playerRef.current.y - camY,
-          playerRef.current.dir,
-          playerRef.current.anim,
-          playerRef.current.moving,
-          t,
-        ),
+        depth: playerRef.current.col + playerRef.current.row,
+        kind: 'player',
       })
-      items.sort((a, b) => a.y - b.y)
-      for (const it of items) it.render()
+      // Drone NPC
+      items.push({
+        depth: dronePosRef.current.col + dronePosRef.current.row,
+        kind: 'drone',
+      })
+      items.sort((a, b) => a.depth - b.depth)
 
-      // Interaction sparkle marker above current interactable
-      if (interactRef.current && !overlay && phase === 'play') {
-        const s = interactRef.current
-        drawInteractSparkle(
-          ctx,
-          (s.col + 1) * TILE - camX,
-          s.row * TILE - camY - 12,
-          t,
-        )
+      for (const it of items) {
+        if (it.kind === 'wall') {
+          ctx.save()
+          ctx.translate(-camX, -camY)
+          drawExtrudedBox(ctx, it.col, it.row, 1, 1, 28, {
+            top: COLORS.wallTop,
+            rightFace: COLORS.wallSide,
+            leftFace: COLORS.wallSideDark,
+            edge: 'rgba(94, 232, 255, 0.07)',
+          })
+          ctx.restore()
+        } else if (it.kind === 'station') {
+          const isNear = interactRef.current && interactRef.current.key === it.station.key
+          drawStation(ctx, it.station, camX, camY, t, isNear)
+        } else if (it.kind === 'player') {
+          const playerIsoP = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
+          drawPlayer(
+            ctx,
+            playerIsoP.x + HALF_W - camX,
+            playerIsoP.y + HALF_H - camY,
+            playerRef.current.dir,
+            playerRef.current.anim,
+            playerRef.current.moving,
+            t,
+          )
+        } else if (it.kind === 'drone') {
+          const d = dronePosRef.current
+          const dIso = isoProject(d.col - 0.5, d.row - 0.5)
+          drawDroneNPC(
+            ctx,
+            dIso.x + HALF_W - camX,
+            dIso.y + HALF_H - camY,
+            t,
+          )
+        }
       }
 
-      // Ambient dust on top
+      // Quest markers (drawn on top, but skip when overlay is open or station is the active one)
+      if (phase === 'play') {
+        for (const s of STATION_BLOCKS) {
+          if (!QUEST_BY_ID[s.key]) continue
+          const isCompleted = completedSet.has(s.key)
+          const isNear = interactRef.current && interactRef.current.key === s.key
+          if (isNear) continue // floating label already covers info
+          drawQuestMarker(ctx, s, camX, camY, t, isCompleted)
+        }
+      }
+
       drawAmbientDust(ctx, viewW, viewH, t)
 
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [overlay, phase, nearbyKey])
+  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion])
 
-  // Joystick callback (stable for the joystick effect deps)
-  const joyMove = useCallback((x, y) => {
-    joyRef.current.x = x
-    joyRef.current.y = y
-  }, [])
+  const joyMove = useCallback((x, y) => { joyRef.current.x = x; joyRef.current.y = y }, [])
 
-  // ──── Render the right overlay component ────
+  // ──── Overlay routing ────
   const renderOverlay = () => {
     if (!overlay) return null
-    const close = () => setOverlay(null)
-    if (overlay === 'aria') return <AriaOverlay onClose={close} />
-    if (overlay === 'about') return <AboutOverlay onClose={close} />
-    if (overlay === 'trophy') return <TrophyOverlay onClose={close} />
-    if (overlay === 'contact') return <ContactOverlay onClose={close} />
-    if (overlay === 'showreel') return <ShowreelOverlay onClose={close} />
+    if (overlay === 'aria') return <AriaOverlay onClose={handleCloseOverlay} />
+    if (overlay === 'about') return <AboutOverlay onClose={handleCloseOverlay} />
+    if (overlay === 'trophy') return <TrophyOverlay onClose={handleCloseOverlay} />
+    if (overlay === 'contact') return <ContactOverlay onClose={handleCloseOverlay} />
+    if (overlay === 'showreel') return <ShowreelOverlay onClose={handleCloseOverlay} />
+    if (overlay === 'skills') return <SkillTreeOverlay onClose={handleCloseOverlay} />
     if (overlay.startsWith('project:')) {
-      const slug = overlay.slice(8)
-      return <ProjectOverlay slug={slug} onClose={close} />
+      return <ProjectOverlay slug={overlay.slice(8)} onClose={handleCloseOverlay} />
     }
     return null
   }
@@ -609,29 +637,33 @@ export default function GameWorld() {
                 <div className="sub">{profile.title}</div>
               </div>
             </div>
-            <Minimap playerRef={playerRef} />
+            <Minimap playerRef={playerRef} completedSet={completedSet} />
           </div>
+
+          <QuestTracker
+            activeKey={nearbyKey}
+            completedSet={completedSet}
+            collapsed={trackerCollapsed}
+            onToggleCollapsed={() => setTrackerCollapsed((v) => !v)}
+            onQuestClick={(id) => setOverlay(id)}
+          />
 
           <div className="hud-bottom">
             {nearbyMeta ? (
               <div className="hud-prompt">
                 <span className="key">E</span>
-                <span className="label">interact</span>
+                <span className="label">{completedSet.has(nearbyMeta.key) ? 'revisit' : 'start quest'}</span>
                 <span style={{ opacity: 0.4 }}>·</span>
                 <span className="title">{nearbyMeta.label}</span>
               </div>
             ) : (
               <div className="hud-controls-hint">
-                <span><span className="k">W</span><span className="k">A</span><span className="k">S</span><span className="k">D</span> move</span>
+                <span><span className="k">W</span><span className="k">A</span><span className="k">S</span><span className="k">D</span> walk</span>
                 <span><span className="k">E</span> interact</span>
-                <span style={{ color: 'var(--ink-ghost)' }}>· walk up to a station to learn more</span>
+                <span style={{ color: 'var(--ink-ghost)' }}>· follow the glowing markers</span>
               </div>
             )}
-            <button
-              className="hud-btn"
-              style={{ pointerEvents: 'auto' }}
-              onClick={() => setOverlay('aria')}
-            >
+            <button className="hud-btn" style={{ pointerEvents: 'auto' }} onClick={() => setOverlay('aria')}>
               ⌬ Talk to ARIA
             </button>
           </div>
@@ -644,9 +676,7 @@ export default function GameWorld() {
           <button
             className="touch-interact"
             disabled={!nearbyMeta || !!overlay}
-            onClick={() => {
-              if (interactRef.current) openStation(interactRef.current)
-            }}
+            onClick={() => { if (interactRef.current) openStation(interactRef.current) }}
           >
             E
           </button>
@@ -656,6 +686,9 @@ export default function GameWorld() {
       {phase === 'boot' && <BootScreen onDone={() => setPhase('intro')} />}
       {phase === 'intro' && <IntroScreen onStart={() => setPhase('play')} />}
       {renderOverlay()}
+      {pendingCompletion && (
+        <QuestCompleted questId={pendingCompletion} onDismiss={() => setPendingCompletion(null)} />
+      )}
     </div>
   )
 }

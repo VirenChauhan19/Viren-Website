@@ -1,40 +1,38 @@
-// Tile-based world definition. Coordinates are in tile units; multiply by TILE
-// to convert to world pixels. The camera projects world pixels into the
-// render-target canvas, which is then scaled up to the screen.
+// Isometric tile world. Coordinates are in tile units. Movement and
+// collision happen in tile space; the renderer projects to iso pixels.
 
-export const TILE = 32
-export const WORLD_W = 36 // tiles
-export const WORLD_H = 22
+import { WORLD_W, WORLD_H, TILE_W, TILE_H } from './iso.js'
 
-// 'h' = hard wall, '.' = floor, ',' = cyan-tinted floor (AI zone),
-// '-' = warm-tinted floor (game zone). Decorative only — actual collision
-// for stations is computed from STATIONS below.
+export { WORLD_W, WORLD_H, TILE_W, TILE_H }
+
+// 'h' = hard wall, '.' = floor, ',' = AI zone tint (cyan), '-' = game zone tint (warm).
+// 32 wide × 22 tall.
 const ROWS = [
-  'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
-  'h..................................h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
-  'h..................................h',
-  'h..................................h',
-  'h..................................h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h.--------------------------------.h',
-  'h..................................h',
-  'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
+  'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
+  'h..............................h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h.,,,,,,,,,,,,,,,,,,,,,,,,,,,,.h',
+  'h..............................h',
+  'h..............................h',
+  'h..............................h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h.----------------------------.h',
+  'h..............................h',
+  'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
 ]
 
-export const TILES = ROWS.map((row) => row.split(''))
+export const TILES = ROWS.map((r) => r.split(''))
 
 export function tileAt(col, row) {
   if (row < 0 || row >= WORLD_H || col < 0 || col >= WORLD_W) return 'h'
@@ -45,127 +43,36 @@ export function isWall(col, row) {
   return tileAt(col, row) === 'h'
 }
 
-// Each station has:
-//   key      — unique id (used by overlay router)
-//   kind     — visual variant: 'aiDesk' | 'arcade' | 'aria' | 'tv' | 'pedestal' | 'trophy' | 'phone'
-//   accent   — 'cyan' | 'warm' | 'green'
-//   slug     — optional projects[slug] reference
-//   col,row  — top-left tile of footprint (2 wide × 2 tall)
-//   facing   — direction the station faces ('south' default)
-//   label    — short title for proximity HUD prompt
-//   subtitle — small subtitle line
-//
-// Footprint: cols col..col+1 × rows row..row+1 are solid (player can't walk
-// through). Interaction zone: a 3×3 box centered on the station bottom-center.
+// Stations. Each occupies a 2×2 footprint. We have 11 in total — 6 in the
+// AI zone (row 5–6 footprint) and 5 in the game zone (row 15–16 footprint).
 export const STATIONS = [
-  {
-    key: 'about',
-    kind: 'pedestal',
-    accent: 'green',
-    col: 4,
-    row: 9,
-    label: 'About Viren',
-    subtitle: 'Profile pedestal',
-  },
-  {
-    key: 'project:study-command-center',
-    kind: 'aiDesk',
-    accent: 'cyan',
-    col: 8,
-    row: 5,
-    label: 'Study Command Center',
-    subtitle: 'AI · 2025',
-    slug: 'study-command-center',
-  },
-  {
-    key: 'aria',
-    kind: 'aria',
-    accent: 'cyan',
-    col: 17,
-    row: 5,
-    label: 'Talk to ARIA',
-    subtitle: 'AI assistant · ask anything',
-  },
-  {
-    key: 'project:la-ultra-running-plans',
-    kind: 'aiDesk',
-    accent: 'cyan',
-    col: 26,
-    row: 5,
-    label: 'La Ultra: AI Running Plans',
-    subtitle: 'AI · 2025',
-    slug: 'la-ultra-running-plans',
-  },
-  {
-    key: 'showreel',
-    kind: 'tv',
-    accent: 'green',
-    col: 30,
-    row: 9,
-    label: 'Showreel',
-    subtitle: 'Film & video work',
-  },
-  {
-    key: 'project:top-down-shooter',
-    kind: 'arcade',
-    accent: 'warm',
-    col: 6,
-    row: 15,
-    label: 'Top Down Shooter',
-    subtitle: 'Game · 2024',
-    slug: 'top-down-shooter',
-  },
-  {
-    key: 'project:peggle',
-    kind: 'arcade',
-    accent: 'warm',
-    col: 17,
-    row: 15,
-    label: 'Peggle-Style Physics',
-    subtitle: 'Game · 2024',
-    slug: 'peggle',
-  },
-  {
-    key: 'project:3d-environment',
-    kind: 'arcade',
-    accent: 'warm',
-    col: 28,
-    row: 15,
-    label: '3D Environment',
-    subtitle: 'Game · 2024',
-    slug: '3d-environment',
-  },
-  {
-    key: 'trophy',
-    kind: 'trophy',
-    accent: 'gold',
-    col: 4,
-    row: 19,
-    label: 'Experience & Wins',
-    subtitle: 'Trophy cabinet',
-  },
-  {
-    key: 'contact',
-    kind: 'phone',
-    accent: 'warm',
-    col: 30,
-    row: 19,
-    label: 'Get in touch',
-    subtitle: 'Contact booth',
-  },
+  // Top-row (AI zone)
+  { key: 'about',                              kind: 'pedestal', accent: 'green', col: 3,  row: 5, label: 'About Viren',          subtitle: 'NPC dialogue' },
+  { key: 'skills',                             kind: 'skillTree', accent: 'gold', col: 8,  row: 5, label: 'Skills Loadout',        subtitle: 'Perk tree' },
+  { key: 'project:study-command-center',       kind: 'aiDesk',   accent: 'cyan',  col: 13, row: 5, label: 'Study Command Center',  subtitle: 'AI · 2025', slug: 'study-command-center' },
+  { key: 'aria',                               kind: 'aria',     accent: 'cyan',  col: 18, row: 5, label: 'Talk to ARIA',          subtitle: 'AI assistant' },
+  { key: 'project:la-ultra-running-plans',     kind: 'aiDesk',   accent: 'cyan',  col: 22, row: 5, label: 'La Ultra: AI Plans',    subtitle: 'AI · 2025', slug: 'la-ultra-running-plans' },
+  { key: 'showreel',                           kind: 'tv',       accent: 'green', col: 27, row: 5, label: 'Showreel',              subtitle: 'Film & video' },
+
+  // Bottom-row (Game zone)
+  { key: 'trophy',                             kind: 'trophy',   accent: 'gold',  col: 3,  row: 15, label: 'Mission Log',          subtitle: 'Career timeline' },
+  { key: 'project:top-down-shooter',           kind: 'arcade',   accent: 'warm',  col: 8,  row: 15, label: 'Top Down Shooter',      subtitle: 'Game · 2024', slug: 'top-down-shooter' },
+  { key: 'project:peggle',                     kind: 'arcade',   accent: 'warm',  col: 13, row: 15, label: 'Peggle-Style Physics',  subtitle: 'Game · 2024', slug: 'peggle' },
+  { key: 'project:3d-environment',             kind: 'arcade',   accent: 'warm',  col: 18, row: 15, label: '3D Environment',        subtitle: 'Game · 2024', slug: '3d-environment' },
+  { key: 'contact',                            kind: 'phone',    accent: 'warm',  col: 26, row: 15, label: 'Recruitment Terminal',  subtitle: 'Contact / hire' },
 ]
 
-// Player spawn (tile coords, will be centered on this tile).
-export const PLAYER_SPAWN = { col: 17, row: 11 }
+// Player spawn in tile coords (fractional, centered on tile).
+export const PLAYER_SPAWN = { col: 15.5, row: 11.5 }
 
 // Pre-compute station occupancy + interaction centers.
 export const STATION_BLOCKS = STATIONS.map((s) => ({
   ...s,
   blockCols: [s.col, s.col + 1],
   blockRows: [s.row, s.row + 1],
-  // Player stands one tile in front (south-facing default).
-  interactCol: s.col + 0.5,
-  interactRow: s.row + 2.2,
+  // Interaction point: directly in front (south) of the station.
+  interactCol: s.col + 1,
+  interactRow: s.row + 2.5,
 }))
 
 export function isStationBlocked(col, row) {
@@ -177,18 +84,17 @@ export function isStationBlocked(col, row) {
   return false
 }
 
-// Solid for player movement: walls OR station footprints.
 export function isSolid(col, row) {
   return isWall(col, row) || isStationBlocked(col, row)
 }
 
-// Find the nearest interactable station within proximity radius (tile units).
-export function nearestInteractable(playerColF, playerRowF, radius = 1.4) {
+// Tile-space nearest interactable.
+export function nearestInteractable(playerCol, playerRow, radius = 2.0) {
   let best = null
   let bestDist = Infinity
   for (const s of STATION_BLOCKS) {
-    const dx = s.interactCol - playerColF
-    const dy = s.interactRow - playerRowF
+    const dx = s.interactCol - playerCol
+    const dy = s.interactRow - playerRow
     const d = Math.sqrt(dx * dx + dy * dy)
     if (d < radius && d < bestDist) {
       best = s

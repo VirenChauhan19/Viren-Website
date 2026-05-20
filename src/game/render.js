@@ -1,37 +1,47 @@
-// All canvas drawing lives here. Everything is rendered procedurally with
-// canvas primitives (no sprite assets), so the bundle stays tiny and the look
-// stays consistent. The aesthetic: dark floor, neon-glow stations, soft pixel
-// vibe through `imageSmoothingEnabled = false` on the canvas.
+// Isometric renderer. Everything is procedural canvas drawing — no
+// sprite assets. The world is in tile space (col, row); we project to
+// iso pixels at render time. The visible look:
+//   • Dark gradient sky with two drifting cloud layers
+//   • Glass-tile floor with zone tints (AI cyan, Game warm)
+//   • Slow sun beam panning across the floor
+//   • Extruded perimeter walls + extruded station "buildings"
+//   • All sortable items depth-sorted by (col + row)
+//   • Floating "!" quest markers, ambient particles, glow halos
 
-import { TILE, TILES, WORLD_W, WORLD_H, STATION_BLOCKS } from './world.js'
+import {
+  TILE_W, TILE_H, HALF_W, HALF_H,
+  WORLD_W, WORLD_H, WORLD_ISO_W, WORLD_ISO_H,
+  isoProject, isoTileCenter, drawExtrudedBox,
+} from './iso.js'
+import { STATION_BLOCKS, TILES, isWall } from './world.js'
 
-const COLORS = {
+export const COLORS = {
   bg: '#06070b',
-  floor: '#0e1219',
-  floor2: '#11161e',
-  floorCyan: '#0d1620',
-  floorWarm: '#1a1410',
-  grid: 'rgba(255, 255, 255, 0.025)',
-  gridStrong: 'rgba(255, 255, 255, 0.05)',
-  wallTop: '#1c2333',
-  wallSide: '#0d111a',
-  wallEdge: 'rgba(94, 232, 255, 0.18)',
-  wallEdgeWarm: 'rgba(255, 154, 90, 0.16)',
+  skyTop: '#0a0e1c',
+  skyBottom: '#15182a',
+  floor: '#11151f',
+  floorDeep: '#0a0d14',
+  floorCyan: '#0d1a26',
+  floorCyan2: '#0f2334',
+  floorWarm: '#1c1410',
+  floorWarm2: '#241812',
+  gridDot: 'rgba(255, 255, 255, 0.06)',
+  zoneCyanGlow: 'rgba(94, 232, 255, 0.06)',
+  zoneWarmGlow: 'rgba(255, 154, 90, 0.06)',
+  wallTop: '#222a3c',
+  wallSide: '#141a26',
+  wallSideDark: '#0a0e16',
+  wallEdge: 'rgba(94, 232, 255, 0.15)',
   cyan: '#5ee8ff',
-  cyanGlow: 'rgba(94, 232, 255, 0.45)',
   warm: '#ff9a5a',
-  warmGlow: 'rgba(255, 154, 90, 0.45)',
   green: '#6cf5a9',
-  greenGlow: 'rgba(108, 245, 169, 0.4)',
   gold: '#ffd166',
-  goldGlow: 'rgba(255, 209, 102, 0.45)',
   pink: '#ff6ec7',
   ink: '#e8ecf2',
   inkDim: '#98a0b0',
   skin: '#f1c9a5',
   skinShadow: '#c19474',
   hair: '#2a2018',
-  hairHi: '#3d2f24',
   shirt: '#2e4a7a',
   shirtHi: '#3e6098',
   shirtShadow: '#1e3258',
@@ -39,154 +49,929 @@ const COLORS = {
   shoe: '#0a0d12',
 }
 
-export { COLORS }
-
-// ───────────────────────── Floor + Walls ─────────────────────────
-
-export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
-  // Background fill.
-  ctx.fillStyle = COLORS.bg
-  ctx.fillRect(0, 0, viewW, viewH)
-
-  // Determine visible tile range.
-  const startCol = Math.max(0, Math.floor(camX / TILE) - 1)
-  const endCol = Math.min(WORLD_W, Math.ceil((camX + viewW) / TILE) + 1)
-  const startRow = Math.max(0, Math.floor(camY / TILE) - 1)
-  const endRow = Math.min(WORLD_H, Math.ceil((camY + viewH) / TILE) + 1)
-
-  for (let r = startRow; r < endRow; r++) {
-    for (let c = startCol; c < endCol; c++) {
-      const t = TILES[r][c]
-      const x = c * TILE - camX
-      const y = r * TILE - camY
-      if (t === 'h') {
-        drawWallTile(ctx, x, y, c, r)
-      } else if (t === ',') {
-        // Cyan-tinted floor.
-        ctx.fillStyle = COLORS.floorCyan
-        ctx.fillRect(x, y, TILE, TILE)
-        ctx.fillStyle = COLORS.grid
-        ctx.fillRect(x, y, TILE, 1)
-        ctx.fillRect(x, y, 1, TILE)
-      } else if (t === '-') {
-        // Warm-tinted floor.
-        ctx.fillStyle = COLORS.floorWarm
-        ctx.fillRect(x, y, TILE, TILE)
-        ctx.fillStyle = COLORS.grid
-        ctx.fillRect(x, y, TILE, 1)
-        ctx.fillRect(x, y, 1, TILE)
-      } else {
-        // Plain floor with subtle checker.
-        ctx.fillStyle = (c + r) % 2 === 0 ? COLORS.floor : COLORS.floor2
-        ctx.fillRect(x, y, TILE, TILE)
-        ctx.fillStyle = COLORS.grid
-        ctx.fillRect(x, y, TILE, 1)
-        ctx.fillRect(x, y, 1, TILE)
-      }
-    }
-  }
-
-  // Zone labels (rendered into the world, faint).
-  drawZoneLabel(ctx, 'AI · APPLIED INTELLIGENCE', 18, 2.6, COLORS.cyan, 0.18, camX, camY)
-  drawZoneLabel(ctx, 'GAMES · INTERACTIVE WORK', 18, 13.6, COLORS.warm, 0.16, camX, camY)
-}
-
-function drawWallTile(ctx, x, y, col, row) {
-  // Top face.
-  ctx.fillStyle = COLORS.wallTop
-  ctx.fillRect(x, y, TILE, TILE)
-  // Top edge highlight.
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
-  ctx.fillRect(x, y, TILE, 2)
-  // Bottom dark edge.
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'
-  ctx.fillRect(x, y + TILE - 2, TILE, 2)
-  // Glowing accent on top wall row (visual flair).
-  if (row === 0) {
-    ctx.fillStyle = COLORS.wallEdge
-    ctx.fillRect(x, y + TILE - 1, TILE, 1)
-  }
-  if (row === WORLD_H - 1) {
-    ctx.fillStyle = COLORS.wallEdgeWarm
-    ctx.fillRect(x, y, TILE, 1)
-  }
-}
-
-function drawZoneLabel(ctx, text, col, row, color, alpha, camX, camY) {
-  const x = col * TILE - camX
-  const y = row * TILE - camY
-  ctx.save()
-  ctx.font = '700 11px ui-monospace, Menlo, Consolas, monospace'
-  ctx.fillStyle = color
-  ctx.globalAlpha = alpha
-  ctx.textBaseline = 'top'
-  ctx.letterSpacing = '2px'
-  ctx.fillText(text, x, y)
-  ctx.restore()
-}
-
-// ───────────────────────── Stations ─────────────────────────
-
-export function drawStation(ctx, station, camX, camY, time, isNear) {
-  const x = station.col * TILE - camX
-  const y = station.row * TILE - camY
-  const w = TILE * 2
-  const h = TILE * 2
-
-  // Ambient glow under station.
-  const glowColor = pickGlow(station.accent)
-  drawGroundGlow(ctx, x + w / 2, y + h + 6, w * 0.9, glowColor, isNear ? 0.7 : 0.4, time)
-
-  switch (station.kind) {
-    case 'arcade':
-      drawArcade(ctx, x, y, w, h, time, isNear, station)
-      break
-    case 'aiDesk':
-      drawAIDesk(ctx, x, y, w, h, time, isNear, station)
-      break
-    case 'aria':
-      drawAria(ctx, x, y, w, h, time, isNear)
-      break
-    case 'tv':
-      drawTV(ctx, x, y, w, h, time, isNear)
-      break
-    case 'pedestal':
-      drawPedestal(ctx, x, y, w, h, time, isNear)
-      break
-    case 'trophy':
-      drawTrophy(ctx, x, y, w, h, time, isNear)
-      break
-    case 'phone':
-      drawPhoneBooth(ctx, x, y, w, h, time, isNear)
-      break
-  }
-
-  // Floating label when nearby.
-  if (isNear) {
-    drawFloatingLabel(ctx, x + w / 2, y - 8, station.label, station.subtitle, glowColor, time)
-  }
-}
-
-function pickGlow(accent) {
-  if (accent === 'cyan') return COLORS.cyan
-  if (accent === 'warm') return COLORS.warm
-  if (accent === 'green') return COLORS.green
-  if (accent === 'gold') return COLORS.gold
+function pickAccent(a) {
+  if (a === 'cyan') return COLORS.cyan
+  if (a === 'warm') return COLORS.warm
+  if (a === 'green') return COLORS.green
+  if (a === 'gold') return COLORS.gold
   return COLORS.cyan
 }
 
-function drawGroundGlow(ctx, cx, cy, radius, color, intensity, time) {
-  const pulse = 0.8 + 0.2 * Math.sin(time / 600)
-  const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * pulse)
+// ───────────────── Sky + clouds ─────────────────
+
+export function drawSky(ctx, viewW, viewH, time) {
+  const g = ctx.createLinearGradient(0, 0, 0, viewH)
+  g.addColorStop(0, COLORS.skyTop)
+  g.addColorStop(1, COLORS.skyBottom)
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, viewW, viewH)
+
+  // Soft horizon glow
+  const hg = ctx.createRadialGradient(viewW / 2, viewH * 0.35, 0, viewW / 2, viewH * 0.35, viewW * 0.6)
+  hg.addColorStop(0, 'rgba(94, 232, 255, 0.05)')
+  hg.addColorStop(1, 'rgba(94, 232, 255, 0)')
+  ctx.fillStyle = hg
+  ctx.fillRect(0, 0, viewW, viewH)
+
+  // Stars layer (cheap pseudo-random)
+  for (let i = 0; i < 30; i++) {
+    const x = ((i * 91.73) % viewW + (time * 0.002 + i)) % viewW
+    const y = ((i * 53.41) % (viewH * 0.45))
+    const tw = 0.5 + ((Math.sin(time / 800 + i) + 1) / 2) * 0.5
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 * tw})`
+    ctx.fillRect(Math.round(x), Math.round(y), 1, 1)
+  }
+
+  // Cloud layers — two depths, scrolling at different speeds.
+  drawCloudLayer(ctx, viewW, viewH, time, 0.012, 0.20, 0.10, 6, 60)
+  drawCloudLayer(ctx, viewW, viewH, time, 0.022, 0.32, 0.05, 4, 90)
+}
+
+function drawCloudLayer(ctx, viewW, viewH, time, speed, bandTop, alpha, count, baseW) {
+  const y = viewH * bandTop
+  const totalW = viewW + baseW * 4
+  for (let i = 0; i < count; i++) {
+    const seed = i * 211 + 17
+    const baseX = (seed % totalW)
+    const x = ((baseX - time * speed * 100) % totalW + totalW) % totalW - baseW * 2
+    const cy = y + ((i * 7) % 30) - 15
+    const w = baseW + (seed % 60)
+    drawSoftCloud(ctx, x, cy, w, alpha)
+  }
+}
+
+function drawSoftCloud(ctx, x, y, w, alpha) {
+  ctx.save()
+  ctx.globalAlpha = alpha
+  ctx.fillStyle = '#cfd6e8'
+  const h = w * 0.32
+  // Three overlapping ellipses for a soft puff.
+  ctx.beginPath()
+  ctx.ellipse(x, y, w * 0.5, h * 0.7, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(x + w * 0.3, y + 2, w * 0.4, h * 0.6, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(x - w * 0.25, y + 1, w * 0.35, h * 0.55, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
+// ───────────────── Floor + sun beam ─────────────────
+
+function fillDiamond(ctx, col, row, color) {
+  const { x, y } = isoProject(col, row)
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.moveTo(x + HALF_W, y)
+  ctx.lineTo(x + TILE_W, y + HALF_H)
+  ctx.lineTo(x + HALF_W, y + TILE_H)
+  ctx.lineTo(x, y + HALF_H)
+  ctx.closePath()
+  ctx.fill()
+}
+
+export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
+  // Compute the bounding box of tiles we need to render.
+  // It's easier to just iterate the whole world (32×22 = 704 tiles).
+  ctx.save()
+  ctx.translate(-camX, -camY)
+
+  // Single fill: deep floor across the whole iso footprint.
+  // Compute the four world iso corners and fill a polygon.
+  const tl = isoProject(0, 0)
+  const tr = isoProject(WORLD_W, 0)
+  const br = isoProject(WORLD_W, WORLD_H)
+  const bl = isoProject(0, WORLD_H)
+  // Each iso corner is the diamond's top-left coord; the visible polygon
+  // corners are: top = (0,0).top, right = (W,0).right, bottom = (W,H).bottom, left = (0,H).left.
+  const polyTop = { x: tl.x + HALF_W, y: tl.y }
+  const polyRight = { x: tr.x + TILE_W, y: tr.y + HALF_H }
+  const polyBottom = { x: br.x + HALF_W, y: br.y + TILE_H }
+  const polyLeft = { x: bl.x, y: bl.y + HALF_H }
+
+  ctx.fillStyle = COLORS.floor
+  ctx.beginPath()
+  ctx.moveTo(polyTop.x, polyTop.y)
+  ctx.lineTo(polyRight.x, polyRight.y)
+  ctx.lineTo(polyBottom.x, polyBottom.y)
+  ctx.lineTo(polyLeft.x, polyLeft.y)
+  ctx.closePath()
+  ctx.fill()
+
+  // Zone tints as filled diamonds (cyan top, warm bottom).
+  ctx.save()
+  ctx.beginPath()
+  // Cyan zone covers rows 2..10, cols 2..30
+  const cyTL = isoProject(2, 2)
+  const cyTR = isoProject(30, 2)
+  const cyBR = isoProject(30, 10)
+  const cyBL = isoProject(2, 10)
+  ctx.moveTo(cyTL.x + HALF_W, cyTL.y)
+  ctx.lineTo(cyTR.x + TILE_W, cyTR.y + HALF_H)
+  ctx.lineTo(cyBR.x + HALF_W, cyBR.y + TILE_H)
+  ctx.lineTo(cyBL.x, cyBL.y + HALF_H)
+  ctx.closePath()
+  const cyG = ctx.createLinearGradient(0, cyTL.y, 0, cyBL.y + TILE_H)
+  cyG.addColorStop(0, COLORS.floorCyan2)
+  cyG.addColorStop(1, COLORS.floorCyan)
+  ctx.fillStyle = cyG
+  ctx.fill()
+  ctx.restore()
+
+  ctx.save()
+  ctx.beginPath()
+  const wmTL = isoProject(2, 13)
+  const wmTR = isoProject(30, 13)
+  const wmBR = isoProject(30, 20)
+  const wmBL = isoProject(2, 20)
+  ctx.moveTo(wmTL.x + HALF_W, wmTL.y)
+  ctx.lineTo(wmTR.x + TILE_W, wmTR.y + HALF_H)
+  ctx.lineTo(wmBR.x + HALF_W, wmBR.y + TILE_H)
+  ctx.lineTo(wmBL.x, wmBL.y + HALF_H)
+  ctx.closePath()
+  const wmG = ctx.createLinearGradient(0, wmTL.y, 0, wmBL.y + TILE_H)
+  wmG.addColorStop(0, COLORS.floorWarm2)
+  wmG.addColorStop(1, COLORS.floorWarm)
+  ctx.fillStyle = wmG
+  ctx.fill()
+  ctx.restore()
+
+  // Subtle grid intersection dots — every 2 tiles.
+  ctx.fillStyle = COLORS.gridDot
+  for (let r = 0; r <= WORLD_H; r += 2) {
+    for (let c = 0; c <= WORLD_W; c += 2) {
+      const p = isoProject(c, r)
+      ctx.beginPath()
+      ctx.arc(p.x + HALF_W, p.y + HALF_H, 1.2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  // Zone labels (faint, in world space)
+  ctx.save()
+  ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  const labelCy = isoTileCenter(16, 1.4)
+  ctx.fillStyle = COLORS.cyan
+  ctx.globalAlpha = 0.22
+  ctx.fillText('· AI · APPLIED INTELLIGENCE ·', labelCy.x, labelCy.y)
+  const labelWm = isoTileCenter(16, 12.4)
+  ctx.fillStyle = COLORS.warm
+  ctx.fillText('· GAMES · INTERACTIVE WORK ·', labelWm.x, labelWm.y)
+  ctx.restore()
+
+  // Sun beam — animated radial gradient panning across the floor.
+  const t = time / 14000
+  const beamCol = 16 + Math.sin(t) * 12
+  const beamRow = 11 + Math.cos(t * 0.7) * 5
+  const beamCenter = isoTileCenter(beamCol, beamRow)
+  const beamR = 220
+  const beamGrd = ctx.createRadialGradient(beamCenter.x, beamCenter.y, 0, beamCenter.x, beamCenter.y, beamR)
+  beamGrd.addColorStop(0, 'rgba(255, 234, 180, 0.10)')
+  beamGrd.addColorStop(0.4, 'rgba(255, 234, 180, 0.04)')
+  beamGrd.addColorStop(1, 'rgba(255, 234, 180, 0)')
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.fillStyle = beamGrd
+  ctx.beginPath()
+  ctx.arc(beamCenter.x, beamCenter.y, beamR, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  ctx.restore()
+}
+
+// ───────────────── Walls (extruded around perimeter) ─────────────────
+
+export function drawWalls(ctx, camX, camY) {
+  ctx.save()
+  ctx.translate(-camX, -camY)
+
+  // Collect wall tiles, depth-sort, then draw.
+  const wallTiles = []
+  for (let r = 0; r < WORLD_H; r++) {
+    for (let c = 0; c < WORLD_W; c++) {
+      if (TILES[r][c] === 'h') wallTiles.push({ col: c, row: r, depth: c + r })
+    }
+  }
+  wallTiles.sort((a, b) => a.depth - b.depth)
+  const wallHeight = 28
+  for (const w of wallTiles) {
+    drawExtrudedBox(ctx, w.col, w.row, 1, 1, wallHeight, {
+      top: COLORS.wallTop,
+      rightFace: COLORS.wallSide,
+      leftFace: COLORS.wallSideDark,
+      edge: 'rgba(94, 232, 255, 0.06)',
+    })
+  }
+
+  ctx.restore()
+}
+
+// ───────────────── Stations ─────────────────
+
+export function drawStation(ctx, station, camX, camY, time, isNear) {
+  ctx.save()
+  ctx.translate(-camX, -camY)
+
+  const accent = pickAccent(station.accent)
+  // Soft ground glow under the station.
+  const groundCenter = isoTileCenter(station.col + 1, station.row + 2.1)
+  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, 130, accent, isNear ? 0.55 : 0.3, time)
+
+  switch (station.kind) {
+    case 'arcade':    drawArcadeIso(ctx, station, time, isNear); break
+    case 'aiDesk':    drawAIDeskIso(ctx, station, time, isNear); break
+    case 'aria':      drawAriaIso(ctx, station, time, isNear); break
+    case 'tv':        drawTVIso(ctx, station, time, isNear); break
+    case 'pedestal':  drawPedestalIso(ctx, station, time, isNear); break
+    case 'trophy':    drawTrophyIso(ctx, station, time, isNear); break
+    case 'phone':     drawPhoneIso(ctx, station, time, isNear); break
+    case 'skillTree': drawSkillTreeIso(ctx, station, time, isNear); break
+  }
+
+  // Floating label when near.
+  if (isNear) {
+    const top = isoTileCenter(station.col + 1, station.row)
+    drawFloatingLabel(ctx, top.x, top.y - 100, station.label, station.subtitle, accent, time)
+  }
+
+  ctx.restore()
+}
+
+function drawGroundGlow(ctx, cx, cy, r, color, intensity, time) {
+  const pulse = 0.85 + 0.15 * Math.sin(time / 600)
+  const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * pulse)
   grd.addColorStop(0, color + '44')
-  grd.addColorStop(0.5, color + '14')
+  grd.addColorStop(0.4, color + '14')
   grd.addColorStop(1, color + '00')
   ctx.save()
   ctx.globalAlpha = intensity
   ctx.globalCompositeOperation = 'lighter'
   ctx.fillStyle = grd
-  ctx.fillRect(cx - radius, cy - radius * 0.6, radius * 2, radius * 1.2)
+  ctx.beginPath()
+  ctx.ellipse(cx, cy, r, r * 0.5, 0, 0, Math.PI * 2)
+  ctx.fill()
   ctx.restore()
+}
+
+// Helper: get the screen position of the station's front-bottom point
+// (south corner of footprint diamond), the top-back point at height h,
+// and a "front face" approximation rectangle for drawing flat panels.
+function stationBounds(s, height) {
+  const front = isoProject(s.col + 1, s.row + 1)
+  return {
+    centerX: front.x + HALF_W,
+    bottomY: front.y + TILE_H + 4,
+    topY: front.y + TILE_H + 4 - height,
+    height,
+  }
+}
+
+function drawArcadeIso(ctx, s, time, isNear) {
+  const H = 100
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#1d1118',
+    rightFace: '#1f1019',
+    leftFace: '#15090f',
+    edge: 'rgba(255, 154, 90, 0.18)',
+  })
+
+  // Marquee on the top (use the top diamond center).
+  const topCx = (top.x + bottom.x) / 2
+  const topCy = (top.y + bottom.y) / 2
+  ctx.save()
+  ctx.font = '700 8px ui-monospace, Menlo, Consolas, monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = isNear ? COLORS.warm : '#a06848'
+  ctx.globalAlpha = 0.85 + 0.15 * Math.sin(time / 350)
+  ctx.fillText('VIREN ARCADE', topCx, topCy - 16)
+  ctx.restore()
+
+  // Front face panel — draw a screen rectangle attached to the right (south-east) face.
+  // We map the right face's quad to a rectangle and draw inside it.
+  const faceX = (right.x + bottom.x) / 2 - 30
+  const faceY = (right.y + bottom.y) / 2 - 40
+  const faceW = 56
+  const faceH = 36
+  // Screen background
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(faceX, faceY, faceW, faceH)
+  ctx.clip()
+  ctx.fillStyle = '#020812'
+  ctx.fillRect(faceX, faceY, faceW, faceH)
+  drawArcadeScreen(ctx, faceX, faceY, faceW, faceH, s.slug, time)
+  ctx.restore()
+
+  // Screen bezel glow.
+  ctx.strokeStyle = COLORS.warm + (isNear ? 'cc' : '88')
+  ctx.lineWidth = 1
+  ctx.strokeRect(faceX, faceY, faceW, faceH)
+
+  // Joystick + buttons on the lower front face.
+  ctx.fillStyle = '#0a0c14'
+  ctx.fillRect(faceX, faceY + faceH + 2, faceW, 16)
+  // Joystick ball
+  ctx.fillStyle = isNear ? COLORS.warm : '#553'
+  ctx.beginPath()
+  ctx.arc(faceX + 12, faceY + faceH + 10, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+  // Buttons
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = ['#e94f4f', '#f3c43c', '#5cd17f'][i]
+    ctx.globalAlpha = isNear ? 1 : 0.65
+    ctx.beginPath()
+    ctx.arc(faceX + 30 + i * 8, faceY + faceH + 10, 2.5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = 1
+  }
+}
+
+function drawArcadeScreen(ctx, x, y, w, h, slug, time) {
+  if (slug === 'top-down-shooter') {
+    const cx = x + w / 2
+    const cy = y + h / 2
+    for (let i = 0; i < 5; i++) {
+      const t = (time / 280 + i * 0.55) % 1
+      const ex = cx + Math.cos(i * 1.3) * t * w * 0.45
+      const ey = cy + Math.sin(i * 1.3) * t * h * 0.45
+      ctx.fillStyle = COLORS.warm
+      ctx.fillRect(Math.round(ex), Math.round(ey), 2, 2)
+    }
+    for (let i = 0; i < 4; i++) {
+      const a = time / 900 + (i * Math.PI * 2) / 4
+      ctx.fillStyle = '#e94f4f'
+      ctx.fillRect(Math.round(cx + Math.cos(a) * w * 0.35), Math.round(cy + Math.sin(a) * h * 0.35), 3, 3)
+    }
+    ctx.fillStyle = COLORS.cyan
+    ctx.fillRect(Math.round(cx) - 2, Math.round(cy) - 2, 3, 3)
+  } else if (slug === 'peggle') {
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 7; c++) {
+        const px = x + 6 + c * (w - 12) / 6
+        const py = y + 6 + r * (h - 14) / 4
+        const lit = (Math.floor(time / 350) + r * 6 + c) % 9 === 0
+        ctx.fillStyle = lit ? COLORS.gold : '#3a3550'
+        ctx.fillRect(Math.round(px), Math.round(py), 2, 2)
+      }
+    }
+    const t = (time / 1400) % 1
+    const bx = x + w / 2 + Math.sin(t * Math.PI * 4) * w * 0.35
+    const by = y + 4 + t * (h - 8)
+    ctx.fillStyle = COLORS.ink
+    ctx.fillRect(Math.round(bx), Math.round(by), 3, 3)
+  } else if (slug === '3d-environment') {
+    const horizon = y + h * 0.45
+    const scroll = (time / 30) % 8
+    const skyG = ctx.createLinearGradient(x, y, x, horizon)
+    skyG.addColorStop(0, '#3a2c4a')
+    skyG.addColorStop(1, '#a06464')
+    ctx.fillStyle = skyG
+    ctx.fillRect(x, y, w, horizon - y)
+    ctx.fillStyle = COLORS.gold
+    ctx.beginPath()
+    ctx.arc(x + w / 2, horizon - 2, 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#1a0e22'
+    ctx.fillRect(x, horizon, w, h - (horizon - y))
+    ctx.strokeStyle = COLORS.pink
+    ctx.lineWidth = 0.5
+    for (let i = 0; i < 7; i++) {
+      const yy = horizon + i * 5 + (scroll % 5)
+      if (yy > y + h) continue
+      ctx.beginPath()
+      ctx.moveTo(x, yy)
+      ctx.lineTo(x + w, yy)
+      ctx.stroke()
+    }
+    for (let i = -5; i <= 5; i++) {
+      ctx.beginPath()
+      ctx.moveTo(x + w / 2, horizon)
+      ctx.lineTo(x + w / 2 + i * w * 0.25, y + h)
+      ctx.stroke()
+    }
+  }
+
+  // Scanlines
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'
+  for (let yy = y; yy < y + h; yy += 2) {
+    ctx.fillRect(x, yy, w, 1)
+  }
+}
+
+function drawAIDeskIso(ctx, s, time, isNear) {
+  const H = 50
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#1a212e',
+    rightFace: '#181d28',
+    leftFace: '#10141d',
+    edge: 'rgba(94, 232, 255, 0.18)',
+  })
+
+  // Monitor — placed on the top, slightly behind center, with stand.
+  const topCx = (top.x + bottom.x) / 2
+  const topCy = (top.y + bottom.y) / 2
+  const monW = 54
+  const monH = 36
+  const monX = topCx - monW / 2
+  const monY = topCy - monH - 4
+  // Monitor frame
+  ctx.fillStyle = '#0a0c12'
+  ctx.fillRect(monX, monY, monW, monH)
+  drawAIScreen(ctx, monX + 2, monY + 2, monW - 4, monH - 4, s.slug, time)
+  ctx.strokeStyle = COLORS.cyan + (isNear ? 'cc' : '77')
+  ctx.lineWidth = 1
+  ctx.strokeRect(monX, monY, monW, monH)
+  // Stand
+  ctx.fillStyle = '#15192a'
+  ctx.fillRect(topCx - 2, monY + monH, 4, 6)
+  ctx.fillRect(topCx - 8, monY + monH + 6, 16, 3)
+
+  // Keyboard on the front edge of the top diamond.
+  ctx.fillStyle = '#10141d'
+  ctx.fillRect(topCx - 14, topCy + 4, 28, 6)
+  // Keys
+  ctx.fillStyle = '#2a3146'
+  for (let i = 0; i < 9; i++) {
+    ctx.fillRect(topCx - 13 + i * 3, topCy + 5, 2, 2)
+  }
+}
+
+function drawAIScreen(ctx, x, y, w, h, slug, time) {
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(x, y, w, h)
+  ctx.clip()
+  ctx.fillStyle = '#070a12'
+  ctx.fillRect(x, y, w, h)
+
+  // Top bar
+  ctx.fillStyle = '#11151e'
+  ctx.fillRect(x, y, w, 4)
+  ctx.fillStyle = '#e94f4f'; ctx.fillRect(x + 2, y + 1, 2, 2)
+  ctx.fillStyle = '#f3c43c'; ctx.fillRect(x + 5, y + 1, 2, 2)
+  ctx.fillStyle = '#5cd17f'; ctx.fillRect(x + 8, y + 1, 2, 2)
+
+  if (slug === 'study-command-center') {
+    const gridX = x + 3
+    const gridY = y + 7
+    const gridW = w * 0.5
+    const gridH = h - 10
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 5; c++) {
+        const cellX = gridX + c * (gridW / 5)
+        const cellY = gridY + r * (gridH / 4)
+        ctx.fillStyle = '#1a2030'
+        ctx.fillRect(Math.round(cellX), Math.round(cellY), Math.round(gridW / 5 - 1), Math.round(gridH / 4 - 1))
+        if ((r * 5 + c + Math.floor(time / 500)) % 7 === 0) {
+          ctx.fillStyle = COLORS.cyan
+          ctx.fillRect(Math.round(cellX) + 1, Math.round(cellY) + 1, 3, 2)
+        }
+      }
+    }
+    const chatX = x + gridW + 5
+    const chatW = w - (gridW + 8)
+    for (let i = 0; i < 6; i++) {
+      const lw = chatW * (0.4 + ((i * 13 + Math.floor(time / 700)) % 6) * 0.1)
+      ctx.fillStyle = i % 2 === 0 ? COLORS.cyan + '99' : '#3a4258'
+      ctx.fillRect(Math.round(chatX), Math.round(y + 8 + i * 4), Math.max(2, Math.round(lw)), 2)
+    }
+  } else if (slug === 'la-ultra-running-plans') {
+    const trY = y + h * 0.4
+    ctx.strokeStyle = COLORS.cyan
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    for (let i = 0; i < w - 4; i++) {
+      const t = i / 6 + time / 200
+      let yy = trY + Math.sin(t) * 1.5
+      const beat = (i - (time / 8) % 30) % 30
+      if (beat > 0 && beat < 5) yy -= 7
+      else if (beat >= 5 && beat < 8) yy += 3
+      if (i === 0) ctx.moveTo(x + 2 + i, yy)
+      else ctx.lineTo(x + 2 + i, yy)
+    }
+    ctx.stroke()
+    const blockY = y + h * 0.7
+    for (let i = 0; i < 5; i++) {
+      const lit = (i + Math.floor(time / 600)) % 5 === 0
+      ctx.fillStyle = lit ? COLORS.cyan : '#2a3548'
+      ctx.fillRect(x + 3 + i * (w - 6) / 5, blockY, (w - 8) / 5 - 1, 5)
+    }
+  }
+
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'
+  for (let yy = y; yy < y + h; yy += 2) ctx.fillRect(x, yy, w, 1)
+  ctx.restore()
+}
+
+function drawAriaIso(ctx, s, time, isNear) {
+  // Hover pad — small low extruded base.
+  const H = 6
+  drawExtrudedBox(ctx, s.col, s.row + 1, 2, 1, H, {
+    top: '#0c1521',
+    rightFace: '#091018',
+    leftFace: '#050a10',
+    edge: 'rgba(94, 232, 255, 0.3)',
+  })
+
+  // Hovering robot body, drawn floating above the pad.
+  const c = isoTileCenter(s.col + 1, s.row + 1.5)
+  const hover = Math.sin(time / 500) * 4
+  const bx = c.x - 16
+  const by = c.y - 60 + hover
+  // Glow halo
+  const haloG = ctx.createRadialGradient(c.x, c.y - 40 + hover, 0, c.x, c.y - 40 + hover, 60)
+  haloG.addColorStop(0, COLORS.cyan + '88')
+  haloG.addColorStop(1, COLORS.cyan + '00')
+  ctx.save()
+  ctx.globalAlpha = 0.5 + 0.15 * Math.sin(time / 400)
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.fillStyle = haloG
+  ctx.beginPath()
+  ctx.ellipse(c.x, c.y - 30 + hover, 50, 28, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  // Robot body
+  ctx.fillStyle = '#0e1620'
+  ctx.fillRect(bx, by, 32, 36)
+  ctx.strokeStyle = COLORS.cyan
+  ctx.lineWidth = 1.2
+  ctx.strokeRect(bx, by, 32, 36)
+  // Inner screen
+  ctx.fillStyle = '#020812'
+  ctx.fillRect(bx + 4, by + 6, 24, 22)
+  // Eye
+  const eyeH = (Math.sin(time / 1800) > 0.97) ? 1 : 6
+  ctx.fillStyle = COLORS.cyan
+  ctx.fillRect(bx + 12, by + 14, 8, eyeH)
+  // Mouth line
+  ctx.fillStyle = COLORS.cyan + '99'
+  ctx.fillRect(bx + 12, by + 24, 8, 1)
+  // Antenna
+  ctx.strokeStyle = COLORS.cyan
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(bx + 16, by)
+  ctx.lineTo(bx + 16, by - 6)
+  ctx.stroke()
+  ctx.fillStyle = COLORS.cyan
+  ctx.beginPath()
+  ctx.arc(bx + 16, by - 7, 2, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Hover particles
+  for (let i = 0; i < 5; i++) {
+    const t = (time / 1400 + i / 5) % 1
+    const px = c.x + Math.cos(i * 1.5 + time / 800) * 24
+    const py = c.y - 6 + hover + (1 - t) * -16
+    ctx.fillStyle = COLORS.cyan
+    ctx.globalAlpha = (1 - t) * 0.7
+    ctx.fillRect(Math.round(px), Math.round(py), 2, 2)
+    ctx.globalAlpha = 1
+  }
+
+  if (isNear) {
+    ctx.fillStyle = COLORS.cyan
+    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time / 200)
+    ctx.font = '700 9px ui-monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText('...', c.x + 22, c.y - 36 + hover)
+    ctx.globalAlpha = 1
+    ctx.textAlign = 'left'
+  }
+}
+
+function drawTVIso(ctx, s, time, isNear) {
+  const H = 80
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#0a0d14',
+    rightFace: '#0a0d14',
+    leftFace: '#05080e',
+    edge: 'rgba(108, 245, 169, 0.18)',
+  })
+
+  // Big screen on the front (right) face.
+  const screenW = 64
+  const screenH = 42
+  const sx = (right.x + bottom.x) / 2 - screenW / 2
+  const sy = (right.y + bottom.y) / 2 - screenH - 4
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(sx, sy, screenW, screenH)
+  ctx.clip()
+  // Animated reel
+  const reelIdx = Math.floor(time / 2400) % 3
+  const reelColors = [['#e94f4f', COLORS.gold], ['#5ee8ff', '#9d7cff'], ['#ff9a5a', '#6cf5a9']]
+  const reelG = ctx.createLinearGradient(sx, sy, sx, sy + screenH)
+  reelG.addColorStop(0, reelColors[reelIdx][0] + '44')
+  reelG.addColorStop(1, reelColors[reelIdx][1] + '14')
+  ctx.fillStyle = reelG
+  ctx.fillRect(sx, sy, screenW, screenH)
+  // Mountain silhouettes
+  ctx.fillStyle = '#000'
+  ctx.beginPath()
+  ctx.moveTo(sx, sy + screenH)
+  ctx.lineTo(sx, sy + screenH * 0.55)
+  ctx.lineTo(sx + screenW * 0.18, sy + screenH * 0.3)
+  ctx.lineTo(sx + screenW * 0.36, sy + screenH * 0.5)
+  ctx.lineTo(sx + screenW * 0.56, sy + screenH * 0.25)
+  ctx.lineTo(sx + screenW * 0.78, sy + screenH * 0.45)
+  ctx.lineTo(sx + screenW, sy + screenH * 0.35)
+  ctx.lineTo(sx + screenW, sy + screenH)
+  ctx.closePath()
+  ctx.fill()
+  // Scrolling text bar
+  ctx.fillStyle = 'rgba(0,0,0,0.6)'
+  ctx.fillRect(sx, sy + screenH - 10, screenW, 10)
+  ctx.fillStyle = reelColors[reelIdx][1]
+  ctx.font = '700 7px ui-monospace, Menlo'
+  ctx.textBaseline = 'middle'
+  const titles = ['LA ULTRA · THE HIGH', 'MOVING MOUNTAINS WITHIN', 'RUN2FLY INITIATIVE']
+  const scroll = (time / 60) % (screenW + 100)
+  ctx.fillText(titles[reelIdx], sx + screenW - scroll + 4, sy + screenH - 5)
+  // REC indicator
+  ctx.fillStyle = '#e94f4f'
+  ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time / 250)
+  ctx.beginPath()
+  ctx.arc(sx + screenW - 6, sy + 6, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.globalAlpha = 1
+  // Scanlines
+  ctx.fillStyle = 'rgba(0,0,0,0.2)'
+  for (let yy = sy; yy < sy + screenH; yy += 2) ctx.fillRect(sx, yy, screenW, 1)
+  ctx.restore()
+
+  ctx.strokeStyle = COLORS.green + (isNear ? 'cc' : '66')
+  ctx.lineWidth = 1.2
+  ctx.strokeRect(sx, sy, screenW, screenH)
+
+  // Stand
+  ctx.fillStyle = '#0a0c14'
+  ctx.fillRect((bottom.x + (right.x + left.x) / 2) / 2 - 4, (right.y + bottom.y) / 2 - 4, 8, 8)
+}
+
+function drawPedestalIso(ctx, s, time, isNear) {
+  const H = 60
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#1a2030',
+    rightFace: '#141a26',
+    leftFace: '#0d1119',
+    edge: 'rgba(108, 245, 169, 0.25)',
+  })
+
+  // Glowing column on top.
+  const topCx = (top.x + bottom.x) / 2
+  const topCy = (top.y + bottom.y) / 2
+  const colW = 24
+  const colH = 40
+  const colX = topCx - colW / 2
+  const colY = topCy - colH - 4
+
+  const colG = ctx.createLinearGradient(colX, colY, colX, colY + colH)
+  colG.addColorStop(0, COLORS.green + 'cc')
+  colG.addColorStop(1, COLORS.green + '22')
+  ctx.fillStyle = colG
+  ctx.fillRect(colX, colY, colW, colH)
+  // Bevel
+  ctx.fillStyle = 'rgba(255,255,255,0.07)'
+  ctx.fillRect(colX, colY, 2, colH)
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'
+  ctx.fillRect(colX + colW - 2, colY, 2, colH)
+
+  // Floating "i" badge
+  ctx.fillStyle = COLORS.green
+  ctx.globalAlpha = isNear ? 1 : 0.85
+  ctx.beginPath()
+  ctx.arc(topCx, colY + 12 + Math.sin(time / 700) * 2, 3.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillRect(topCx - 4, colY + 18 + Math.sin(time / 700) * 2, 8, 12)
+  ctx.globalAlpha = 1
+
+  // Wisps rising
+  for (let i = 0; i < 4; i++) {
+    const t = ((time / 1700) + i / 4) % 1
+    const px = topCx + Math.sin(i * 1.7 + time / 600) * 7
+    const py = colY + colH - t * (colH + 14)
+    ctx.fillStyle = COLORS.green
+    ctx.globalAlpha = (1 - t) * 0.8
+    ctx.fillRect(Math.round(px), Math.round(py), 1.5, 1.5)
+  }
+  ctx.globalAlpha = 1
+}
+
+function drawTrophyIso(ctx, s, time, isNear) {
+  const H = 50
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#231811',
+    rightFace: '#1a1209',
+    leftFace: '#100a06',
+    edge: 'rgba(255, 209, 102, 0.22)',
+  })
+
+  const topCx = (top.x + bottom.x) / 2
+  const topCy = (top.y + bottom.y) / 2
+
+  // Trophy cup on top
+  const ty = topCy - 26
+  ctx.fillStyle = COLORS.gold
+  ctx.beginPath()
+  ctx.moveTo(topCx - 12, ty)
+  ctx.lineTo(topCx + 12, ty)
+  ctx.lineTo(topCx + 9, ty + 16)
+  ctx.lineTo(topCx - 9, ty + 16)
+  ctx.closePath()
+  ctx.fill()
+  ctx.fillStyle = '#fff3b8'
+  ctx.fillRect(topCx - 11, ty + 2, 2, 10)
+  ctx.fillStyle = COLORS.gold
+  ctx.fillRect(topCx - 3, ty + 16, 6, 6)
+  ctx.fillRect(topCx - 8, ty + 22, 16, 4)
+
+  // Spinning star above
+  ctx.save()
+  ctx.translate(topCx, ty - 10 + Math.sin(time / 700) * 1.5)
+  ctx.rotate((time / 1000) * 0.3)
+  ctx.fillStyle = COLORS.gold
+  ctx.globalAlpha = isNear ? 1 : 0.85
+  ctx.beginPath()
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? 6 : 2.6
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2
+    const px = Math.cos(a) * r
+    const py = Math.sin(a) * r
+    if (i === 0) ctx.moveTo(px, py)
+    else ctx.lineTo(px, py)
+  }
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+
+  // Sparkles
+  for (let i = 0; i < 4; i++) {
+    const t = ((time / 1500) + i / 4) % 1
+    const angle = i * 1.7
+    const px = topCx + Math.cos(angle) * (1 - t) * 26
+    const py = ty + 4 + Math.sin(angle) * (1 - t) * 12 - t * 8
+    ctx.fillStyle = COLORS.gold
+    ctx.globalAlpha = (1 - t) * 0.9
+    ctx.fillRect(Math.round(px), Math.round(py), 2, 2)
+  }
+  ctx.globalAlpha = 1
+}
+
+function drawPhoneIso(ctx, s, time, isNear) {
+  const H = 110
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#1a0f0a',
+    rightFace: '#150a06',
+    leftFace: '#0b0503',
+    edge: 'rgba(255, 154, 90, 0.28)',
+  })
+
+  // Glass panel on the front (right) face.
+  const gx = (right.x + bottom.x) / 2 - 20
+  const gy = (right.y + bottom.y) / 2 - 56
+  const gw = 40
+  const gh = 50
+  ctx.fillStyle = '#050d18'
+  ctx.fillRect(gx, gy, gw, gh)
+  ctx.fillStyle = 'rgba(255,255,255,0.05)'
+  ctx.fillRect(gx + 2, gy + 2, 3, gh - 4)
+  // Animated CRT terminal lines inside
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(gx + 4, gy + 6, gw - 8, gh - 14)
+  ctx.clip()
+  ctx.font = '700 6px ui-monospace, Menlo'
+  ctx.fillStyle = COLORS.warm + '99'
+  for (let i = 0; i < 6; i++) {
+    const lw = 12 + ((i * 11 + Math.floor(time / 400)) % 18)
+    ctx.fillRect(gx + 4, gy + 8 + i * 6, lw, 1.5)
+  }
+  ctx.restore()
+  // Glowing "@" symbol
+  ctx.font = '700 18px ui-monospace, Menlo'
+  ctx.fillStyle = COLORS.warm
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.globalAlpha = isNear ? 1 : 0.7 + 0.3 * Math.sin(time / 400)
+  ctx.fillText('@', gx + gw / 2, gy + gh - 8)
+  ctx.globalAlpha = 1
+  ctx.textAlign = 'left'
+
+  ctx.strokeStyle = COLORS.warm + (isNear ? 'cc' : '77')
+  ctx.lineWidth = 1.2
+  ctx.strokeRect(gx, gy, gw, gh)
+
+  // Light strip on top
+  ctx.fillStyle = COLORS.warm + '88'
+  ctx.fillRect(top.x + 8, top.y + 4, TILE_W - 12, 1.5)
+}
+
+function drawSkillTreeIso(ctx, s, time, isNear) {
+  const H = 80
+  const { top, right, bottom, left } = drawExtrudedBox(ctx, s.col, s.row, 2, 2, H, {
+    top: '#1a1408',
+    rightFace: '#13100a',
+    leftFace: '#09060a',
+    edge: 'rgba(255, 209, 102, 0.28)',
+  })
+
+  // Holographic tree branch glyph on top.
+  const topCx = (top.x + bottom.x) / 2
+  const topCy = (top.y + bottom.y) / 2
+
+  // Pillar
+  ctx.fillStyle = '#0a0810'
+  ctx.fillRect(topCx - 6, topCy - 60, 12, 50)
+  ctx.fillStyle = 'rgba(255,255,255,0.04)'
+  ctx.fillRect(topCx - 6, topCy - 60, 2, 50)
+
+  // 4 floating skill-branch nodes around the top
+  const branches = [
+    { c: COLORS.warm, dx: -18, dy: -54 }, // game (left)
+    { c: COLORS.cyan, dx: 18, dy: -54 },  // ai (right)
+    { c: COLORS.green, dx: -10, dy: -68 },// tools (top-left)
+    { c: COLORS.gold, dx: 10, dy: -68 },  // soft (top-right)
+  ]
+  // Connecting lines from pillar top to each branch
+  ctx.strokeStyle = 'rgba(255, 209, 102, 0.5)'
+  ctx.lineWidth = 1
+  for (const b of branches) {
+    ctx.beginPath()
+    ctx.moveTo(topCx, topCy - 56)
+    ctx.lineTo(topCx + b.dx, topCy + b.dy)
+    ctx.stroke()
+  }
+  // Nodes with pulse
+  branches.forEach((b, i) => {
+    const pulse = 0.7 + 0.3 * Math.sin(time / 400 + i)
+    ctx.fillStyle = b.c
+    ctx.globalAlpha = isNear ? 1 : 0.85
+    ctx.beginPath()
+    ctx.arc(topCx + b.dx, topCy + b.dy, 3.5 * pulse, 0, Math.PI * 2)
+    ctx.fill()
+    // Glow
+    const g = ctx.createRadialGradient(topCx + b.dx, topCy + b.dy, 0, topCx + b.dx, topCy + b.dy, 12)
+    g.addColorStop(0, b.c + '88')
+    g.addColorStop(1, b.c + '00')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(topCx + b.dx, topCy + b.dy, 12, 0, Math.PI * 2)
+    ctx.fill()
+  })
+  ctx.globalAlpha = 1
+}
+
+// ───────────────── Floating label ─────────────────
+
+function drawFloatingLabel(ctx, cx, baseY, title, subtitle, color, time) {
+  const bob = Math.sin(time / 400) * 2
+  const y = baseY + bob
+  ctx.save()
+  ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace'
+  const titleW = ctx.measureText(title).width
+  ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace'
+  const subW = ctx.measureText(subtitle || '').width
+  const w = Math.max(titleW, subW) + 20
+  const h = subtitle ? 32 : 22
+  const bx = cx - w / 2
+  const by = y - h - 6
+
+  ctx.fillStyle = 'rgba(8, 10, 16, 0.94)'
+  roundRect(ctx, bx, by, w, h, 8)
+  ctx.fill()
+  ctx.strokeStyle = color + 'cc'
+  ctx.lineWidth = 1
+  roundRect(ctx, bx, by, w, h, 8)
+  ctx.stroke()
+
+  ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillStyle = color
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(title, cx, by + (subtitle ? 10 : h / 2))
+  if (subtitle) {
+    ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace'
+    ctx.fillStyle = COLORS.inkDim
+    ctx.fillText(subtitle, cx, by + 22)
+  }
+  ctx.fillStyle = 'rgba(8, 10, 16, 0.94)'
+  ctx.beginPath()
+  ctx.moveTo(cx - 5, by + h)
+  ctx.lineTo(cx + 5, by + h)
+  ctx.lineTo(cx, by + h + 5)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+  ctx.textAlign = 'left'
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -204,789 +989,176 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath()
 }
 
-// Arcade cabinet — tall block with marquee + screen + control panel.
-function drawArcade(ctx, x, y, w, h, time, isNear, station) {
-  // Cabinet body (shifted up so it stands taller than 2 tiles visually).
-  const bx = x + 6
-  const by = y - 18
-  const bw = w - 12
-  const bh = h + 18
+// ───────────────── Quest markers (floating "!" + ring) ─────────────────
 
-  // Shadow base
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
-  roundRect(ctx, bx - 2, by + bh - 6, bw + 4, 8, 4)
-  ctx.fill()
-
-  // Cabinet side gradient.
-  const sideGrd = ctx.createLinearGradient(bx, by, bx + bw, by)
-  sideGrd.addColorStop(0, '#1a1018')
-  sideGrd.addColorStop(0.5, '#2a1a26')
-  sideGrd.addColorStop(1, '#1a1018')
-  ctx.fillStyle = sideGrd
-  roundRect(ctx, bx, by, bw, bh, 6)
-  ctx.fill()
-
-  // Marquee (top strip).
-  const my = by + 4
-  const mh = 12
-  ctx.fillStyle = '#000'
-  roundRect(ctx, bx + 4, my, bw - 8, mh, 3)
-  ctx.fill()
-  // Marquee glow text.
-  const marqueeColor = isNear ? COLORS.warm : '#cc7748'
-  ctx.fillStyle = marqueeColor
-  ctx.globalAlpha = 0.85 + 0.15 * Math.sin(time / 350)
-  ctx.font = '700 7px ui-monospace, Menlo, Consolas, monospace'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText('VIREN ARCADE', bx + bw / 2, my + mh / 2 + 0.5)
-  ctx.globalAlpha = 1
-  ctx.textAlign = 'left'
-
-  // Screen (the heart of it).
-  const sx = bx + 6
-  const sy = my + mh + 4
-  const sw = bw - 12
-  const sh = bh * 0.5
-  ctx.fillStyle = '#000'
-  roundRect(ctx, sx, sy, sw, sh, 3)
-  ctx.fill()
-
-  // Screen content — animated mini-preview.
-  drawArcadeScreen(ctx, sx + 2, sy + 2, sw - 4, sh - 4, station.slug, time)
-
-  // Screen border glow.
-  ctx.strokeStyle = COLORS.warm + (isNear ? 'cc' : '66')
-  ctx.lineWidth = 1
-  roundRect(ctx, sx, sy, sw, sh, 3)
-  ctx.stroke()
-
-  // Control panel below screen.
-  const cx = sx
-  const cy = sy + sh + 4
-  const cw = sw
-  const ch = bh - (cy - by) - 8
-  ctx.fillStyle = '#0a0a10'
-  roundRect(ctx, cx, cy, cw, ch, 3)
-  ctx.fill()
-  // Joystick + buttons
-  ctx.fillStyle = '#222'
-  ctx.beginPath()
-  ctx.arc(cx + cw * 0.3, cy + ch * 0.55, 3, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.fillStyle = isNear ? COLORS.warm : '#553'
-  ctx.beginPath()
-  ctx.arc(cx + cw * 0.3, cy + ch * 0.55, 1.5, 0, Math.PI * 2)
-  ctx.fill()
-  // Three buttons.
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = ['#e94f4f', '#f3c43c', '#5cd17f'][i]
-    ctx.globalAlpha = isNear ? 1 : 0.65
-    ctx.beginPath()
-    ctx.arc(cx + cw * 0.55 + i * 6, cy + ch * 0.55, 1.7, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.globalAlpha = 1
-  }
-}
-
-// Tiny animated screens unique to each game project.
-function drawArcadeScreen(ctx, x, y, w, h, slug, time) {
+export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
   ctx.save()
-  ctx.beginPath()
-  ctx.rect(x, y, w, h)
-  ctx.clip()
-
-  // CRT scanline base
-  ctx.fillStyle = '#02050a'
-  ctx.fillRect(x, y, w, h)
-
-  if (slug === 'top-down-shooter') {
-    // Top-down player + enemies + bullets
-    const cx = x + w / 2
-    const cy = y + h / 2
-    // Bullets
-    for (let i = 0; i < 4; i++) {
-      const t = (time / 250 + i * 0.5) % 1
-      const ex = cx + Math.cos(i * 1.5) * t * w * 0.5
-      const ey = cy + Math.sin(i * 1.5) * t * h * 0.5
-      ctx.fillStyle = COLORS.warm
-      ctx.fillRect(Math.round(ex), Math.round(ey), 1, 1)
-    }
-    // Enemies (red dots)
-    for (let i = 0; i < 3; i++) {
-      const a = time / 800 + (i * Math.PI * 2) / 3
-      ctx.fillStyle = '#e94f4f'
-      ctx.fillRect(Math.round(cx + Math.cos(a) * w * 0.3), Math.round(cy + Math.sin(a) * h * 0.3), 2, 2)
-    }
-    // Player (center)
-    ctx.fillStyle = COLORS.cyan
-    ctx.fillRect(Math.round(cx) - 1, Math.round(cy) - 1, 2, 2)
-  } else if (slug === 'peggle') {
-    // Peg field + bouncing ball
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 6; c++) {
-        const px = x + 4 + c * (w - 8) / 5
-        const py = y + 6 + r * (h - 14) / 4
-        const lit = (Math.floor(time / 400) + r * 6 + c) % 9 === 0
-        ctx.fillStyle = lit ? COLORS.gold : '#3a3550'
-        ctx.fillRect(Math.round(px), Math.round(py), 1, 1)
-      }
-    }
-    // Bouncing ball
-    const t = (time / 1400) % 1
-    const bx = x + w / 2 + Math.sin(t * Math.PI * 4) * w * 0.3
-    const by = y + 4 + t * (h - 8)
-    ctx.fillStyle = COLORS.ink
-    ctx.fillRect(Math.round(bx), Math.round(by), 2, 2)
-  } else if (slug === '3d-environment') {
-    // Faux 3D perspective grid
-    const horizon = y + h * 0.45
-    const scroll = (time / 30) % 8
-    // Sky gradient
-    const skyG = ctx.createLinearGradient(x, y, x, horizon)
-    skyG.addColorStop(0, '#3a2c4a')
-    skyG.addColorStop(1, '#a06464')
-    ctx.fillStyle = skyG
-    ctx.fillRect(x, y, w, horizon - y)
-    // Sun
-    ctx.fillStyle = COLORS.gold
-    ctx.beginPath()
-    ctx.arc(x + w / 2, horizon - 2, 4, 0, Math.PI * 2)
-    ctx.fill()
-    // Ground
-    ctx.fillStyle = '#1a0e22'
-    ctx.fillRect(x, horizon, w, h - (horizon - y))
-    // Grid lines (faux 3D)
-    ctx.strokeStyle = COLORS.pink
-    ctx.lineWidth = 0.5
-    for (let i = 0; i < 6; i++) {
-      const yy = horizon + i * 4 + (scroll % 4)
-      if (yy > y + h) continue
-      ctx.beginPath()
-      ctx.moveTo(x, yy)
-      ctx.lineTo(x + w, yy)
-      ctx.stroke()
-    }
-    for (let i = -4; i <= 4; i++) {
-      ctx.beginPath()
-      ctx.moveTo(x + w / 2, horizon)
-      ctx.lineTo(x + w / 2 + i * w * 0.25, y + h)
-      ctx.stroke()
-    }
-  }
-
-  // Subtle scanlines
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'
-  for (let yy = y; yy < y + h; yy += 2) {
-    ctx.fillRect(x, yy, w, 1)
-  }
-  ctx.restore()
-}
-
-// AI desk — monitor + keyboard.
-function drawAIDesk(ctx, x, y, w, h, time, isNear, station) {
-  // Desk top
-  const dy = y + h - 16
-  const dx = x + 2
-  const dw = w - 4
-  ctx.fillStyle = '#191e2a'
-  roundRect(ctx, dx, dy, dw, 14, 2)
-  ctx.fill()
-  ctx.fillStyle = 'rgba(255,255,255,0.04)'
-  ctx.fillRect(dx, dy, dw, 1)
-  // Desk legs
-  ctx.fillStyle = '#0d1118'
-  ctx.fillRect(dx + 2, dy + 14, 3, 6)
-  ctx.fillRect(dx + dw - 5, dy + 14, 3, 6)
-
-  // Monitor
-  const mx = x + 8
-  const my = y + 4
-  const mw = w - 16
-  const mh = h - 26
-  // Stand
-  ctx.fillStyle = '#23293a'
-  ctx.fillRect(mx + mw / 2 - 2, my + mh, 4, 6)
-  ctx.fillRect(mx + mw / 2 - 6, my + mh + 4, 12, 2)
-  // Screen frame
-  ctx.fillStyle = '#0a0c12'
-  roundRect(ctx, mx, my, mw, mh, 3)
-  ctx.fill()
-  // Screen content
-  drawAIScreen(ctx, mx + 2, my + 2, mw - 4, mh - 4, station.slug, time, isNear)
-  // Bezel glow
-  ctx.strokeStyle = COLORS.cyan + (isNear ? 'cc' : '55')
-  ctx.lineWidth = 1
-  roundRect(ctx, mx, my, mw, mh, 3)
-  ctx.stroke()
-
-  // Keyboard
-  ctx.fillStyle = '#0e1119'
-  roundRect(ctx, dx + dw / 2 - 10, dy + 2, 20, 5, 1)
-  ctx.fill()
-  // Keys
-  ctx.fillStyle = '#2a3146'
-  for (let i = 0; i < 7; i++) {
-    ctx.fillRect(dx + dw / 2 - 9 + i * 2.6, dy + 3, 2, 2)
-  }
-}
-
-function drawAIScreen(ctx, x, y, w, h, slug, time, isNear) {
-  ctx.save()
-  ctx.beginPath()
-  ctx.rect(x, y, w, h)
-  ctx.clip()
-
-  // Dark IDE-like background
-  ctx.fillStyle = '#070a12'
-  ctx.fillRect(x, y, w, h)
-
-  // Top bar
-  ctx.fillStyle = '#11151e'
-  ctx.fillRect(x, y, w, 4)
-  // Dots
-  ctx.fillStyle = '#e94f4f'; ctx.fillRect(x + 2, y + 1, 2, 2)
-  ctx.fillStyle = '#f3c43c'; ctx.fillRect(x + 5, y + 1, 2, 2)
-  ctx.fillStyle = '#5cd17f'; ctx.fillRect(x + 8, y + 1, 2, 2)
-
-  if (slug === 'study-command-center') {
-    // Calendar grid + chat lines
-    const gridX = x + 3
-    const gridY = y + 7
-    const gridW = w * 0.5
-    const gridH = h - 10
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 5; c++) {
-        const cellX = gridX + c * (gridW / 5)
-        const cellY = gridY + r * (gridH / 4)
-        ctx.fillStyle = '#1a2030'
-        ctx.fillRect(Math.round(cellX), Math.round(cellY), Math.round(gridW / 5 - 1), Math.round(gridH / 4 - 1))
-        // Highlight a few events
-        if ((r * 5 + c + Math.floor(time / 500)) % 7 === 0) {
-          ctx.fillStyle = COLORS.cyan
-          ctx.fillRect(Math.round(cellX) + 1, Math.round(cellY) + 1, 2, 1)
-        }
-      }
-    }
-    // Chat lines on the right
-    const chatX = x + gridW + 5
-    const chatW = w - (gridW + 8)
-    const lineCount = 5
-    for (let i = 0; i < lineCount; i++) {
-      const lw = chatW * (0.4 + ((i * 13 + Math.floor(time / 700)) % 6) * 0.1)
-      ctx.fillStyle = i % 2 === 0 ? COLORS.cyan + '88' : '#3a4258'
-      ctx.fillRect(Math.round(chatX), Math.round(y + 8 + i * 4), Math.max(2, Math.round(lw)), 2)
-    }
-  } else if (slug === 'la-ultra-running-plans') {
-    // ECG/heart-rate trace + plan blocks
-    const trX = x + 2
-    const trY = y + h * 0.35
-    const trW = w - 4
-    ctx.strokeStyle = COLORS.cyan
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    for (let i = 0; i < trW; i++) {
-      const t = i / 6 + time / 200
-      let yy = trY + Math.sin(t) * 1.5
-      // Spike pulses
-      const beat = (i - (time / 8) % 30) % 30
-      if (beat > 0 && beat < 5) yy -= 6
-      else if (beat >= 5 && beat < 8) yy += 3
-      if (i === 0) ctx.moveTo(trX + i, yy)
-      else ctx.lineTo(trX + i, yy)
-    }
-    ctx.stroke()
-    // Plan blocks at bottom
-    const blockY = y + h * 0.65
-    for (let i = 0; i < 5; i++) {
-      const lit = (i + Math.floor(time / 600)) % 5 === 0
-      ctx.fillStyle = lit ? COLORS.cyan : '#2a3548'
-      ctx.fillRect(x + 3 + i * (w - 6) / 5, blockY, (w - 8) / 5 - 1, 4)
-    }
-  }
-
-  // Scanlines
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'
-  for (let yy = y; yy < y + h; yy += 2) {
-    ctx.fillRect(x, yy, w, 1)
-  }
-
-  ctx.restore()
-}
-
-// ARIA the AI NPC — a friendly bobbing holographic helper.
-function drawAria(ctx, x, y, w, h, time, isNear) {
-  const cx = x + w / 2
-  const cy = y + h / 2 + Math.sin(time / 500) * 3
-  // Hover platform
-  const platY = y + h - 6
-  ctx.fillStyle = '#0a1117'
-  roundRect(ctx, x + 6, platY, w - 12, 6, 3)
-  ctx.fill()
-  // Glow ring
-  const ringGrd = ctx.createRadialGradient(cx, platY + 2, 0, cx, platY + 2, w * 0.7)
-  ringGrd.addColorStop(0, COLORS.cyan + '88')
-  ringGrd.addColorStop(1, COLORS.cyan + '00')
-  ctx.save()
-  ctx.globalAlpha = 0.55 + 0.15 * Math.sin(time / 400)
-  ctx.globalCompositeOperation = 'lighter'
-  ctx.fillStyle = ringGrd
-  ctx.fillRect(x - 8, platY - 4, w + 16, 12)
-  ctx.restore()
-
-  // Hovering robot body
-  const bw = 22
-  const bh = 26
-  const bx = cx - bw / 2
-  const by = cy - bh / 2
-  ctx.fillStyle = '#0e1620'
-  roundRect(ctx, bx, by, bw, bh, 6)
-  ctx.fill()
-  ctx.strokeStyle = COLORS.cyan
-  ctx.lineWidth = 1
-  roundRect(ctx, bx, by, bw, bh, 6)
-  ctx.stroke()
-  // Inner screen
-  ctx.fillStyle = '#020812'
-  roundRect(ctx, bx + 3, by + 4, bw - 6, bh - 12, 3)
-  ctx.fill()
-  // Eye
-  const eyeW = 8
-  const eyeH = (Math.sin(time / 1800) > 0.97) ? 1 : 4 // blink
-  ctx.fillStyle = COLORS.cyan
-  roundRect(ctx, cx - eyeW / 2, cy - 2, eyeW, eyeH, 1)
-  ctx.fill()
-  // Mouth indicator
-  ctx.fillStyle = COLORS.cyan + '88'
-  ctx.fillRect(cx - 3, cy + 5, 6, 1)
-  // Antenna
-  ctx.strokeStyle = COLORS.cyan
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(cx, by)
-  ctx.lineTo(cx, by - 4)
-  ctx.stroke()
-  ctx.fillStyle = COLORS.cyan
-  ctx.beginPath()
-  ctx.arc(cx, by - 5, 1.4, 0, Math.PI * 2)
-  ctx.fill()
-
-  // Hover particles
-  for (let i = 0; i < 4; i++) {
-    const t = (time / 1400 + i / 4) % 1
-    const px = cx + Math.cos(i * 1.5 + time / 800) * (w * 0.35)
-    const py = platY - 4 + (1 - t) * -8
-    ctx.fillStyle = COLORS.cyan
-    ctx.globalAlpha = (1 - t) * 0.7
-    ctx.fillRect(Math.round(px), Math.round(py), 1, 1)
-    ctx.globalAlpha = 1
-  }
-
-  if (isNear) {
-    // Speech bubble hint
-    ctx.fillStyle = COLORS.cyan
-    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time / 200)
-    ctx.font = '700 7px ui-monospace'
-    ctx.textAlign = 'center'
-    ctx.fillText('...', cx + 14, cy + 1)
-    ctx.globalAlpha = 1
-    ctx.textAlign = 'left'
-  }
-}
-
-// TV wall — large screen with animated reel preview.
-function drawTV(ctx, x, y, w, h, time, isNear) {
-  // Wall mount shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.4)'
-  roundRect(ctx, x + 4, y + h - 4, w - 8, 6, 3)
-  ctx.fill()
-
-  // Stand
-  ctx.fillStyle = '#0a0d14'
-  ctx.fillRect(x + w / 2 - 6, y + h - 8, 12, 8)
-  ctx.fillRect(x + w / 2 - 14, y + h - 2, 28, 4)
-
-  // TV body
-  const tx = x + 2
-  const ty = y + 2
-  const tw = w - 4
-  const th = h - 12
-  ctx.fillStyle = '#0a0d14'
-  roundRect(ctx, tx, ty, tw, th, 4)
-  ctx.fill()
-  // Screen
-  const sx = tx + 3
-  const sy = ty + 3
-  const sw = tw - 6
-  const sh = th - 6
-  ctx.fillStyle = '#000'
-  roundRect(ctx, sx, sy, sw, sh, 2)
-  ctx.fill()
-
-  // Animated reel content
-  ctx.save()
-  ctx.beginPath()
-  ctx.rect(sx, sy, sw, sh)
-  ctx.clip()
-  const reelIdx = Math.floor(time / 2200) % 3
-  const reelColors = [['#e94f4f', COLORS.gold], ['#5ee8ff', '#9d7cff'], ['#ff9a5a', '#6cf5a9']]
-  // Backdrop
-  const reelG = ctx.createLinearGradient(sx, sy, sx, sy + sh)
-  reelG.addColorStop(0, reelColors[reelIdx][0] + '33')
-  reelG.addColorStop(1, reelColors[reelIdx][1] + '11')
-  ctx.fillStyle = reelG
-  ctx.fillRect(sx, sy, sw, sh)
-  // "Mountains" silhouettes (La Ultra vibe)
-  ctx.fillStyle = '#000'
-  ctx.beginPath()
-  ctx.moveTo(sx, sy + sh)
-  ctx.lineTo(sx, sy + sh * 0.6)
-  ctx.lineTo(sx + sw * 0.2, sy + sh * 0.35)
-  ctx.lineTo(sx + sw * 0.4, sy + sh * 0.55)
-  ctx.lineTo(sx + sw * 0.6, sy + sh * 0.3)
-  ctx.lineTo(sx + sw * 0.8, sy + sh * 0.5)
-  ctx.lineTo(sx + sw, sy + sh * 0.4)
-  ctx.lineTo(sx + sw, sy + sh)
-  ctx.closePath()
-  ctx.fill()
-  // Scrolling text bar
-  ctx.fillStyle = 'rgba(0,0,0,0.6)'
-  ctx.fillRect(sx, sy + sh - 8, sw, 8)
-  ctx.fillStyle = reelColors[reelIdx][1]
-  ctx.font = '700 6px ui-monospace, Menlo'
-  ctx.textBaseline = 'middle'
-  const titles = ['LA ULTRA · THE HIGH', 'MOVING MOUNTAINS WITHIN', 'RUN2FLY INITIATIVE']
-  const scroll = (time / 60) % (sw + 80)
-  ctx.fillText(titles[reelIdx], sx + sw - scroll + 4, sy + sh - 4)
-  // REC indicator
-  ctx.fillStyle = '#e94f4f'
-  ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time / 250)
-  ctx.beginPath()
-  ctx.arc(sx + sw - 5, sy + 5, 2, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.globalAlpha = 1
-  // Scanlines
-  ctx.fillStyle = 'rgba(0,0,0,0.2)'
-  for (let yy = sy; yy < sy + sh; yy += 2) ctx.fillRect(sx, yy, sw, 1)
-  ctx.restore()
-
-  // Frame glow when nearby
-  ctx.strokeStyle = COLORS.green + (isNear ? 'cc' : '44')
-  ctx.lineWidth = 1
-  roundRect(ctx, tx, ty, tw, th, 4)
-  ctx.stroke()
-}
-
-// Pedestal — glowing column with profile silhouette.
-function drawPedestal(ctx, x, y, w, h, time, isNear) {
-  const cx = x + w / 2
-
-  // Base
-  ctx.fillStyle = '#11161e'
-  roundRect(ctx, x + 6, y + h - 12, w - 12, 12, 3)
-  ctx.fill()
-  ctx.fillStyle = '#1a2030'
-  roundRect(ctx, x + 10, y + h - 16, w - 20, 6, 2)
-  ctx.fill()
-
-  // Glowing column
-  const colX = cx - 8
-  const colY = y + 4
-  const colW = 16
-  const colH = h - 22
-
-  // Inner light
-  const grd = ctx.createLinearGradient(colX, colY, colX, colY + colH)
-  grd.addColorStop(0, COLORS.green + '88')
-  grd.addColorStop(1, COLORS.green + '22')
-  ctx.fillStyle = grd
-  roundRect(ctx, colX, colY, colW, colH, 2)
-  ctx.fill()
-
-  // Floating "i" / portrait silhouette
-  ctx.fillStyle = COLORS.green
-  ctx.globalAlpha = isNear ? 1 : 0.85
-  ctx.beginPath()
-  ctx.arc(cx, colY + 10 + Math.sin(time / 700) * 2, 3, 0, Math.PI * 2)
-  ctx.fill()
-  // Body silhouette
-  ctx.fillRect(cx - 4, colY + 14 + Math.sin(time / 700) * 2, 8, 10)
-  ctx.globalAlpha = 1
-
-  // Particle wisps rising
-  for (let i = 0; i < 3; i++) {
-    const t = ((time / 1600) + i / 3) % 1
-    const px = cx + Math.sin(i * 1.7 + time / 600) * 5
-    const py = colY + colH - t * colH
-    ctx.fillStyle = COLORS.green
-    ctx.globalAlpha = (1 - t) * 0.8
-    ctx.fillRect(Math.round(px), Math.round(py), 1, 1)
-  }
-  ctx.globalAlpha = 1
-}
-
-// Trophy wall — pedestal with star + medal.
-function drawTrophy(ctx, x, y, w, h, time, isNear) {
-  const cx = x + w / 2
-  // Base
-  ctx.fillStyle = '#1a1410'
-  roundRect(ctx, x + 4, y + h - 10, w - 8, 10, 3)
-  ctx.fill()
-  ctx.fillStyle = '#23180f'
-  roundRect(ctx, x + 8, y + h - 14, w - 16, 6, 2)
-  ctx.fill()
-
-  // Trophy cup
-  const ty = y + 10
-  ctx.fillStyle = COLORS.gold
-  ctx.beginPath()
-  ctx.moveTo(cx - 10, ty)
-  ctx.lineTo(cx + 10, ty)
-  ctx.lineTo(cx + 8, ty + 14)
-  ctx.lineTo(cx - 8, ty + 14)
-  ctx.closePath()
-  ctx.fill()
-  // Highlights
-  ctx.fillStyle = '#fff3b8'
-  ctx.fillRect(cx - 9, ty + 2, 2, 8)
-  // Stem
-  ctx.fillStyle = COLORS.gold
-  ctx.fillRect(cx - 2, ty + 14, 4, 6)
-  ctx.fillRect(cx - 6, ty + 20, 12, 3)
-
-  // Star above
-  const sa = time / 1000
-  ctx.save()
-  ctx.translate(cx, ty - 6 + Math.sin(time / 700) * 1.5)
-  ctx.rotate(sa * 0.3)
-  ctx.fillStyle = COLORS.gold
-  ctx.globalAlpha = isNear ? 1 : 0.85
-  ctx.beginPath()
-  for (let i = 0; i < 10; i++) {
-    const r = i % 2 === 0 ? 5 : 2.2
-    const a = (i / 10) * Math.PI * 2 - Math.PI / 2
-    const px = Math.cos(a) * r
-    const py = Math.sin(a) * r
-    if (i === 0) ctx.moveTo(px, py)
-    else ctx.lineTo(px, py)
-  }
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
-
-  // Sparkle particles
-  for (let i = 0; i < 3; i++) {
-    const t = ((time / 1500) + i / 3) % 1
-    const angle = i * 2.1
-    const px = cx + Math.cos(angle) * (1 - t) * 20
-    const py = ty + 4 + Math.sin(angle) * (1 - t) * 12 - t * 5
-    ctx.fillStyle = COLORS.gold
-    ctx.globalAlpha = (1 - t) * 0.9
-    ctx.fillRect(Math.round(px), Math.round(py), 1, 1)
-  }
-  ctx.globalAlpha = 1
-}
-
-// Phone booth — door with glowing knob.
-function drawPhoneBooth(ctx, x, y, w, h, time, isNear) {
-  const cx = x + w / 2
-  // Booth body
-  ctx.fillStyle = '#1a0f0a'
-  roundRect(ctx, x + 6, y + 2, w - 12, h - 4, 4)
-  ctx.fill()
-  // Glass panel
-  const gx = x + 10
-  const gy = y + 6
-  const gw = w - 20
-  const gh = h * 0.55
-  ctx.fillStyle = '#050d18'
-  roundRect(ctx, gx, gy, gw, gh, 2)
-  ctx.fill()
-  // Reflection
-  ctx.fillStyle = 'rgba(255,255,255,0.05)'
-  ctx.fillRect(gx + 2, gy + 2, 3, gh - 4)
-  // "@" mail symbol glowing inside
-  ctx.fillStyle = COLORS.warm
-  ctx.globalAlpha = isNear ? 1 : 0.7 + 0.3 * Math.sin(time / 400)
-  ctx.font = '700 14px ui-monospace, Menlo'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText('@', cx, gy + gh / 2)
-  ctx.globalAlpha = 1
-  ctx.textAlign = 'left'
-  // Door handle
-  ctx.fillStyle = COLORS.warm
-  ctx.beginPath()
-  ctx.arc(x + w - 10, y + h - 14, 2, 0, Math.PI * 2)
-  ctx.fill()
-  // Light strip
-  ctx.fillStyle = COLORS.warm + '88'
-  ctx.fillRect(x + 8, y + 4, w - 16, 1)
-}
-
-// ───────────────────────── Floating label ─────────────────────────
-
-function drawFloatingLabel(ctx, cx, baseY, title, subtitle, color, time) {
-  const bob = Math.sin(time / 400) * 2
+  ctx.translate(-camX, -camY)
+  const c = isoTileCenter(station.col + 1, station.row)
+  const baseY = c.y - 116
+  const bob = Math.sin(time / 400 + (station.col + station.row)) * 4
+  const x = c.x
   const y = baseY + bob
-  ctx.save()
-  ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace'
-  const titleW = ctx.measureText(title).width
-  ctx.font = '600 8px ui-monospace, Menlo, Consolas, monospace'
-  const subW = ctx.measureText(subtitle || '').width
-  const w = Math.max(titleW, subW) + 16
-  const h = subtitle ? 26 : 18
-  const bx = cx - w / 2
-  const by = y - h - 4
 
-  // Background pill
-  ctx.fillStyle = 'rgba(8, 10, 16, 0.92)'
-  roundRect(ctx, bx, by, w, h, 6)
+  const accent = isCompleted ? COLORS.green : pickAccent(station.accent)
+
+  // Halo
+  const haloR = 16
+  const haloG = ctx.createRadialGradient(x, y + 6, 0, x, y + 6, haloR)
+  haloG.addColorStop(0, accent + 'cc')
+  haloG.addColorStop(1, accent + '00')
+  ctx.fillStyle = haloG
+  ctx.beginPath()
+  ctx.arc(x, y + 6, haloR, 0, Math.PI * 2)
   ctx.fill()
-  ctx.strokeStyle = color + 'cc'
-  ctx.lineWidth = 1
-  roundRect(ctx, bx, by, w, h, 6)
-  ctx.stroke()
 
-  // Title
-  ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace'
-  ctx.fillStyle = color
+  // Glyph
+  ctx.font = '900 18px ui-monospace, Menlo, Consolas, monospace'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(title, cx, by + (subtitle ? 8 : h / 2))
-  // Subtitle
-  if (subtitle) {
-    ctx.font = '600 8px ui-monospace, Menlo, Consolas, monospace'
-    ctx.fillStyle = COLORS.inkDim
-    ctx.fillText(subtitle, cx, by + 18)
-  }
-
-  // Pointer triangle below
-  ctx.fillStyle = 'rgba(8, 10, 16, 0.92)'
-  ctx.beginPath()
-  ctx.moveTo(cx - 4, by + h)
-  ctx.lineTo(cx + 4, by + h)
-  ctx.lineTo(cx, by + h + 4)
-  ctx.closePath()
-  ctx.fill()
-
-  ctx.restore()
+  ctx.fillStyle = '#0c0d12'
+  ctx.fillText(isCompleted ? '✓' : '!', x, y + 6 + 1)
+  ctx.fillStyle = accent
+  ctx.fillText(isCompleted ? '✓' : '!', x, y + 6)
   ctx.textAlign = 'left'
+  ctx.restore()
 }
 
-// ───────────────────────── Player ─────────────────────────
+// ───────────────── Player ─────────────────
 
-// Player is a small humanoid drawn in 4 directions. ~14×22 px.
-// We draw at fractional player position; the player coordinates are in
-// world pixels.
-export function drawPlayer(ctx, px, py, dir, animFrame, moving, time) {
-  const x = Math.round(px)
-  const y = Math.round(py)
+export function drawPlayer(ctx, isoX, isoY, dir, animFrame, moving, time) {
+  const x = Math.round(isoX)
+  const y = Math.round(isoY)
 
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)'
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'
   ctx.beginPath()
-  ctx.ellipse(x, y + 10, 7, 2.5, 0, 0, Math.PI * 2)
+  ctx.ellipse(x, y + 6, 10, 4, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Walking bob: small vertical offset when moving.
   const bob = moving ? Math.sin(animFrame * Math.PI) * 1 : Math.sin(time / 700) * 0.5
-  const ox = x - 7
-  const oy = y - 18 + bob
+  const ox = x - 9
+  const oy = y - 28 + bob
 
-  // Legs (back to front)
+  // Legs
   const legSwing = moving ? Math.sin(animFrame * Math.PI) * 2 : 0
   ctx.fillStyle = COLORS.pants
   if (dir === 'left' || dir === 'right') {
-    ctx.fillRect(ox + 4, oy + 14, 2, 6 - Math.abs(legSwing))
-    ctx.fillRect(ox + 8, oy + 14, 2, 6 + Math.abs(legSwing) * 0.5)
+    ctx.fillRect(ox + 5, oy + 18, 3, 8 - Math.abs(legSwing))
+    ctx.fillRect(ox + 10, oy + 18, 3, 8 + Math.abs(legSwing) * 0.5)
   } else {
-    ctx.fillRect(ox + 4 + legSwing * 0.3, oy + 14, 2, 6)
-    ctx.fillRect(ox + 8 - legSwing * 0.3, oy + 14, 2, 6)
+    ctx.fillRect(ox + 5 + legSwing * 0.3, oy + 18, 3, 8)
+    ctx.fillRect(ox + 10 - legSwing * 0.3, oy + 18, 3, 8)
   }
-  // Shoes
   ctx.fillStyle = COLORS.shoe
-  ctx.fillRect(ox + 4, oy + 19, 3, 1)
-  ctx.fillRect(ox + 8, oy + 19, 3, 1)
+  ctx.fillRect(ox + 5, oy + 25, 4, 2)
+  ctx.fillRect(ox + 10, oy + 25, 4, 2)
 
-  // Torso (shirt)
+  // Torso
   ctx.fillStyle = COLORS.shirt
-  ctx.fillRect(ox + 3, oy + 8, 8, 7)
-  // Shading
+  ctx.fillRect(ox + 4, oy + 10, 10, 9)
   ctx.fillStyle = COLORS.shirtShadow
-  ctx.fillRect(ox + 3, oy + 13, 8, 2)
+  ctx.fillRect(ox + 4, oy + 17, 10, 2)
   ctx.fillStyle = COLORS.shirtHi
-  if (dir === 'left') ctx.fillRect(ox + 9, oy + 8, 2, 6)
-  else if (dir === 'right') ctx.fillRect(ox + 3, oy + 8, 2, 6)
-  else ctx.fillRect(ox + 6, oy + 8, 2, 6)
+  if (dir === 'left') ctx.fillRect(ox + 11, oy + 10, 3, 7)
+  else if (dir === 'right') ctx.fillRect(ox + 4, oy + 10, 3, 7)
+  else ctx.fillRect(ox + 7, oy + 10, 3, 7)
 
   // Arms
   ctx.fillStyle = COLORS.shirt
   const armSwing = moving ? Math.sin(animFrame * Math.PI + Math.PI) * 1.5 : 0
   if (dir === 'down') {
-    ctx.fillRect(ox + 1, oy + 9 + armSwing * 0.4, 2, 4)
-    ctx.fillRect(ox + 11, oy + 9 - armSwing * 0.4, 2, 4)
+    ctx.fillRect(ox + 1, oy + 11 + armSwing * 0.4, 3, 5)
+    ctx.fillRect(ox + 14, oy + 11 - armSwing * 0.4, 3, 5)
   } else if (dir === 'up') {
-    ctx.fillRect(ox + 1, oy + 9 - armSwing * 0.4, 2, 4)
-    ctx.fillRect(ox + 11, oy + 9 + armSwing * 0.4, 2, 4)
+    ctx.fillRect(ox + 1, oy + 11 - armSwing * 0.4, 3, 5)
+    ctx.fillRect(ox + 14, oy + 11 + armSwing * 0.4, 3, 5)
   } else if (dir === 'left') {
-    ctx.fillRect(ox + 2, oy + 9, 2, 4 + armSwing)
+    ctx.fillRect(ox + 2, oy + 11, 3, 5 + armSwing)
   } else if (dir === 'right') {
-    ctx.fillRect(ox + 10, oy + 9, 2, 4 + armSwing)
+    ctx.fillRect(ox + 13, oy + 11, 3, 5 + armSwing)
   }
-  // Hands
   ctx.fillStyle = COLORS.skin
   if (dir === 'down' || dir === 'up') {
-    ctx.fillRect(ox + 1, oy + 12 + (dir === 'down' ? armSwing * 0.4 : -armSwing * 0.4), 2, 1)
-    ctx.fillRect(ox + 11, oy + 12 + (dir === 'down' ? -armSwing * 0.4 : armSwing * 0.4), 2, 1)
+    ctx.fillRect(ox + 1, oy + 15, 3, 2)
+    ctx.fillRect(ox + 14, oy + 15, 3, 2)
   } else if (dir === 'left') {
-    ctx.fillRect(ox + 2, oy + 12 + armSwing, 2, 1)
+    ctx.fillRect(ox + 2, oy + 15 + armSwing, 3, 2)
   } else if (dir === 'right') {
-    ctx.fillRect(ox + 10, oy + 12 + armSwing, 2, 1)
+    ctx.fillRect(ox + 13, oy + 15 + armSwing, 3, 2)
   }
 
   // Head
   ctx.fillStyle = COLORS.skin
-  ctx.fillRect(ox + 4, oy + 2, 6, 6)
-  // Head shadow
+  ctx.fillRect(ox + 5, oy + 2, 8, 8)
   ctx.fillStyle = COLORS.skinShadow
-  ctx.fillRect(ox + 4, oy + 7, 6, 1)
-  // Hair (top)
+  ctx.fillRect(ox + 5, oy + 9, 8, 1)
   ctx.fillStyle = COLORS.hair
-  ctx.fillRect(ox + 4, oy + 1, 6, 2)
-  if (dir === 'left') ctx.fillRect(ox + 4, oy + 2, 1, 4)
-  if (dir === 'right') ctx.fillRect(ox + 9, oy + 2, 1, 4)
-  if (dir === 'up') {
-    // back of head: full hair patch
-    ctx.fillRect(ox + 4, oy + 1, 6, 6)
-  }
+  ctx.fillRect(ox + 5, oy + 1, 8, 3)
+  if (dir === 'left') ctx.fillRect(ox + 5, oy + 2, 1, 6)
+  if (dir === 'right') ctx.fillRect(ox + 12, oy + 2, 1, 6)
+  if (dir === 'up') ctx.fillRect(ox + 5, oy + 1, 8, 8)
 
-  // Eyes
   if (dir !== 'up') {
     ctx.fillStyle = '#0a0d12'
     if (dir === 'left') {
-      ctx.fillRect(ox + 5, oy + 4, 1, 1)
+      ctx.fillRect(ox + 6, oy + 5, 1, 1)
     } else if (dir === 'right') {
-      ctx.fillRect(ox + 8, oy + 4, 1, 1)
+      ctx.fillRect(ox + 11, oy + 5, 1, 1)
     } else {
-      ctx.fillRect(ox + 5, oy + 4, 1, 1)
-      ctx.fillRect(ox + 8, oy + 4, 1, 1)
+      ctx.fillRect(ox + 6, oy + 5, 1, 1)
+      ctx.fillRect(ox + 11, oy + 5, 1, 1)
     }
   }
 }
 
-// ───────────────────────── Particles ─────────────────────────
+// Ambient drone NPC — patrols a small loop on the floor between zones.
+export function drawDroneNPC(ctx, isoX, isoY, time) {
+  const x = Math.round(isoX)
+  const y = Math.round(isoY)
+  // Floor shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'
+  ctx.beginPath()
+  ctx.ellipse(x, y + 4, 6, 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  // Drone body
+  const hover = Math.sin(time / 400) * 2
+  ctx.fillStyle = '#1a1f30'
+  ctx.beginPath()
+  ctx.ellipse(x, y - 10 + hover, 6, 4, 0, 0, Math.PI * 2)
+  ctx.fill()
+  // Top light
+  ctx.fillStyle = COLORS.pink
+  ctx.beginPath()
+  ctx.arc(x, y - 13 + hover, 1.6, 0, Math.PI * 2)
+  ctx.fill()
+  // Glow
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  const g = ctx.createRadialGradient(x, y - 10 + hover, 0, x, y - 10 + hover, 14)
+  g.addColorStop(0, 'rgba(255, 110, 199, 0.6)')
+  g.addColorStop(1, 'rgba(255, 110, 199, 0)')
+  ctx.fillStyle = g
+  ctx.beginPath()
+  ctx.arc(x, y - 10 + hover, 14, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+  // Trail
+  ctx.fillStyle = COLORS.pink + '66'
+  ctx.beginPath()
+  ctx.arc(x, y - 6 + hover, 1.2, 0, Math.PI * 2)
+  ctx.fill()
+}
 
+// Ambient dust particles drifting over the camera viewport.
 export function drawAmbientDust(ctx, viewW, viewH, time) {
-  // Floating dust motes — cheap parallax depth.
-  const count = 28
+  const count = 32
   for (let i = 0; i < count; i++) {
     const seed = i * 12.9898
     const baseX = ((seed * 78.233) % 1) * viewW
     const baseY = ((seed * 41.221) % 1) * viewH
-    const drift = (time / 30 + i * 60) % (viewW + 200) - 100
+    const drift = (time / 25 + i * 60) % (viewW + 200) - 100
     const x = (baseX + drift) % viewW
-    const y = baseY + Math.sin(time / 1200 + i) * 6
+    const y = baseY + Math.sin(time / 1200 + i) * 8
     const size = (i % 3 === 0) ? 1.4 : 0.9
     const alpha = 0.08 + (i % 4) * 0.04
     ctx.fillStyle = `rgba(94, 232, 255, ${alpha})`
@@ -994,23 +1166,4 @@ export function drawAmbientDust(ctx, viewW, viewH, time) {
     ctx.arc(x, y, size, 0, Math.PI * 2)
     ctx.fill()
   }
-}
-
-export function drawInteractSparkle(ctx, x, y, time) {
-  // Small pulsing diamond above an interactable.
-  const t = (time / 600) % 1
-  const s = 6 + t * 4
-  const alpha = 1 - t
-  ctx.save()
-  ctx.globalAlpha = alpha
-  ctx.strokeStyle = COLORS.cyan
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(x, y - s)
-  ctx.lineTo(x + s * 0.7, y)
-  ctx.lineTo(x, y + s)
-  ctx.lineTo(x - s * 0.7, y)
-  ctx.closePath()
-  ctx.stroke()
-  ctx.restore()
 }
