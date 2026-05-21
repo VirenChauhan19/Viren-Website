@@ -201,21 +201,33 @@ export function AboutOverlay({ onClose }) {
   ]
   const [pageIdx, setPageIdx] = useState(0)
   const [typed, setTyped] = useState('')
+  const typingTimerRef = useRef(null)
   const fullText = dialogue[pageIdx] || ''
 
   useEffect(() => {
     setTyped('')
     let i = 0
     const id = setInterval(() => {
-      i += 2
+      i += 1
       setTyped(fullText.slice(0, i))
-      if (i >= fullText.length) clearInterval(id)
-    }, 14)
-    return () => clearInterval(id)
+      if (i >= fullText.length) {
+        clearInterval(id)
+        typingTimerRef.current = null
+      }
+    }, 28)
+    typingTimerRef.current = id
+    return () => {
+      clearInterval(id)
+      typingTimerRef.current = null
+    }
   }, [pageIdx, fullText])
 
   const advance = () => {
     if (typed.length < fullText.length) {
+      if (typingTimerRef.current) {
+        clearInterval(typingTimerRef.current)
+        typingTimerRef.current = null
+      }
       setTyped(fullText) // skip typing on first click
       return
     }

@@ -493,11 +493,12 @@ export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted 
 
   const accent = pickAccent(station.accent)
   const active = isNear
-  const boosted = active || scanBoost
+  const boost = typeof scanBoost === 'number' ? Math.max(0, Math.min(1, scanBoost)) : (scanBoost ? 1 : 0)
+  const boosted = active || boost > 0.02
   // Soft ground glow under the station.
   const groundCenter = isoTileCenter(station.col + 1, station.row + 2.1)
-  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, boosted ? 190 : 138, accent, boosted ? 0.86 : 0.36, time)
-  drawStationQuestPad(ctx, station, accent, time, boosted, isCompleted)
+  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, 138 + (boosted ? 52 * (active ? 1 : boost) : 0), accent, active ? 0.86 : 0.36 + boost * 0.5, time)
+  drawStationQuestPad(ctx, station, accent, time, boosted, isCompleted, boost)
 
   switch (station.kind) {
     case 'arcade':    drawArcadeIso(ctx, station, time, boosted); break
@@ -510,8 +511,8 @@ export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted 
     case 'skillTree': drawSkillTreeIso(ctx, station, time, boosted); break
   }
 
-  drawStationPopRim(ctx, station, accent, time, boosted)
-  drawStationBeacon(ctx, station, accent, time, boosted, isCompleted)
+  drawStationPopRim(ctx, station, accent, time, boosted, boost)
+  drawStationBeacon(ctx, station, accent, time, boosted, isCompleted, boost)
   if (isCompleted) drawCompletedSeal(ctx, station, time)
 
   // Floating label when near.
@@ -523,7 +524,7 @@ export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted 
   ctx.restore()
 }
 
-function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
+function drawStationQuestPad(ctx, station, color, time, active, isCompleted, boost = 0) {
   const p = isoProject(station.col - 0.22, station.row - 0.18)
   const w = TILE_W * 2.44
   const h = TILE_H * 2.36
@@ -533,8 +534,9 @@ function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
 
   ctx.save()
   ctx.globalCompositeOperation = 'lighter'
-  ctx.strokeStyle = color + (active ? 'cc' : isCompleted ? '88' : '44')
-  ctx.lineWidth = active ? 1.6 : 0.9
+  const activeAlpha = Math.round((0.27 + boost * 0.53) * 255).toString(16).padStart(2, '0')
+  ctx.strokeStyle = color + (active ? activeAlpha : isCompleted ? '88' : '44')
+  ctx.lineWidth = active ? 0.9 + boost * 0.9 : 0.9
   ctx.beginPath()
   ctx.moveTo(cx, p.y)
   ctx.lineTo(p.x + w, cy)
@@ -545,7 +547,7 @@ function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
 
   const scan = ((time / 900 + station.col * 0.07) % 1)
   const sx1 = p.x + w * scan
-  ctx.strokeStyle = color + (active ? 'aa' : '3a')
+  ctx.strokeStyle = color + (active ? Math.round((0.24 + boost * 0.43) * 255).toString(16).padStart(2, '0') : '3a')
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(sx1 - 42, cy - 22)
@@ -553,8 +555,8 @@ function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
   ctx.stroke()
 
   if (active || isCompleted) {
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, active ? 96 : 72)
-    g.addColorStop(0, color + (active ? '30' : '1c'))
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, active ? 72 + boost * 36 : 72)
+    g.addColorStop(0, color + (active ? Math.round((0.11 + boost * 0.14) * 255).toString(16).padStart(2, '0') : '1c'))
     g.addColorStop(1, color + '00')
     ctx.fillStyle = g
     ctx.beginPath()
@@ -567,14 +569,14 @@ function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
     const px = cx + Math.cos(a) * w * 0.42
     const py = cy + Math.sin(a) * h * 0.42
     ctx.fillStyle = color
-    ctx.globalAlpha = (active ? 0.8 : 0.35) + pulse * 0.2
+    ctx.globalAlpha = (active ? 0.35 + boost * 0.48 : 0.35) + pulse * 0.2
     ctx.fillRect(Math.round(px), Math.round(py), 2, 2)
   }
   ctx.globalAlpha = 1
   ctx.restore()
 }
 
-function drawStationPopRim(ctx, station, color, time, active) {
+function drawStationPopRim(ctx, station, color, time, active, boost = 0) {
   const p = isoProject(station.col, station.row)
   const cx = p.x + TILE_W
   const cy = p.y + TILE_H
@@ -582,8 +584,8 @@ function drawStationPopRim(ctx, station, color, time, active) {
 
   ctx.save()
   ctx.globalCompositeOperation = 'lighter'
-  ctx.strokeStyle = color + (active ? 'f0' : '70')
-  ctx.lineWidth = active ? 2.2 : 1.2
+  ctx.strokeStyle = color + (active ? Math.round((0.44 + boost * 0.5) * 255).toString(16).padStart(2, '0') : '70')
+  ctx.lineWidth = active ? 1.2 + boost * 1.2 : 1.2
   ctx.beginPath()
   ctx.moveTo(cx, p.y - 3)
   ctx.lineTo(p.x + TILE_W * 2 + 4, cy)
@@ -593,8 +595,8 @@ function drawStationPopRim(ctx, station, color, time, active) {
   ctx.stroke()
 
   if (active) {
-    ctx.strokeStyle = color + '55'
-    ctx.lineWidth = 4 + breathe * 2
+    ctx.strokeStyle = color + Math.round((0.12 + boost * 0.22) * 255).toString(16).padStart(2, '0')
+    ctx.lineWidth = 2 + boost * 4 + breathe * 1.4
     ctx.beginPath()
     ctx.moveTo(cx, p.y - 7)
     ctx.lineTo(p.x + TILE_W * 2 + 9, cy)
@@ -607,10 +609,10 @@ function drawStationPopRim(ctx, station, color, time, active) {
   ctx.restore()
 }
 
-function drawStationBeacon(ctx, station, color, time, active, isCompleted) {
+function drawStationBeacon(ctx, station, color, time, active, isCompleted, boost = 0) {
   const c = isoTileCenter(station.col + 1, station.row + 1)
-  const h = active ? 150 : 94
-  const alpha = active ? 0.34 : isCompleted ? 0.14 : 0.1
+  const h = active ? 94 + boost * 56 : 94
+  const alpha = active ? 0.1 + boost * 0.24 : isCompleted ? 0.14 : 0.1
 
   ctx.save()
   ctx.globalCompositeOperation = 'lighter'
@@ -627,7 +629,7 @@ function drawStationBeacon(ctx, station, color, time, active, isCompleted) {
   ctx.closePath()
   ctx.fill()
   if (active) {
-    ctx.strokeStyle = color + '88'
+    ctx.strokeStyle = color + Math.round((0.18 + boost * 0.36) * 255).toString(16).padStart(2, '0')
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(c.x - 28, c.y)
@@ -1410,19 +1412,20 @@ function roundRect(ctx, x, y, w, h, r) {
 export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted, scanBoost = false) {
   ctx.save()
   ctx.translate(-camX, -camY)
+  const boost = typeof scanBoost === 'number' ? Math.max(0, Math.min(1, scanBoost)) : (scanBoost ? 1 : 0)
   const c = isoTileCenter(station.col + 1, station.row)
-  const baseY = c.y - (scanBoost ? 132 : 116)
-  const bob = Math.sin(time / 400 + (station.col + station.row)) * (scanBoost ? 6 : 4)
+  const baseY = c.y - (116 + boost * 16)
+  const bob = Math.sin(time / 400 + (station.col + station.row)) * (4 + boost * 2)
   const x = c.x
   const y = baseY + bob
 
   const accent = isCompleted ? COLORS.green : pickAccent(station.accent)
 
   // Halo
-  const haloR = scanBoost ? 34 : isCompleted ? 14 : 19
+  const haloR = isCompleted ? 14 + boost * 10 : 19 + boost * 15
   const haloG = ctx.createRadialGradient(x, y + 6, 0, x, y + 6, haloR)
   haloG.addColorStop(0, accent + 'cc')
-  haloG.addColorStop(0.35, accent + (scanBoost ? '70' : '28'))
+  haloG.addColorStop(0.35, accent + Math.round((0.16 + boost * 0.28) * 255).toString(16).padStart(2, '0'))
   haloG.addColorStop(1, accent + '00')
   ctx.fillStyle = haloG
   ctx.beginPath()
@@ -1433,17 +1436,17 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted, sca
   ctx.translate(x, y + 6)
   ctx.rotate(Math.sin(time / 800 + station.col) * 0.08)
   ctx.strokeStyle = accent + (isCompleted ? '88' : 'dd')
-  ctx.lineWidth = scanBoost ? 2 : 1
+  ctx.lineWidth = 1 + boost
   ctx.beginPath()
-  ctx.moveTo(0, scanBoost ? -22 : -16)
-  ctx.lineTo(scanBoost ? 18 : 13, 0)
-  ctx.lineTo(0, scanBoost ? 22 : 16)
-  ctx.lineTo(scanBoost ? -18 : -13, 0)
+  ctx.moveTo(0, -16 - boost * 6)
+  ctx.lineTo(13 + boost * 5, 0)
+  ctx.lineTo(0, 16 + boost * 6)
+  ctx.lineTo(-13 - boost * 5, 0)
   ctx.closePath()
   ctx.stroke()
-  if (scanBoost && !isCompleted) {
-    ctx.strokeStyle = accent + '55'
-    ctx.lineWidth = 5
+  if (boost > 0.02 && !isCompleted) {
+    ctx.strokeStyle = accent + Math.round(boost * 0x55).toString(16).padStart(2, '0')
+    ctx.lineWidth = 2 + boost * 3
     ctx.stroke()
   }
   ctx.restore()
@@ -1460,7 +1463,7 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted, sca
   ctx.fillStyle = accent
   ctx.fillText(glyph, x, y + 6)
 
-  if (scanBoost && !isCompleted) {
+  if (boost > 0.45 && !isCompleted) {
     const label = station.label.toUpperCase().slice(0, 18)
     ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace'
     const labelW = Math.min(150, ctx.measureText(label).width + 18)
@@ -1741,8 +1744,8 @@ export function drawScanPulse(ctx, player, camX, camY, age) {
   const center = isoTileCenter(player.col - 0.5, player.row - 0.5)
   const x = center.x - camX
   const y = center.y - camY
-  const t = Math.min(1, age / 1200)
-  const radius = 40 + t * 420
+  const t = Math.min(1, age / 1500)
+  const radius = 24 + t * 520
   const alpha = Math.max(0, 1 - t)
 
   ctx.save()

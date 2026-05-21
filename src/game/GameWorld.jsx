@@ -53,6 +53,9 @@ const PLAYER_SPEED = 5.5 // tiles per second
 const PLAYER_HALF = 0.18 // collision half-extent in tile units
 const CAMERA_LERP = 0.14
 const SCAN_RADIUS_TILES = 7.5
+const SCAN_TRAVEL_MS = 1500
+const SCAN_GLOW_LINGER_MS = 900
+const SCAN_GLOW_RAMP_MS = 220
 const PROJECT_QUEST_IDS = projects.map((p) => `project:${p.slug}`)
 const SHARD_STORAGE_KEY = 'viren_exe_data_shards_v1'
 const DATA_SHARDS = [
@@ -71,6 +74,17 @@ const WORLD_TICKER = [
 ]
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
+
+function scanStationIntensity(scanAge, stationDist) {
+  if (!Number.isFinite(scanAge) || stationDist > SCAN_RADIUS_TILES) return 0
+  const reachAt = (stationDist / SCAN_RADIUS_TILES) * SCAN_TRAVEL_MS
+  const elapsed = scanAge - reachAt
+  if (elapsed < 0 || elapsed > SCAN_GLOW_LINGER_MS) return 0
+  if (elapsed < SCAN_GLOW_RAMP_MS) return elapsed / SCAN_GLOW_RAMP_MS
+  const fadeStart = SCAN_GLOW_LINGER_MS - SCAN_GLOW_RAMP_MS
+  if (elapsed > fadeStart) return Math.max(0, (SCAN_GLOW_LINGER_MS - elapsed) / SCAN_GLOW_RAMP_MS)
+  return 1
+}
 
 function loadCollectedShards() {
   try {
@@ -191,20 +205,73 @@ function BootScreen({ onDone }) {
 
 // ──────────────────── Intro card ────────────────────
 
-function AnimatedWords({ text, className = '', baseDelay = 0, step = 72, as: Tag = 'p' }) {
-  const words = text.split(' ')
+function TypewriterBriefing({ text, objective, fastForwardToken, onDone }) {
+  const [body, setBody] = useState('')
+  const [goal, setGoal] = useState('')
+  const doneRef = useRef(false)
+
+  useEffect(() => {
+    setBody('')
+    setGoal('')
+    doneRef.current = false
+
+    let bodyIndex = 0
+    let goalIndex = 0
+    let goalTimer = 0
+    let finishTimer = 0
+
+    const bodyTimer = setInterval(() => {
+      bodyIndex += 1
+      setBody(text.slice(0, bodyIndex))
+
+      if (bodyIndex >= text.length) {
+        clearInterval(bodyTimer)
+        goalTimer = window.setInterval(() => {
+          goalIndex += 1
+          setGoal(objective.slice(0, goalIndex))
+
+          if (goalIndex >= objective.length) {
+            clearInterval(goalTimer)
+            finishTimer = window.setTimeout(() => {
+              if (!doneRef.current) {
+                doneRef.current = true
+                onDone()
+              }
+            }, 220)
+          }
+        }, 20)
+      }
+    }, 24)
+
+    return () => {
+      clearInterval(bodyTimer)
+      clearInterval(goalTimer)
+      clearTimeout(finishTimer)
+    }
+  }, [text, objective, onDone])
+
+  useEffect(() => {
+    if (!fastForwardToken || doneRef.current) return
+    setBody(text)
+    setGoal(objective)
+    doneRef.current = true
+    onDone()
+  }, [fastForwardToken, text, objective, onDone])
+
+  const bodyDone = body.length >= text.length
+  const goalDone = goal.length >= objective.length
+
   return (
-    <Tag className={`intro-words ${className}`}>
-      {words.map((word, i) => (
-        <span
-          key={`${word}-${i}`}
-          className="intro-word"
-          style={{ animationDelay: `${baseDelay + i * step}ms` }}
-        >
-          {word}{i < words.length - 1 ? ' ' : ''}
-        </span>
-      ))}
-    </Tag>
+    <>
+      <p className="intro-type">
+        {body}
+        {!bodyDone && <span className="type-cursor" />}
+      </p>
+      <div className="intro-objective">
+        {bodyDone && goal}
+        {bodyDone && !goalDone && <span className="type-cursor gold" />}
+      </div>
+    </>
   )
 }
 
@@ -230,16 +297,31 @@ function IntroScreen({ onStart }) {
     },
   ]
   const [pageIdx, setPageIdx] = useState(0)
+  const [typingDone, setTypingDone] = useState(false)
+  const [fastForwardToken, setFastForwardToken] = useState(0)
   const page = pages[pageIdx]
   const isLast = pageIdx === pages.length - 1
+  useEffect(() => {
+    setTypingDone(false)
+  }, [pageIdx])
+
   const next = () => {
+    if (!typingDone) return
     if (isLast) onStart()
     else setPageIdx((i) => i + 1)
+  }
+  const fastForward = (e) => {
+    e.stopPropagation()
+    setFastForwardToken((v) => v + 1)
+  }
+  const skipBriefing = (e) => {
+    e.stopPropagation()
+    onStart()
   }
 
   return (
     <div className="intro" onClick={next}>
-      <div className="intro-card" key={pageIdx} onClick={(e) => e.stopPropagation()}>
+      <div className={`intro-card ${typingDone ? 'ready' : ''}`} key={pageIdx} onClick={(e) => e.stopPropagation()}>
         <div className="intro-scene" aria-hidden>
           <div className="intro-map">
             <span className="node home" />
@@ -256,37 +338,48 @@ function IntroScreen({ onStart }) {
         <div className="intro-tag"><span className="pulse" /> <span>{page.tag}</span></div>
         <div className="intro-dialogue">
           <div className="speaker">{page.name}</div>
-          <AnimatedWords text={page.text} baseDelay={720} step={78} />
-          <AnimatedWords
-            text={page.objective}
-            className="intro-objective"
-            baseDelay={720 + page.text.split(' ').length * 78 + 180}
-            step={62}
-            as="div"
+          <TypewriterBriefing
+            text={page.text}
+            objective={page.objective}
+            fastForwardToken={fastForwardToken}
+            onDone={() => setTypingDone(true)}
           />
         </div>
 
-        <div className="intro-controls">
-          <div className="row">
-            <div className="keys"><span className="kk">W</span><span className="kk">A</span><span className="kk">S</span><span className="kk">D</span></div>
-            <span className="lab">move</span>
-          </div>
-          <div className="row">
-            <div className="keys"><span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span></div>
-            <span className="lab">also works</span>
-          </div>
-          <div className="row"><span className="kk">E</span><span className="lab">interact / open quest</span></div>
-          <div className="row"><span className="kk">Q</span><span className="lab">scan nearby quests</span></div>
+        <div className="intro-skip-row">
+          {!typingDone && (
+            <button type="button" className="intro-mini" onClick={fastForward}>
+              Fast text
+            </button>
+          )}
+          <button type="button" className="intro-mini" onClick={skipBriefing}>
+            Skip intro
+          </button>
         </div>
 
-        <div className="intro-pips">
-          {pages.map((_, i) => <span key={i} className={i === pageIdx ? 'active' : ''} />)}
-        </div>
+        <div className="intro-after">
+          <div className="intro-controls">
+            <div className="row">
+              <div className="keys"><span className="kk">W</span><span className="kk">A</span><span className="kk">S</span><span className="kk">D</span></div>
+              <span className="lab">move</span>
+            </div>
+            <div className="row">
+              <div className="keys"><span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span></div>
+              <span className="lab">also works</span>
+            </div>
+            <div className="row"><span className="kk">E</span><span className="lab">interact / open quest</span></div>
+            <div className="row"><span className="kk">Q</span><span className="lab">scan nearby quests</span></div>
+          </div>
 
-        <button className="intro-start" onClick={next}>
-          {isLast ? 'Enter the studio' : 'Continue briefing'}
-          <span className="arrow">→</span>
-        </button>
+          <div className="intro-pips">
+            {pages.map((_, i) => <span key={i} className={i === pageIdx ? 'active' : ''} />)}
+          </div>
+
+          <button className="intro-start" onClick={next}>
+            {isLast ? 'Enter the studio' : 'Continue briefing'}
+            <span className="arrow">→</span>
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -873,12 +966,11 @@ export default function GameWorld() {
           const isNear = interactRef.current && interactRef.current.key === it.station.key
           const isHovered = hoveredStationKey === it.station.key
           const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
-          const scanActive = scanAge >= 0 && scanAge < 1800
           const stationDist = Math.hypot(
             playerRef.current.col - (it.station.col + 1),
             playerRef.current.row - (it.station.row + 1),
           )
-          const scanBoost = scanActive && stationDist <= SCAN_RADIUS_TILES
+          const scanBoost = scanStationIntensity(scanAge, stationDist)
           drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSet.has(it.station.key), scanBoost)
         } else if (it.kind === 'player') {
           const playerIsoP = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
@@ -910,8 +1002,7 @@ export default function GameWorld() {
       }
 
       const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
-      const scanBoost = scanAge >= 0 && scanAge < 1800
-      if (scanAge >= 0 && scanAge < 1500) {
+      if (scanAge >= 0 && scanAge < SCAN_TRAVEL_MS) {
         drawScanPulse(ctx, playerRef.current, camX, camY, scanAge)
       }
 
@@ -927,7 +1018,7 @@ export default function GameWorld() {
             playerRef.current.col - (s.col + 1),
             playerRef.current.row - (s.row + 1),
           )
-          drawQuestMarker(ctx, s, camX, camY, t, isCompleted, scanBoost && stationDist <= SCAN_RADIUS_TILES)
+          drawQuestMarker(ctx, s, camX, camY, t, isCompleted, scanStationIntensity(scanAge, stationDist))
         }
       }
 
