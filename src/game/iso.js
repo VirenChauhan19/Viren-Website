@@ -1,5 +1,5 @@
 // Isometric projection helpers. The world is stored in tile coordinates
-// (col, row). Movement and collision are computed in tile space — the
+// (col, row). Movement and collision are computed in tile space; the
 // projection only matters at render time.
 //
 // Classic 2:1 isometric tiles: width = 64, height = 32. A tile at
@@ -39,7 +39,7 @@ export function isoTileCenter(col, row) {
   }
 }
 
-// Inverse projection — given a screen point in world iso space, return
+// Inverse projection: given a screen point in world iso space, return
 // the fractional (col, row). Useful for click-to-move if we ever add it.
 export function isoUnproject(sx, sy) {
   const x = sx - WORLD_OFFSET_X
@@ -60,7 +60,7 @@ export function tileDiamond(col, row) {
   }
 }
 
-// Helper to draw an extruded "box" — a top diamond plus two visible side
+// Helper to draw an extruded "box": a top diamond plus two visible side
 // faces. Used for walls and station bases. The diamond corners are taken
 // from the box's top-edge tile at (col, row) of size (sizeCol, sizeRow);
 // the box rises by `height` pixels.

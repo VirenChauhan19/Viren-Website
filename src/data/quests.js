@@ -21,7 +21,7 @@ export const QUESTS = [
     reward: '+80 XP · Loadout Revealed',
     completion: {
       headline: 'Achievement Unlocked: Loadout Confirmed',
-      sub: 'Game Dev, Applied AI, Tools, Endurance — all green.',
+      sub: 'Game Dev, Applied AI, Tools, Endurance: all green.',
     },
   },
   {
@@ -36,12 +36,12 @@ export const QUESTS = [
   },
   {
     id: 'aria',
-    title: 'Interrogate the NPC',
-    objective: 'Chat with ARIA',
+    title: "Ask Viren's Assistant",
+    objective: "Chat with Viren's Assistant",
     reward: '+90 XP · Conversational AI Verified',
     completion: {
       headline: 'Quest Completed: Conversational AI Verified',
-      sub: 'ARIA runs entirely offline — Viren built that.',
+      sub: "Viren's Assistant runs entirely offline. Viren built that.",
     },
   },
   {
@@ -81,7 +81,7 @@ export const QUESTS = [
     reward: '+110 XP · Skill: Physics & Systems',
     completion: {
       headline: 'Quest Completed: Physics Engineer Found',
-      sub: '2D physics, collision response, scoring loops — under control.',
+      sub: '2D physics, collision response, scoring loops: under control.',
     },
   },
   {
@@ -91,7 +91,7 @@ export const QUESTS = [
     reward: '+130 XP · Skill: Environment Art',
     completion: {
       headline: 'Quest Completed: Environment Artist Spotted',
-      sub: 'Composed, explorable real-time 3D space. Mood, lighting, atmosphere — all there.',
+      sub: 'Composed, explorable real-time 3D space. Mood, lighting, atmosphere: all there.',
     },
   },
   {

@@ -112,7 +112,7 @@ export const experience = [
 ]
 
 // ───────── Skills (perk tree) ─────────
-// branch: 'game' | 'ai' | 'tools' | 'soft'. level: 1–5 (filled dots).
+// branch: 'game' | 'ai' | 'tools' | 'soft'. level: 1-5 (filled dots).
 export const skills = [
   // Game Dev branch
   { id: 'gameplay-prog', branch: 'game', name: 'Gameplay Programming', level: 4,
@@ -136,7 +136,7 @@ export const skills = [
   { id: 'api-glue', branch: 'ai', name: 'API Integration', level: 4,
     desc: 'Google Calendar, Firebase, third-party services as first-class glue.' },
   { id: 'ai-ethics', branch: 'ai', name: 'Applied AI Ethics', level: 3,
-    desc: 'Minor coursework — agentic design, intelligent tools, creative computing.' },
+    desc: 'Minor coursework: agentic design, intelligent tools, creative computing.' },
 
   // Tools branch
   { id: 'react', branch: 'tools', name: 'React', level: 4,
@@ -144,7 +144,7 @@ export const skills = [
   { id: 'cs', branch: 'tools', name: 'C# / Engine Scripting', level: 3,
     desc: 'Gameplay scripting in mainstream game engines.' },
   { id: 'flutter', branch: 'tools', name: 'Flutter / Web', level: 3,
-    desc: 'Cross-platform deployment — see La Ultra patient app.' },
+    desc: 'Cross-platform deployment: see La Ultra patient app.' },
   { id: 'firebase', branch: 'tools', name: 'Firebase', level: 3,
     desc: 'Auth, Firestore, hosting for the clinical app.' },
   { id: 'git', branch: 'tools', name: 'Git', level: 4,
@@ -152,9 +152,9 @@ export const skills = [
 
   // Endurance / Soft branch
   { id: 'leadership', branch: 'soft', name: 'Field Leadership', level: 5,
-    desc: 'Race director, 55km category at La Ultra — multi-functional teams.' },
+    desc: 'Race director, 55km category at La Ultra: multi-functional teams.' },
   { id: 'ops', branch: 'soft', name: 'Logistics & Ops', level: 5,
-    desc: 'High-altitude (12k–15k ft) race operations and medical reporting.' },
+    desc: 'High-altitude (12k-15k ft) race operations and medical reporting.' },
   { id: 'endurance', branch: 'soft', name: 'Endurance', level: 5,
     desc: 'Long-form ultra-sport background. Finishes what he starts.' },
   { id: 'comms', branch: 'soft', name: 'Communication', level: 4,

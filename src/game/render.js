@@ -1,4 +1,4 @@
-// Isometric renderer. Everything is procedural canvas drawing — no
+// Isometric renderer. Everything is procedural canvas drawing, no
 // sprite assets. The world is in tile space (col, row); we project to
 // iso pixels at render time. The visible look:
 //   • Dark gradient sky with two drifting cloud layers
@@ -84,7 +84,7 @@ export function drawSky(ctx, viewW, viewH, time) {
     ctx.fillRect(Math.round(x), Math.round(y), 1, 1)
   }
 
-  // Cloud layers — two depths, scrolling at different speeds.
+  // Cloud layers: two depths, scrolling at different speeds.
   drawDistantSkyline(ctx, viewW, viewH, time)
   drawCloudLayer(ctx, viewW, viewH, time, 0.012, 0.17, 0.10, 7, 60)
   drawCloudLayer(ctx, viewW, viewH, time, 0.022, 0.31, 0.06, 5, 90)
@@ -298,7 +298,7 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
   ctx.fill()
   ctx.restore()
 
-  // Subtle grid intersection dots — every 2 tiles.
+  // Subtle grid intersection dots: every 2 tiles.
   ctx.fillStyle = COLORS.gridDot
   for (let r = 0; r <= WORLD_H; r += 2) {
     for (let c = 0; c <= WORLD_W; c += 2) {
@@ -326,7 +326,7 @@ export function drawFloor(ctx, camX, camY, viewW, viewH, time) {
   ctx.fillText('· GAMES · INTERACTIVE WORK ·', labelWm.x, labelWm.y)
   ctx.restore()
 
-  // Sun beam — animated radial gradient panning across the floor.
+  // Sun beam: animated radial gradient panning across the floor.
   drawDistrictHolograms(ctx, time)
 
   const t = time / 14000
@@ -487,29 +487,31 @@ export function drawWalls(ctx, camX, camY) {
 
 // ───────────────── Stations ─────────────────
 
-export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted = false) {
+export function drawStation(ctx, station, camX, camY, time, isNear, isCompleted = false, scanBoost = false) {
   ctx.save()
   ctx.translate(-camX, -camY)
 
   const accent = pickAccent(station.accent)
   const active = isNear
+  const boosted = active || scanBoost
   // Soft ground glow under the station.
   const groundCenter = isoTileCenter(station.col + 1, station.row + 2.1)
-  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, active ? 170 : 130, accent, active ? 0.72 : 0.3, time)
-  drawStationQuestPad(ctx, station, accent, time, active, isCompleted)
+  drawGroundGlow(ctx, groundCenter.x, groundCenter.y, boosted ? 190 : 138, accent, boosted ? 0.86 : 0.36, time)
+  drawStationQuestPad(ctx, station, accent, time, boosted, isCompleted)
 
   switch (station.kind) {
-    case 'arcade':    drawArcadeIso(ctx, station, time, active); break
-    case 'aiDesk':    drawAIDeskIso(ctx, station, time, active); break
-    case 'aria':      drawAriaIso(ctx, station, time, active); break
-    case 'tv':        drawTVIso(ctx, station, time, active); break
-    case 'pedestal':  drawPedestalIso(ctx, station, time, active); break
-    case 'trophy':    drawTrophyIso(ctx, station, time, active); break
-    case 'phone':     drawPhoneIso(ctx, station, time, active); break
-    case 'skillTree': drawSkillTreeIso(ctx, station, time, active); break
+    case 'arcade':    drawArcadeIso(ctx, station, time, boosted); break
+    case 'aiDesk':    drawAIDeskIso(ctx, station, time, boosted); break
+    case 'aria':      drawAriaIso(ctx, station, time, boosted); break
+    case 'tv':        drawTVIso(ctx, station, time, boosted); break
+    case 'pedestal':  drawPedestalIso(ctx, station, time, boosted); break
+    case 'trophy':    drawTrophyIso(ctx, station, time, boosted); break
+    case 'phone':     drawPhoneIso(ctx, station, time, boosted); break
+    case 'skillTree': drawSkillTreeIso(ctx, station, time, boosted); break
   }
 
-  drawStationBeacon(ctx, station, accent, time, active, isCompleted)
+  drawStationPopRim(ctx, station, accent, time, boosted)
+  drawStationBeacon(ctx, station, accent, time, boosted, isCompleted)
   if (isCompleted) drawCompletedSeal(ctx, station, time)
 
   // Floating label when near.
@@ -572,10 +574,43 @@ function drawStationQuestPad(ctx, station, color, time, active, isCompleted) {
   ctx.restore()
 }
 
+function drawStationPopRim(ctx, station, color, time, active) {
+  const p = isoProject(station.col, station.row)
+  const cx = p.x + TILE_W
+  const cy = p.y + TILE_H
+  const breathe = 0.75 + 0.25 * Math.sin(time / 360 + station.row)
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = color + (active ? 'f0' : '70')
+  ctx.lineWidth = active ? 2.2 : 1.2
+  ctx.beginPath()
+  ctx.moveTo(cx, p.y - 3)
+  ctx.lineTo(p.x + TILE_W * 2 + 4, cy)
+  ctx.lineTo(cx, p.y + TILE_H * 2 + 5)
+  ctx.lineTo(p.x - 4, cy)
+  ctx.closePath()
+  ctx.stroke()
+
+  if (active) {
+    ctx.strokeStyle = color + '55'
+    ctx.lineWidth = 4 + breathe * 2
+    ctx.beginPath()
+    ctx.moveTo(cx, p.y - 7)
+    ctx.lineTo(p.x + TILE_W * 2 + 9, cy)
+    ctx.lineTo(cx, p.y + TILE_H * 2 + 10)
+    ctx.lineTo(p.x - 9, cy)
+    ctx.closePath()
+    ctx.stroke()
+  }
+
+  ctx.restore()
+}
+
 function drawStationBeacon(ctx, station, color, time, active, isCompleted) {
   const c = isoTileCenter(station.col + 1, station.row + 1)
-  const h = active ? 120 : 86
-  const alpha = active ? 0.2 : isCompleted ? 0.12 : 0.08
+  const h = active ? 150 : 94
+  const alpha = active ? 0.34 : isCompleted ? 0.14 : 0.1
 
   ctx.save()
   ctx.globalCompositeOperation = 'lighter'
@@ -591,6 +626,16 @@ function drawStationBeacon(ctx, station, color, time, active, isCompleted) {
   ctx.lineTo(c.x - 8, c.y - h)
   ctx.closePath()
   ctx.fill()
+  if (active) {
+    ctx.strokeStyle = color + '88'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(c.x - 28, c.y)
+    ctx.lineTo(c.x - 10, c.y - h)
+    ctx.moveTo(c.x + 28, c.y)
+    ctx.lineTo(c.x + 10, c.y - h)
+    ctx.stroke()
+  }
   ctx.restore()
 }
 
@@ -723,7 +768,7 @@ function drawArcadeIso(ctx, s, time, isNear) {
   ctx.fillText('VIREN ARCADE', topCx, topCy - 16)
   ctx.restore()
 
-  // Front face panel — draw a screen rectangle attached to the right (south-east) face.
+  // Front face panel: draw a screen rectangle attached to the right (south-east) face.
   // We map the right face's quad to a rectangle and draw inside it.
   const faceX = (right.x + bottom.x) / 2 - 30
   const faceY = (right.y + bottom.y) / 2 - 40
@@ -844,7 +889,7 @@ function drawAIDeskIso(ctx, s, time, isNear) {
     edge: 'rgba(94, 232, 255, 0.18)',
   })
 
-  // Monitor — placed on the top, slightly behind center, with stand.
+  // Monitor: placed on the top, slightly behind center, with stand.
   const topCx = (top.x + bottom.x) / 2
   const topCy = (top.y + bottom.y) / 2
   const monW = 54
@@ -941,7 +986,7 @@ function drawAIScreen(ctx, x, y, w, h, slug, time) {
 }
 
 function drawAriaIso(ctx, s, time, isNear) {
-  // Hover pad — small low extruded base.
+  // Hover pad: small low extruded base.
   const H = 6
   drawExtrudedBox(ctx, s.col, s.row + 1, 2, 1, H, {
     top: '#0c1521',
@@ -1362,21 +1407,22 @@ function roundRect(ctx, x, y, w, h, r) {
 
 // ───────────────── Quest markers (floating "!" + ring) ─────────────────
 
-export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
+export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted, scanBoost = false) {
   ctx.save()
   ctx.translate(-camX, -camY)
   const c = isoTileCenter(station.col + 1, station.row)
-  const baseY = c.y - 116
-  const bob = Math.sin(time / 400 + (station.col + station.row)) * 4
+  const baseY = c.y - (scanBoost ? 132 : 116)
+  const bob = Math.sin(time / 400 + (station.col + station.row)) * (scanBoost ? 6 : 4)
   const x = c.x
   const y = baseY + bob
 
   const accent = isCompleted ? COLORS.green : pickAccent(station.accent)
 
   // Halo
-  const haloR = isCompleted ? 14 : 19
+  const haloR = scanBoost ? 34 : isCompleted ? 14 : 19
   const haloG = ctx.createRadialGradient(x, y + 6, 0, x, y + 6, haloR)
   haloG.addColorStop(0, accent + 'cc')
+  haloG.addColorStop(0.35, accent + (scanBoost ? '70' : '28'))
   haloG.addColorStop(1, accent + '00')
   ctx.fillStyle = haloG
   ctx.beginPath()
@@ -1387,14 +1433,19 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
   ctx.translate(x, y + 6)
   ctx.rotate(Math.sin(time / 800 + station.col) * 0.08)
   ctx.strokeStyle = accent + (isCompleted ? '88' : 'dd')
-  ctx.lineWidth = 1
+  ctx.lineWidth = scanBoost ? 2 : 1
   ctx.beginPath()
-  ctx.moveTo(0, -16)
-  ctx.lineTo(13, 0)
-  ctx.lineTo(0, 16)
-  ctx.lineTo(-13, 0)
+  ctx.moveTo(0, scanBoost ? -22 : -16)
+  ctx.lineTo(scanBoost ? 18 : 13, 0)
+  ctx.lineTo(0, scanBoost ? 22 : 16)
+  ctx.lineTo(scanBoost ? -18 : -13, 0)
   ctx.closePath()
   ctx.stroke()
+  if (scanBoost && !isCompleted) {
+    ctx.strokeStyle = accent + '55'
+    ctx.lineWidth = 5
+    ctx.stroke()
+  }
   ctx.restore()
 
   // Glyph
@@ -1408,6 +1459,23 @@ export function drawQuestMarker(ctx, station, camX, camY, time, isCompleted) {
   ctx.fillText(glyph, x, y + 6 + 1)
   ctx.fillStyle = accent
   ctx.fillText(glyph, x, y + 6)
+
+  if (scanBoost && !isCompleted) {
+    const label = station.label.toUpperCase().slice(0, 18)
+    ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace'
+    const labelW = Math.min(150, ctx.measureText(label).width + 18)
+    const bx = x - labelW / 2
+    const by = y + 34
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.94)'
+    roundRect(ctx, bx, by, labelW, 18, 5)
+    ctx.fill()
+    ctx.strokeStyle = accent + 'bb'
+    ctx.lineWidth = 1
+    roundRect(ctx, bx, by, labelW, 18, 5)
+    ctx.stroke()
+    ctx.fillStyle = accent
+    ctx.fillText(label, x, by + 9)
+  }
   ctx.textAlign = 'left'
   ctx.restore()
 }
@@ -1499,7 +1567,7 @@ export function drawPlayer(ctx, isoX, isoY, dir, animFrame, moving, time) {
   }
 }
 
-// Ambient drone NPC — patrols a small loop on the floor between zones.
+// Ambient drone NPC: patrols a small loop on the floor between zones.
 export function drawDroneNPC(ctx, isoX, isoY, time) {
   const x = Math.round(isoX)
   const y = Math.round(isoY)

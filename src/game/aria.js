@@ -1,4 +1,4 @@
-// ARIA — an offline retrieval chatbot that answers questions about Viren.
+// Viren's Assistant: an offline retrieval chatbot that answers questions about Viren.
 // Builds a small TF-IDF index over the structured profile data and a curated
 // set of canned-but-substantive responses for common recruiter questions.
 // No external API; ships in the static bundle.
@@ -17,7 +17,7 @@ const KB = []
 KB.push(
   makeDoc(
     'profile',
-    `${profile.name} — ${profile.title}`,
+    `${profile.name}: ${profile.title}`,
     [profile.tagline, ...profile.about].join(' '),
     ['about', 'who', 'bio', 'profile', 'viren', 'background', 'introduction'],
   ),
@@ -28,7 +28,7 @@ education.forEach((e, i) => {
   KB.push(
     makeDoc(
       `edu-${i}`,
-      `${e.degree} — ${e.school}`,
+      `${e.degree}: ${e.school}`,
       `${e.degree} at ${e.school} (${e.location}). ${e.detail || ''}`,
       ['education', 'school', 'degree', 'scad', 'savannah', 'study', 'minor', 'university'],
     ),
@@ -157,7 +157,7 @@ function retrieve(query, topK = 3) {
   const { vec, norm, tokens } = queryVector(query)
   const scored = KB.map((doc, i) => {
     const base = cosine(vec, norm, DOC_VECTORS[i].vec, DOC_VECTORS[i].norm)
-    // Tag boost — direct tag matches strongly weighted.
+    // Tag boost: direct tag matches strongly weighted.
     let tagBoost = 0
     for (const t of tokens) {
       if (doc.tags.some((tag) => tag.includes(t) || t.includes(tag))) tagBoost += 0.18
@@ -179,7 +179,7 @@ const INTENTS = [
     test: (q) => /^(hi|hello|hey|yo|sup|hola)\b/i.test(q.trim()),
     respond: () => ({
       text:
-        "Hey! I'm ARIA — Viren's AI assistant. I can tell you about his projects, experience, or anything on this site. " +
+        "Hey! I'm Viren's Assistant. I can tell you about his projects, experience, or anything on this site. " +
         "Try one of the suggestions below, or ask anything.",
     }),
   },
@@ -188,7 +188,7 @@ const INTENTS = [
     test: (q) => /who\s+(are|r)\s+you|what\s+are\s+you|whoami/i.test(q),
     respond: () => ({
       text:
-        "I'm ARIA — an in-game NPC and a small retrieval engine built into this site. " +
+        "I'm Viren's Assistant, an in-game NPC and a small retrieval engine built into this site. " +
         "I'm indexed over Viren's bio, education, projects, and experience. " +
         "Ask me what you'd ask in an interview.",
     }),
@@ -210,7 +210,7 @@ const INTENTS = [
     respond: () => ({
       text:
         "Three reasons in plain English:\n" +
-        "1. He ships across the stack — gameplay systems, 3D environments, AI-powered tools. The studio you're standing in is built from scratch in his own engine code.\n" +
+        "1. He ships across the stack: gameplay systems, 3D environments, AI-powered tools. The studio you're standing in is built from scratch in his own engine code.\n" +
         "2. He's already deployed AI in the real world: a clinical app his father (a doctor) actually uses, and a Study Command Center for his classmates.\n" +
         "3. He's a student athlete with an ultramarathon background. Translation: he finishes things. Long projects don't faze him.",
       src: 'profile + experience',
@@ -221,7 +221,7 @@ const INTENTS = [
     test: (q) => /(game|games|gameplay|design|unity|unreal|engine)/i.test(q),
     respond: () => {
       const gs = projects.filter((p) => p.type === 'game')
-      const list = gs.map((p) => `• ${p.name} (${p.year}) — ${p.summary}`).join('\n')
+      const list = gs.map((p) => `• ${p.name} (${p.year}): ${p.summary}`).join('\n')
       return {
         text:
           `Viren has shipped ${gs.length} game projects, all solo:\n${list}\n\n` +
@@ -235,11 +235,11 @@ const INTENTS = [
     test: (q) => /(\bai\b|applied ai|chatbot|rag|llm|machine learning|ml)/i.test(q),
     respond: () => {
       const ai = projects.filter((p) => p.type === 'ai')
-      const list = ai.map((p) => `• ${p.name} (${p.year}) — ${p.summary}`).join('\n')
+      const list = ai.map((p) => `• ${p.name} (${p.year}): ${p.summary}`).join('\n')
       return {
         text:
           `On the Applied AI side, Viren has built:\n${list}\n\n` +
-          "Both are real, deployed apps — not toy demos. Step up to the AI workstations in the top half of the studio to read more.",
+          "Both are real, deployed apps, not toy demos. Step up to the AI workstations in the top half of the studio to read more.",
         src: 'projects (ai)',
       }
     },
@@ -270,7 +270,7 @@ const INTENTS = [
     name: 'experience_summary',
     test: (q) => /(experience|work|career|history|background|jobs|leadership|leader)/i.test(q),
     respond: () => {
-      const lines = experience.slice(0, 5).map((e) => `• ${e.role} — ${e.org} (${e.dates || ''})`)
+      const lines = experience.slice(0, 5).map((e) => `• ${e.role}: ${e.org} (${e.dates || ''})`)
       return {
         text:
           "Highlights from Viren's experience:\n" +
@@ -285,7 +285,7 @@ const INTENTS = [
     test: (q) => /(ultra|la ultra|ultramarathon|ladakh|running|endurance|himalaya)/i.test(q),
     respond: () => ({
       text:
-        "When he was a teenager, Viren was Race Director of the 55km category at La Ultra: The High — one of the world's most extreme ultramarathons, held between 12,000 and 15,500 ft in the Himalayas. He led a multi-functional team across remote terrain and managed athlete health, cut-off enforcement, and live operations. It's the experience that shaped how he handles long, hard projects.",
+        "When he was a teenager, Viren was Race Director of the 55km category at La Ultra: The High, one of the world's most extreme ultramarathons, held between 12,000 and 15,500 ft in the Himalayas. He led a multi-functional team across remote terrain and managed athlete health, cut-off enforcement, and live operations. It's the experience that shaped how he handles long, hard projects.",
       src: 'experience',
     }),
   },
@@ -310,7 +310,7 @@ const INTENTS = [
     test: (q) => /(help|what can|what should|suggest|options|menu)/i.test(q),
     respond: () => ({
       text:
-        "Try asking:\n• Why should I hire Viren?\n• What games has he made?\n• Tell me about his AI projects\n• What's the ultramarathon thing about?\n• How do I contact him?\n\nOr just walk around — every station in the studio opens up more info.",
+        "Try asking:\n• Why should I hire Viren?\n• What games has he made?\n• Tell me about his AI projects\n• What's the ultramarathon thing about?\n• How do I contact him?\n\nOr just walk around. Every station in the studio opens up more info.",
     }),
   },
 ]
@@ -338,7 +338,7 @@ export function ariaAnswer(query) {
   )
   if (projHit) {
     return {
-      text: `${projHit.name} — ${projHit.summary}\n\n${(projHit.description || []).join(' ')}`,
+      text: `${projHit.name}: ${projHit.summary}\n\n${(projHit.description || []).join(' ')}`,
       src: `project: ${projHit.name}`,
       openProjectSlug: projHit.slug,
     }

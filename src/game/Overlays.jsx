@@ -220,6 +220,7 @@ export function AboutOverlay({ onClose }) {
       return
     }
     if (pageIdx < dialogue.length - 1) setPageIdx(pageIdx + 1)
+    else onClose()
   }
 
   const isLast = pageIdx === dialogue.length - 1
@@ -245,7 +246,16 @@ export function AboutOverlay({ onClose }) {
                 <span key={i} className={`pip ${i === pageIdx ? 'active' : ''} ${i < pageIdx ? 'seen' : ''}`} />
               ))}
             </span>
-            <span className="npc-next">{typed.length < fullText.length ? '⏵ skip' : isLast ? '⏵ continue' : '⏵ next'}</span>
+            <button
+              type="button"
+              className="npc-next"
+              onClick={(e) => {
+                e.stopPropagation()
+                advance()
+              }}
+            >
+              {typed.length < fullText.length ? 'skip' : isLast ? 'continue' : 'next'}
+            </button>
           </div>
         </div>
       </div>
@@ -254,7 +264,7 @@ export function AboutOverlay({ onClose }) {
         {education.map((e, i) => (
           <div className="row" key={i}>
             <span className="k">EDU</span>
-            <span>{e.degree} — {e.school} ({e.location})</span>
+            <span>{e.degree}: {e.school} ({e.location})</span>
           </div>
         ))}
         <div className="row"><span className="k">MAIL</span><span>{profile.email}</span></div>
@@ -322,7 +332,7 @@ export function ShowreelOverlay({ onClose }) {
 
       {reels.map((r, i) => (
         <div key={i} className="reel-block">
-          <div className="overlay-section-title">{r.role} — {r.org} ({r.dates})</div>
+          <div className="overlay-section-title">{r.role}: {r.org} ({r.dates})</div>
           {r.detail && <p className="reel-detail">{r.detail}</p>}
           <div className="reel-grid">
             {r.media.map((m, j) => <MediaCard key={j} m={m} alt={r.role} />)}
@@ -365,7 +375,7 @@ export function ContactOverlay({ onClose }) {
       <div className="terminal">
         <div className="terminal-head">
           <span className="dot red" /><span className="dot yel" /><span className="dot grn" />
-          <span className="terminal-title">recruit.exe — RECRUITMENT TERMINAL</span>
+          <span className="terminal-title">recruit.exe: RECRUITMENT TERMINAL</span>
         </div>
         <pre className="terminal-body">
 {printed}<span className="terminal-cursor" />
@@ -373,8 +383,8 @@ export function ContactOverlay({ onClose }) {
       </div>
 
       <div className="overlay-cta" style={{ marginTop: 18 }}>
-        <a className="primary" href={`mailto:${profile.email}?subject=Hello%20Viren%20—%20recruiting`}>
-          ✉  TRANSMIT — {profile.email}
+        <a className="primary" href={`mailto:${profile.email}?subject=Hello%20Viren%20-%20recruiting`}>
+          ✉  TRANSMIT: {profile.email}
         </a>
         {githubLink && <a href={githubLink} target="_blank" rel="noreferrer">⌥  Open source / repo</a>}
       </div>
@@ -383,20 +393,20 @@ export function ContactOverlay({ onClose }) {
       <ul className="overlay-highlights">
         <li>Based in Atlanta, GA · Studying at SCAD</li>
         <li>Open to game dev, applied-AI, and creative-tech internships / roles</li>
-        <li>Fastest reply by email — typically within a day</li>
+        <li>Fastest reply by email, typically within a day</li>
       </ul>
     </OverlayShell>
   )
 }
 
-// ───────────────────── ARIA chat overlay ─────────────────────
+// ───────────────────── Assistant chat overlay ─────────────────────
 
 export function AriaOverlay({ onClose }) {
   const [messages, setMessages] = useState([
     {
       who: 'bot',
       text:
-        "Hey — I'm ARIA. I'm an AI assistant baked into this site, running offline with a small retrieval engine over Viren's profile, projects, and experience. " +
+        "Hey, I'm Viren's Assistant. I'm baked into this site, running offline with a small retrieval engine over Viren's profile, projects, and experience. " +
         "Ask me anything you'd ask in an interview.",
     },
   ])
@@ -438,7 +448,7 @@ export function AriaOverlay({ onClose }) {
           <div className="aria-head">
             <div className="aria-avatar" />
             <div>
-              <div className="aria-name">ARIA</div>
+              <div className="aria-name">Viren's Assistant</div>
               <div className="aria-status">
                 <span className="dot" />
                 ONLINE · retrieval engine v0.4 · offline-first
@@ -450,7 +460,7 @@ export function AriaOverlay({ onClose }) {
             {messages.map((m, i) => (
               <div key={i} className={`aria-msg ${m.who}`}>
                 {m.text}
-                {m.src && <span className="src">↳ source: {m.src}</span>}
+                {m.src && <span className="src">source: {m.src}</span>}
               </div>
             ))}
             {typing && (
@@ -475,7 +485,7 @@ export function AriaOverlay({ onClose }) {
             >
               <input
                 ref={inputRef}
-                placeholder="Ask anything about Viren…"
+                placeholder="Ask anything about Viren..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={typing}

@@ -12,7 +12,7 @@ export function assetUrl(p) {
   return BASE.replace(/\/+$/, '/') + clean
 }
 
-// Best-effort YouTube thumbnail (Vite/GH Pages don't proxy this — direct CDN).
+// Best-effort YouTube thumbnail (Vite/GH Pages don't proxy this: direct CDN).
 export function youtubeThumb(id) {
   if (!id) return ''
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`

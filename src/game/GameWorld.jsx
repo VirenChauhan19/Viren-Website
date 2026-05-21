@@ -52,6 +52,7 @@ import { profile, projects } from '../data/content.js'
 const PLAYER_SPEED = 5.5 // tiles per second
 const PLAYER_HALF = 0.18 // collision half-extent in tile units
 const CAMERA_LERP = 0.14
+const SCAN_RADIUS_TILES = 7.5
 const PROJECT_QUEST_IDS = projects.map((p) => `project:${p.slug}`)
 const SHARD_STORAGE_KEY = 'viren_exe_data_shards_v1'
 const DATA_SHARDS = [
@@ -64,7 +65,7 @@ const DATA_SHARDS = [
 const WORLD_TICKER = [
   'MIDNIGHT BUILD: neon storm rolling over the AI labs.',
   'ARCADE DOCKS: cabinets warming up, input latency nominal.',
-  'ARIA: recruiter-question model is listening offline.',
+  "VIREN'S ASSISTANT: recruiter questions ready offline.",
   'SIMULATION DECK: project beacons synced to quest log.',
   'RECRUIT SIGNAL: final terminal waiting for a serious player.',
 ]
@@ -141,7 +142,7 @@ const BOOT_LINES = [
   { text: 'Detecting recruiter…', cls: 'ok', delay: 220 },
   { text: 'Loading isometric world [32 × 22 tiles]', cls: 'ok', delay: 200 },
   { text: 'Mounting 11 quest stations', cls: 'ok', delay: 180 },
-  { text: 'Booting ARIA · retrieval-engine v0.4', cls: 'ok', delay: 200 },
+  { text: "Booting Viren's Assistant · retrieval-engine v0.4", cls: 'ok', delay: 200 },
   { text: 'Loading quest log…', cls: 'ok', delay: 180 },
   { text: 'Calibrating sun beam + cloud layer', cls: 'ok', delay: 180 },
   { text: 'Spawning ambient drone', cls: 'ok', delay: 160 },
@@ -190,34 +191,100 @@ function BootScreen({ onDone }) {
 
 // ──────────────────── Intro card ────────────────────
 
-function IntroScreen({ onStart }) {
+function AnimatedWords({ text, className = '', baseDelay = 0, step = 72, as: Tag = 'p' }) {
+  const words = text.split(' ')
   return (
-    <div className="intro" onClick={onStart}>
-      <div className="intro-card" onClick={(e) => e.stopPropagation()}>
-        <div className="intro-tag"><span className="pulse" /> Isometric playable portfolio · v0.7</div>
-        <h1 className="intro-title">
-          Midnight build: <em>recruit {profile.name}</em>
-        </h1>
-        <p className="intro-sub">
-          Step into Viren's neon studio after hours. {QUESTS.length} quest stations are live,
-          the arcade floor is awake, and every reviewed project pushes you toward the final recruit signal.
-        </p>
+    <Tag className={`intro-words ${className}`}>
+      {words.map((word, i) => (
+        <span
+          key={`${word}-${i}`}
+          className="intro-word"
+          style={{ animationDelay: `${baseDelay + i * step}ms` }}
+        >
+          {word}{i < words.length - 1 ? ' ' : ''}
+        </span>
+      ))}
+    </Tag>
+  )
+}
+
+function IntroScreen({ onStart }) {
+  const pages = [
+    {
+      tag: 'WELCOME TO VIREN.exe',
+      name: "Viren's Assistant",
+      text: "Hey, player. I'm Viren's Assistant. You just loaded into Viren's playable portfolio, so I'm giving you the quick field briefing before I hand you the controls.",
+      objective: 'Objective: explore the studio and discover why Viren is worth recruiting.',
+    },
+    {
+      tag: 'HOW TO PLAY',
+      name: "Viren's Assistant",
+      text: 'Walk up to glowing quest stations and press E. Each station opens a project, skill, timeline, or contact mission. Completed stations add XP and push you toward the final recruitment terminal.',
+      objective: 'Tip: press Q to scan. Only nearby quest signals will flare up.',
+    },
+    {
+      tag: 'READY CHECK',
+      name: "Viren's Assistant",
+      text: "This is not a normal portfolio page. Treat it like a tiny RPG hub: move, inspect, ask questions, and follow the brightest clues.",
+      objective: 'Quest line unlocked: Meet the Operator.',
+    },
+  ]
+  const [pageIdx, setPageIdx] = useState(0)
+  const page = pages[pageIdx]
+  const isLast = pageIdx === pages.length - 1
+  const next = () => {
+    if (isLast) onStart()
+    else setPageIdx((i) => i + 1)
+  }
+
+  return (
+    <div className="intro" onClick={next}>
+      <div className="intro-card" key={pageIdx} onClick={(e) => e.stopPropagation()}>
+        <div className="intro-scene" aria-hidden>
+          <div className="intro-map">
+            <span className="node home" />
+            <span className="node ai" />
+            <span className="node game" />
+            <span className="node final" />
+          </div>
+          <div className="intro-avatar">
+            <span className="eye" />
+            <span className="eye" />
+          </div>
+        </div>
+
+        <div className="intro-tag"><span className="pulse" /> <span>{page.tag}</span></div>
+        <div className="intro-dialogue">
+          <div className="speaker">{page.name}</div>
+          <AnimatedWords text={page.text} baseDelay={720} step={78} />
+          <AnimatedWords
+            text={page.objective}
+            className="intro-objective"
+            baseDelay={720 + page.text.split(' ').length * 78 + 180}
+            step={62}
+            as="div"
+          />
+        </div>
 
         <div className="intro-controls">
           <div className="row">
             <div className="keys"><span className="kk">W</span><span className="kk">A</span><span className="kk">S</span><span className="kk">D</span></div>
-            <span className="lab">move (iso-relative)</span>
+            <span className="lab">move</span>
           </div>
           <div className="row">
             <div className="keys"><span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span></div>
             <span className="lab">also works</span>
           </div>
           <div className="row"><span className="kk">E</span><span className="lab">interact / open quest</span></div>
-          <div className="row"><span className="kk">Esc</span><span className="lab">close panel</span></div>
+          <div className="row"><span className="kk">Q</span><span className="lab">scan nearby quests</span></div>
         </div>
 
-        <button className="intro-start" onClick={onStart}>
-          Begin quest line
+        <div className="intro-pips">
+          {pages.map((_, i) => <span key={i} className={i === pageIdx ? 'active' : ''} />)}
+        </div>
+
+        <button className="intro-start" onClick={next}>
+          {isLast ? 'Enter the studio' : 'Continue briefing'}
           <span className="arrow">→</span>
         </button>
       </div>
@@ -422,6 +489,13 @@ export default function GameWorld() {
     }, item.duration || 4200)
   }, [])
 
+  const resetMovementInput = useCallback(() => {
+    keysRef.current = {}
+    joyRef.current.x = 0
+    joyRef.current.y = 0
+    playerRef.current.moving = false
+  }, [])
+
   const startPlay = useCallback(() => {
     setPhase('play')
     pushObjective({
@@ -439,10 +513,14 @@ export default function GameWorld() {
       kind: 'new',
       kicker: 'SCAN PULSE',
       title: 'Quest signals revealed',
-      detail: 'Look for bright stations and floating data shards.',
-      duration: 2600,
+      detail: 'Quest buildings are overcharged. Follow the brightest markers.',
+      duration: 3200,
     })
   }, [pushObjective])
+
+  useEffect(() => {
+    if (phase !== 'play' || overlay || pendingCompletion) resetMovementInput()
+  }, [phase, overlay, pendingCompletion, resetMovementInput])
 
   useEffect(() => {
     if (phase !== 'play') return undefined
@@ -454,11 +532,15 @@ export default function GameWorld() {
 
   // ──── Keyboard input ────
   useEffect(() => {
+    const resetOnHidden = () => {
+      if (document.hidden) resetMovementInput()
+    }
     const down = (e) => {
       const k = e.key.toLowerCase()
       if (k === 'escape') {
         if (overlay) setOverlay(null)
         if (pendingCompletion) setPendingCompletion(null)
+        resetMovementInput()
         return
       }
       const tag = (e.target && e.target.tagName) || ''
@@ -477,18 +559,20 @@ export default function GameWorld() {
       }
     }
     const up = (e) => {
-      const tag = (e.target && e.target.tagName) || ''
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return
       const k = e.key.toLowerCase()
       keysRef.current[k] = false
     }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('blur', resetMovementInput)
+    document.addEventListener('visibilitychange', resetOnHidden)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', resetMovementInput)
+      document.removeEventListener('visibilitychange', resetOnHidden)
     }
-  }, [phase, overlay, pendingCompletion, triggerScan])
+  }, [phase, overlay, pendingCompletion, triggerScan, resetMovementInput])
 
   // ──── Resize handling ────
   useEffect(() => {
@@ -686,7 +770,7 @@ export default function GameWorld() {
           setNearbyMeta(near || null)
         }
 
-        // Drone NPC patrol — simple oscillation between two waypoints.
+        // Drone NPC patrol: simple oscillation between two waypoints.
         dronePosRef.current.phase += dt * 0.6
         const phaseT = (Math.sin(dronePosRef.current.phase) + 1) / 2
         dronePosRef.current.col = 5 + phaseT * 22
@@ -788,7 +872,14 @@ export default function GameWorld() {
         } else if (it.kind === 'station') {
           const isNear = interactRef.current && interactRef.current.key === it.station.key
           const isHovered = hoveredStationKey === it.station.key
-          drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSet.has(it.station.key))
+          const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
+          const scanActive = scanAge >= 0 && scanAge < 1800
+          const stationDist = Math.hypot(
+            playerRef.current.col - (it.station.col + 1),
+            playerRef.current.row - (it.station.row + 1),
+          )
+          const scanBoost = scanActive && stationDist <= SCAN_RADIUS_TILES
+          drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSet.has(it.station.key), scanBoost)
         } else if (it.kind === 'player') {
           const playerIsoP = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
           drawPlayer(
@@ -819,7 +910,8 @@ export default function GameWorld() {
       }
 
       const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
-      if (scanAge >= 0 && scanAge < 1200) {
+      const scanBoost = scanAge >= 0 && scanAge < 1800
+      if (scanAge >= 0 && scanAge < 1500) {
         drawScanPulse(ctx, playerRef.current, camX, camY, scanAge)
       }
 
@@ -831,7 +923,11 @@ export default function GameWorld() {
           const isNear = interactRef.current && interactRef.current.key === s.key
           const isHovered = hoveredStationKey === s.key
           if (isNear || isHovered) continue // floating label already covers info
-          drawQuestMarker(ctx, s, camX, camY, t, isCompleted)
+          const stationDist = Math.hypot(
+            playerRef.current.col - (s.col + 1),
+            playerRef.current.row - (s.row + 1),
+          )
+          drawQuestMarker(ctx, s, camX, camY, t, isCompleted, scanBoost && stationDist <= SCAN_RADIUS_TILES)
         }
       }
 
@@ -863,6 +959,7 @@ export default function GameWorld() {
 
   const finalMissionUnlocked = PROJECT_QUEST_IDS.every((id) => completedSet.has(id))
   const xpTotal = QUESTS.filter((q) => completedSet.has(q.id)).length * 100 + collectedShards.size * 15
+  const nextQuest = QUESTS.find((q) => !completedSet.has(q.id))
 
   return (
     <div className="stage">
@@ -914,11 +1011,11 @@ export default function GameWorld() {
                 <span><span className="k">W</span><span className="k">A</span><span className="k">S</span><span className="k">D</span> walk</span>
                 <span><span className="k">E</span> interact</span>
                 <span><span className="k">Q</span> scan</span>
-                <span style={{ color: 'var(--ink-ghost)' }}>· follow the glowing markers</span>
+                <span className="route-chip"><span className="route-dot" /> next: {nextQuest?.title || 'Recruit Viren'}</span>
               </div>
             )}
             <button className="hud-btn" style={{ pointerEvents: 'auto' }} onClick={() => setOverlay('aria')}>
-              ⌬ Talk to ARIA
+              ⌬ Viren's Assistant
             </button>
           </div>
         </div>
