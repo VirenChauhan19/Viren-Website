@@ -218,7 +218,8 @@ a:hover { text-decoration: underline; }
   top: 16px;
   left: 16px;
   right: 16px;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(320px, 560px) auto;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
@@ -273,6 +274,7 @@ a:hover { text-decoration: underline; }
   border-radius: 10px;
   backdrop-filter: blur(10px);
   box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+  justify-self: center;
 }
 .vibe-chip {
   min-width: 104px;
@@ -1147,6 +1149,14 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   box-shadow: var(--shadow);
   transition: transform 240ms ease, opacity 240ms ease;
+}
+.quest-tracker::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(94, 232, 255, 0.055), transparent 42%);
 }
 .quest-tracker.collapsed {
   transform: translateX(calc(-100% + 28px));
@@ -2202,61 +2212,241 @@ a:hover { text-decoration: underline; }
 /* ───────────── Responsive ───────────── */
 
 @media (max-width: 720px) {
-  .hud-brand .sub { display: none; }
-  .hud-top { align-items: flex-start; }
-  .fun-hud {
-    position: absolute;
-    top: 56px;
-    left: 0;
-    right: 0;
-    max-width: none;
-    grid-template-columns: auto auto auto;
+  html,
+  body,
+  #root {
+    overflow: hidden;
   }
-  .vibe-chip { grid-column: 1 / -1; }
-  .world-ticker { grid-column: 1 / -1; }
-  .minimap { width: 124px; height: 86px; padding: 8px; }
+  .hud {
+    font-size: 11px;
+  }
+  .hud-top {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: start;
+  }
+  .hud-brand {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+  .hud-brand .name {
+    font-size: 12px;
+  }
+  .hud-brand .sub { display: none; }
+  .fun-hud {
+    grid-column: 1 / -1;
+    position: static;
+    max-width: none;
+    width: 100%;
+    grid-template-columns: 1fr 74px 74px auto;
+    gap: 6px;
+    padding: 7px;
+  }
+  .vibe-chip {
+    min-width: 0;
+    padding: 6px 8px;
+  }
+  .vibe-chip strong {
+    font-size: 11px;
+  }
+  .fun-stat {
+    min-width: 0;
+    padding: 6px 7px;
+  }
+  .scan-btn {
+    height: 34px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+  .scan-btn span {
+    width: 18px;
+    height: 18px;
+  }
+  .world-ticker {
+    grid-column: 1 / -1;
+    white-space: normal;
+    line-height: 1.3;
+    max-height: 28px;
+  }
+  .minimap { display: none; }
   .hud-controls { gap: 6px; }
   .hud-controls-hint { display: none; }
-  .overlay-panel { padding: 22px 20px 20px; }
-  .overlay-panel.mission-panel { padding: 0; max-width: calc(100vw - 20px); }
-  .mission-screen { padding: 16px; }
-  .mission-topbar { flex-direction: column; gap: 4px; }
-  .mission-hero { grid-template-columns: 1fr; padding: 16px; }
-  .mission-title { font-size: 24px; margin-right: 28px; }
-  .mission-rank { min-height: 70px; border-left: 0; border-top: 1px solid var(--line); }
+  .hud-bottom {
+    left: 10px;
+    right: 10px;
+    bottom: 12px;
+    align-items: flex-end;
+  }
+  .hud-prompt {
+    max-width: calc(100vw - 116px);
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+  .hud-prompt .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 145px;
+  }
+  .hud-btn {
+    padding: 9px 10px;
+    font-size: 0;
+    min-width: 42px;
+    justify-content: center;
+  }
+  .hud-btn::after {
+    content: 'ARIA';
+    font-size: 10px;
+  }
+  .overlay {
+    padding: 10px;
+    align-items: stretch;
+  }
+  .overlay-panel {
+    max-height: calc(100dvh - 20px);
+    padding: 20px 16px 18px;
+    border-radius: 12px;
+  }
+  .overlay-close {
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+  }
+  .overlay-panel.mission-panel {
+    padding: 0;
+    max-width: calc(100vw - 20px);
+    width: 100%;
+  }
+  .mission-screen { padding: 14px; }
+  .mission-topbar {
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 44px;
+    font-size: 9px;
+  }
+  .mission-hero {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 12px;
+  }
+  .mission-title {
+    font-size: 23px;
+    margin-right: 0;
+    line-height: 1.08;
+  }
+  .mission-objective {
+    font-size: 13px;
+  }
+  .mission-rank {
+    min-height: 54px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .mission-rank strong {
+    font-size: 30px;
+  }
   .mission-meta-grid,
   .mission-columns,
   .qc-reward-grid { grid-template-columns: 1fr; }
+  .mission-meta-grid {
+    gap: 7px;
+  }
+  .mission-meta-grid div {
+    padding: 9px 10px;
+  }
+  .mission-section {
+    padding: 13px;
+  }
+  .overlay-summary,
+  .overlay-body p {
+    font-size: 13.5px;
+  }
   .mission-media-grid { grid-template-columns: 1fr; }
   .overlay-title { font-size: 22px; }
   .about-grid { grid-template-columns: 1fr; }
   .about-photo { width: 100%; height: 200px; }
-  .intro-card { padding: 28px 24px 22px; }
+  .intro {
+    padding: 12px;
+  }
+  .intro-card {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    padding: 24px 20px 20px;
+    border-radius: 14px;
+  }
   .intro-title { font-size: 24px; }
   .intro-controls { grid-template-columns: 1fr; gap: 8px; }
   .quest-tracker {
-    left: 12px;
-    right: 12px;
-    bottom: 82px;
-    top: auto;
+    left: 10px;
+    right: 10px;
+    top: 142px;
+    bottom: auto;
     width: auto;
-    max-height: min(44vh, 360px);
+    max-height: min(42dvh, 330px);
+    padding: 12px 12px 10px;
+    border-radius: 10px;
+    z-index: 11;
   }
-  .quest-tracker.collapsed { transform: translateY(calc(100% - 32px)); }
+  .quest-tracker.collapsed {
+    transform: translateY(calc(-100% + 34px));
+  }
   .qt-toggle {
-    top: -28px;
+    top: auto;
+    bottom: -28px;
     right: 14px;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0 0 8px 8px;
     border-left: 1px solid var(--line-strong);
-    border-bottom: 0;
+    border-top: 0;
+  }
+  .qt-list {
+    max-height: 190px;
+  }
+  .qt-item {
+    padding: 7px 6px;
+  }
+  .qt-q-title {
+    font-size: 11px;
+  }
+  .qt-q-obj {
+    font-size: 9.5px;
+  }
+  .touch-joy {
+    width: 94px;
+    height: 94px;
+    left: 14px;
+    bottom: 70px;
+  }
+  .touch-joy .stick {
+    width: 42px;
+    height: 42px;
+  }
+  .touch-interact {
+    width: 58px;
+    height: 58px;
+    right: 16px;
+    bottom: 74px;
+    font-size: 12px;
   }
   .objective-feed {
-    top: 92px;
-    left: 12px;
-    right: 12px;
+    top: 118px;
+    left: 10px;
+    right: 10px;
     width: auto;
   }
-  .qc-banner { padding: 24px 28px; }
+  .objective-toast {
+    padding: 10px 12px;
+  }
+  .qc-banner {
+    width: calc(100vw - 28px);
+    padding: 24px 18px;
+    border-radius: 12px;
+  }
   .qc-headline { font-size: 17px; }
 }
 
