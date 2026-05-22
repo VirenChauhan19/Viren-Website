@@ -48,6 +48,9 @@ import { SkillTreeOverlay } from './SkillTree.jsx'
 import { QuestTracker, QuestCompleted } from './QuestSystem.jsx'
 import { QUESTS, QUEST_BY_ID, loadCompletedQuests, saveCompletedQuests } from '../data/quests.js'
 import { profile, projects } from '../data/content.js'
+import { startAudio, sfx, getSettings, updateSettings, loadSettings } from './audio.js'
+
+const QUALITY_DPR = { low: 1.25, medium: 1.6, high: 2 }
 
 const PLAYER_SPEED = 5.5 // tiles per second
 const PLAYER_HALF = 0.18 // collision half-extent in tile units
@@ -72,6 +75,29 @@ const WORLD_TICKER = [
   'Project stations are grouped by applied AI, creative tech, and game development.',
   'Use Contact Viren when you are ready to move from review to conversation.',
 ]
+
+// ── Progression: XP → ranks. Reviewing a station = +100, a data shard = +15. ──
+const XP_PER_STATION = 100
+const XP_PER_SHARD = 15
+const RANKS = [
+  { title: 'Visitor', at: 0 },
+  { title: 'Recruiter', at: 100 },
+  { title: 'Scout', at: 250 },
+  { title: 'Analyst', at: 450 },
+  { title: 'Advocate', at: 700 },
+  { title: 'Hire-Ready', at: 1000 },
+]
+
+function rankFor(xp) {
+  let idx = 0
+  for (let i = 0; i < RANKS.length; i++) if (xp >= RANKS[i].at) idx = i
+  const cur = RANKS[idx]
+  const next = RANKS[idx + 1] || null
+  const base = cur.at
+  const span = next ? next.at - base : 1
+  const progress = next ? Math.min(1, (xp - base) / span) : 1
+  return { level: idx + 1, title: cur.title, progress, next, xp }
+}
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
 
@@ -121,23 +147,29 @@ function ObjectiveFeed({ items }) {
 }
 
 function FunHud({ xp, shards, totalShards, ticker, onScan }) {
+  const rank = rankFor(xp)
   return (
     <div className="fun-hud">
-      <div className="vibe-chip">
-        <span>Mode</span>
-        <strong>Guided Tour</strong>
+      <div className="xp-block">
+        <div className="xp-top">
+          <span className="xp-lvl">LVL {rank.level}</span>
+          <span className="xp-title">{rank.title}</span>
+          <span className="xp-num">{xp} XP</span>
+        </div>
+        <div className="xp-bar">
+          <div className="xp-fill" style={{ width: `${rank.progress * 100}%` }} />
+        </div>
+        <div className="xp-next">
+          {rank.next ? `${rank.next.at - xp} XP to ${rank.next.title}` : 'Max rank · Hire-Ready'}
+        </div>
       </div>
       <div className="fun-stat">
-        <span>Progress</span>
-        <strong>{xp}</strong>
-      </div>
-      <div className="fun-stat">
-        <span>Notes</span>
+        <span>Intel</span>
         <strong>{shards}/{totalShards}</strong>
       </div>
       <button className="scan-btn" onClick={onScan}>
         <span>Q</span>
-        Guide
+        Scan
       </button>
       <div className="world-ticker">{ticker}</div>
     </div>
@@ -149,55 +181,401 @@ function isTouchDevice() {
   return 'ontouchstart' in window || (navigator && (navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0))
 }
 
-// ──────────────────── Boot sequence ────────────────────
+// ──────────────────── Loading screen ────────────────────
 
-const BOOT_LINES = [
-  { text: 'VIREN.exe BIOS v0.7.0  ·  © Viren Chauhan', cls: '' },
-  { text: 'Detecting recruiter…', cls: 'ok', delay: 220 },
-  { text: 'Loading isometric world [32 × 22 tiles]', cls: 'ok', delay: 200 },
-  { text: 'Mounting 11 portfolio stations', cls: 'ok', delay: 180 },
-  { text: "Booting Viren's Assistant · retrieval-engine v0.4", cls: 'ok', delay: 200 },
-  { text: 'Loading guided path...', cls: 'ok', delay: 180 },
-  { text: 'Calibrating sun beam + cloud layer', cls: 'ok', delay: 180 },
-  { text: 'Spawning ambient drone', cls: 'ok', delay: 160 },
-  { text: 'Ready.', cls: '', delay: 240 },
+const LOADING_STEPS = [
+  'Initializing engine',
+  'Loading isometric world',
+  'Mounting portfolio stations',
+  "Booting Viren's Assistant",
+  'Calibrating lighting & atmosphere',
+  'Entering the studio',
 ]
 
-function BootScreen({ onDone }) {
-  const [shown, setShown] = useState(0)
-  const [fading, setFading] = useState(false)
-  const skippedRef = useRef(false)
+function LoadingScreen({ onDone }) {
+  const [pct, setPct] = useState(0)
+  const [step, setStep] = useState(0)
+  const [out, setOut] = useState(false)
+  const doneRef = useRef(false)
 
   useEffect(() => {
-    if (skippedRef.current) return
-    if (shown >= BOOT_LINES.length) {
-      const t1 = setTimeout(() => setFading(true), 480)
-      const t2 = setTimeout(() => onDone(), 480 + 380)
-      return () => { clearTimeout(t1); clearTimeout(t2) }
+    let raf = 0
+    let start = 0
+    const dur = 2600
+    const tick = (t) => {
+      if (!start) start = t
+      const e = Math.min(1, (t - start) / dur)
+      const eased = 1 - Math.pow(1 - e, 2.2)
+      setPct(Math.round(eased * 100))
+      setStep(Math.min(LOADING_STEPS.length - 1, Math.floor(e * LOADING_STEPS.length)))
+      if (e < 1) {
+        raf = requestAnimationFrame(tick)
+      } else if (!doneRef.current) {
+        doneRef.current = true
+        setOut(true)
+        setTimeout(onDone, 520)
+      }
     }
-    const d = BOOT_LINES[shown].delay ?? 180
-    const t = setTimeout(() => setShown((s) => s + 1), d)
-    return () => clearTimeout(t)
-  }, [shown, onDone])
-
-  const skip = () => {
-    skippedRef.current = true
-    setFading(true)
-    setTimeout(() => onDone(), 200)
-  }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [onDone])
 
   return (
-    <div className={`boot ${fading ? 'boot-fade-out' : ''}`} onClick={skip} role="button" tabIndex={-1}>
-      <div className="boot-inner">
-        <div className="boot-title">VIREN.exe</div>
-        {BOOT_LINES.slice(0, shown).map((l, i) => (
-          <div key={i} className={`boot-line ${l.cls}`}>{`> ${l.text}`}</div>
-        ))}
-        {shown >= BOOT_LINES.length && (
-          <div className="boot-line" style={{ marginTop: 12 }}>
-            Press anywhere to enter the world<span className="boot-cursor" />
+    <div className={`loading-screen ${out ? 'loading-out' : ''}`}>
+      <div className="ls-vignette" />
+      <div className="ls-inner">
+        <div className="ls-logo">VIREN<span>.exe</span></div>
+        <div className="ls-tag">PLAYABLE PORTFOLIO</div>
+        <div className="ls-bar"><div className="ls-fill" style={{ width: `${pct}%` }} /></div>
+        <div className="ls-row">
+          <span className="ls-step">{LOADING_STEPS[step]}…</span>
+          <span className="ls-pct">{String(pct).padStart(3, '0')}%</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────── Press start gate ────────────────────
+
+function PressStartScreen({ onStart }) {
+  useEffect(() => {
+    const go = () => onStart()
+    window.addEventListener('keydown', go)
+    window.addEventListener('pointerdown', go)
+    return () => {
+      window.removeEventListener('keydown', go)
+      window.removeEventListener('pointerdown', go)
+    }
+  }, [onStart])
+
+  return (
+    <div className="press-start">
+      <div className="ps-scrim" />
+      <div className="ps-vignette" />
+      <div className="ps-inner">
+        <div className="ps-kicker">PLAYABLE PORTFOLIO</div>
+        <h1 className="ps-logo">VIREN<span>.exe</span></h1>
+        <div className="ps-tag">{profile.title}</div>
+        <div className="ps-prompt">PRESS ANY KEY</div>
+      </div>
+      <div className="ps-grain" />
+    </div>
+  )
+}
+
+// ──────────────────── Title / main menu (cinematic) ────────────────────
+
+function TitleScreen({ hasProgress, progressLabel, onPlay, onContinue, onJump, onSettings, onCredits }) {
+  const items = [
+    { id: 'play', label: hasProgress ? 'New Tour' : 'New Game', hint: 'Begin the guided studio tour', action: onPlay },
+    hasProgress && { id: 'continue', label: 'Continue', hint: progressLabel, action: onContinue },
+    { id: 'freeroam', label: 'Free Roam', hint: 'Skip the intro and explore', action: () => onJump(null) },
+    { id: 'settings', label: 'Settings', hint: 'Audio · motion · graphics', action: onSettings },
+    { id: 'credits', label: 'Credits', hint: 'Who built this', action: onCredits },
+  ].filter(Boolean)
+
+  const [sel, setSel] = useState(0)
+  const rootRef = useRef(null)
+  const pointerRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 })
+  const rafRef = useRef(0)
+
+  // Very subtle cinematic parallax on the content block.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const onPointer = (e) => {
+      pointerRef.current.tx = (e.clientX / window.innerWidth - 0.5) * 2
+      pointerRef.current.ty = (e.clientY / window.innerHeight - 0.5) * 2
+    }
+    const loop = () => {
+      const motion = getSettings().motion
+      const p = pointerRef.current
+      const tx = motion ? p.tx : 0
+      const ty = motion ? p.ty : 0
+      p.x += (tx - p.x) * 0.06
+      p.y += (ty - p.y) * 0.06
+      root.style.setProperty('--mx', p.x.toFixed(4))
+      root.style.setProperty('--my', p.y.toFixed(4))
+      rafRef.current = requestAnimationFrame(loop)
+    }
+    window.addEventListener('pointermove', onPointer)
+    rafRef.current = requestAnimationFrame(loop)
+    return () => {
+      window.removeEventListener('pointermove', onPointer)
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  const activate = (item) => {
+    sfx.select()
+    item.action()
+  }
+
+  useEffect(() => {
+    const onKey = (e) => {
+      const k = e.key.toLowerCase()
+      if (k === 'arrowdown' || k === 's') {
+        e.preventDefault()
+        setSel((i) => { const n = (i + 1) % items.length; sfx.move(); return n })
+      } else if (k === 'arrowup' || k === 'w') {
+        e.preventDefault()
+        setSel((i) => { const n = (i - 1 + items.length) % items.length; sfx.move(); return n })
+      } else if (k === 'enter' || k === ' ') {
+        e.preventDefault()
+        if (items[sel]) activate(items[sel])
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [items, sel])
+
+  return (
+    <div className="cine-title" ref={rootRef}>
+      <div className="cine-bar top" />
+      <div className="cine-bar bottom" />
+      <div className="cine-scrim" />
+      <div className="cine-vignette" />
+      <div className="cine-grain" />
+
+      <div className="cine-content">
+        <div className="cine-kicker"><span className="pulse" /> PLAYABLE PORTFOLIO</div>
+        <h1 className="cine-logo">VIREN<span>.exe</span></h1>
+        <div className="cine-tagline">{profile.title}</div>
+
+        <nav className="cine-menu" aria-label="Main menu">
+          {items.map((it, i) => (
+            <button
+              key={it.id}
+              className={`cine-item ${i === sel ? 'active' : ''} ${it.id === 'continue' ? 'accent' : ''}`}
+              style={{ '--i': i }}
+              onMouseEnter={() => { if (i !== sel) { setSel(i); sfx.hover() } }}
+              onFocus={() => setSel(i)}
+              onClick={() => activate(it)}
+            >
+              <span className="ci-bar" />
+              <span className="ci-label">{it.label}</span>
+              <span className="ci-hint">{it.hint}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="cine-hint">
+          <span><span className="kk">↑</span><span className="kk">↓</span> Navigate</span>
+          <span><span className="kk">↵</span> Select</span>
+        </div>
+      </div>
+
+      <div className="cine-version">BUILD v0.7.0 · © {new Date().getFullYear()} VIREN CHAUHAN</div>
+    </div>
+  )
+}
+
+// ──────────────────── Settings + Credits ────────────────────
+
+function Toggle({ on, onChange }) {
+  return (
+    <button className={`cm-toggle ${on ? 'on' : ''}`} onClick={() => { sfx.tick(); onChange(!on) }} role="switch" aria-checked={on}>
+      <span className="cm-knob" />
+    </button>
+  )
+}
+
+function SettingsOverlay({ settings, onChange, onClose }) {
+  return (
+    <div className="cine-modal-wrap" onClick={onClose}>
+      <div className="cine-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="cm-head">
+          <h2>Settings</h2>
+          <button className="cm-back" onClick={onClose}>← Back</button>
+        </div>
+
+        <div className="cm-row">
+          <span className="cm-label">Master Volume</span>
+          <input
+            className="cm-range"
+            type="range" min="0" max="100"
+            value={Math.round(settings.master * 100)}
+            onChange={(e) => onChange({ master: Number(e.target.value) / 100 })}
+          />
+          <span className="cm-val">{Math.round(settings.master * 100)}</span>
+        </div>
+
+        <div className="cm-row">
+          <span className="cm-label">Music</span>
+          <Toggle on={settings.music} onChange={(v) => onChange({ music: v })} />
+        </div>
+
+        <div className="cm-row">
+          <span className="cm-label">Sound Effects</span>
+          <Toggle on={settings.sfx} onChange={(v) => { onChange({ sfx: v }); if (v) setTimeout(() => sfx.hover(), 30) }} />
+        </div>
+
+        <div className="cm-row">
+          <span className="cm-label">Reduce Motion</span>
+          <Toggle on={!settings.motion} onChange={(v) => onChange({ motion: !v })} />
+        </div>
+
+        <div className="cm-row">
+          <span className="cm-label">Graphics Quality</span>
+          <div className="cm-seg">
+            {['low', 'medium', 'high'].map((q) => (
+              <button
+                key={q}
+                className={settings.quality === q ? 'on' : ''}
+                onClick={() => { sfx.tick(); onChange({ quality: q }) }}
+              >
+                {q[0].toUpperCase() + q.slice(1)}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+
+        <p className="cm-note">Settings are saved to this browser.</p>
+      </div>
+    </div>
+  )
+}
+
+function CreditsOverlay({ onClose }) {
+  return (
+    <div className="cine-modal-wrap" onClick={onClose}>
+      <div className="cine-modal credits" onClick={(e) => e.stopPropagation()}>
+        <div className="cm-head">
+          <h2>Credits</h2>
+          <button className="cm-back" onClick={onClose}>← Back</button>
+        </div>
+        <div className="credits-body">
+          <div className="cr-block">
+            <span className="cr-role">Design · Code · Art</span>
+            <span className="cr-name">Viren Chauhan</span>
+          </div>
+          <div className="cr-block">
+            <span className="cr-role">Discipline</span>
+            <span className="cr-name">{profile.title}</span>
+          </div>
+          <div className="cr-block">
+            <span className="cr-role">Engine</span>
+            <span className="cr-name">Hand-built isometric canvas renderer · React · Web Audio</span>
+          </div>
+          <div className="cr-block">
+            <span className="cr-role">Music & SFX</span>
+            <span className="cr-name">Procedurally synthesized in-browser</span>
+          </div>
+          <div className="cr-thanks">Thanks for playing — now go hire him.</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────── Pause menu ────────────────────
+
+function PauseMenu({ active, onResume, onSettings, onCredits, onQuit }) {
+  const items = [
+    { id: 'resume', label: 'Resume', action: onResume },
+    { id: 'settings', label: 'Settings', action: onSettings },
+    { id: 'credits', label: 'Credits', action: onCredits },
+    { id: 'quit', label: 'Quit to Title', action: onQuit, accent: true },
+  ]
+  const [sel, setSel] = useState(0)
+
+  useEffect(() => {
+    if (!active) return undefined
+    const onKey = (e) => {
+      const k = e.key.toLowerCase()
+      if (k === 'arrowdown' || k === 's') {
+        e.preventDefault()
+        setSel((i) => { sfx.move(); return (i + 1) % items.length })
+      } else if (k === 'arrowup' || k === 'w') {
+        e.preventDefault()
+        setSel((i) => { sfx.move(); return (i - 1 + items.length) % items.length })
+      } else if (k === 'enter') {
+        e.preventDefault()
+        items[sel]?.action()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [active, items, sel])
+
+  return (
+    <div className="pause-menu">
+      <div className="pause-scrim" />
+      <div className="pause-panel">
+        <div className="pause-head">
+          <span className="pause-kicker"><span className="pulse" /> PAUSED</span>
+          <h2>VIREN<span>.exe</span></h2>
+        </div>
+        <nav className="pause-nav">
+          {items.map((it, i) => (
+            <button
+              key={it.id}
+              className={`pause-item ${i === sel ? 'active' : ''} ${it.accent ? 'accent' : ''}`}
+              onMouseEnter={() => { if (i !== sel) { setSel(i); sfx.hover() } }}
+              onClick={() => it.action()}
+            >
+              <span className="pi-bar" />
+              <span className="pi-label">{it.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="pause-hint">
+          <span><span className="kk">Esc</span> Resume</span>
+          <span><span className="kk">↑</span><span className="kk">↓</span> Navigate · <span className="kk">↵</span> Select</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────── Celebration UI ────────────────────
+
+function LevelUpBanner({ level, title }) {
+  return (
+    <div className="levelup-banner" aria-live="polite">
+      <div className="lu-ring" />
+      <div className="lu-inner">
+        <span className="lu-kicker">◆ RANK UP ◆</span>
+        <span className="lu-level">LEVEL {level}</span>
+        <span className="lu-title">{title}</span>
+      </div>
+    </div>
+  )
+}
+
+function FinalBanner() {
+  return (
+    <div className="final-banner" aria-live="polite">
+      <div className="fb-inner">
+        <span className="fb-kicker">ALL PROJECTS REVIEWED</span>
+        <span className="fb-title">FINAL MISSION UNLOCKED</span>
+        <span className="fb-sub">Reach the Contact station to complete the tour</span>
+      </div>
+    </div>
+  )
+}
+
+function VictoryScreen({ stats, onTitle, onContact }) {
+  return (
+    <div className="victory">
+      <div className="vic-rays" />
+      <div className="vic-grain" />
+      <div className="vic-card">
+        <span className="vic-kicker"><span className="pulse" /> MISSION COMPLETE</span>
+        <h1 className="vic-title">TOUR<span>COMPLETE</span></h1>
+        <p className="vic-flavor">You explored the entire studio and unlocked every mission. Here is your final report.</p>
+        <div className="vic-stats">
+          <div className="vs"><span>Final Rank</span><strong>{stats.title}</strong></div>
+          <div className="vs"><span>Level</span><strong>{stats.level}</strong></div>
+          <div className="vs"><span>Stations</span><strong>{stats.stations}/{stats.totalStations}</strong></div>
+          <div className="vs"><span>Intel Found</span><strong>{stats.shards}/{stats.totalShards}</strong></div>
+          <div className="vs wide"><span>Total XP</span><strong>{stats.xp}</strong></div>
+        </div>
+        <div className="vic-actions">
+          <button className="vic-btn primary" onClick={onContact}>Contact Viren →</button>
+          <button className="vic-btn" onClick={onTitle}>Return to Title</button>
+        </div>
       </div>
     </div>
   )
@@ -598,9 +976,18 @@ export default function GameWorld() {
   const rafRef = useRef(0)
   const lastTRef = useRef(performance.now())
   const dronePosRef = useRef({ col: 6, row: 11, phase: 0 })
+  // Juice: transient particles, floating text, and screen shake live here so
+  // the rAF loop can animate them without React re-renders.
+  const fxRef = useRef({ particles: [], texts: [], shake: 0, flash: 0 })
+  const levelRef = useRef(1)
 
-  const [phase, setPhase] = useState('boot')
+  const [phase, setPhase] = useState('loading')
   const [overlay, setOverlay] = useState(null)
+  const [menuOverlay, setMenuOverlay] = useState(null) // 'settings' | 'credits' | null
+  const [paused, setPaused] = useState(false)
+  const [settings, setSettings] = useState(() => loadSettings())
+  const dprCapRef = useRef(QUALITY_DPR[loadSettings().quality] || 2)
+  const closeOverlayRef = useRef(null)
   const [nearbyKey, setNearbyKey] = useState(null)
   const [nearbyMeta, setNearbyMeta] = useState(null)
   const [isTouch, setIsTouch] = useState(false)
@@ -613,20 +1000,54 @@ export default function GameWorld() {
   const collectedShardsRef = useRef(collectedShards)
   const [scanPulseAt, setScanPulseAt] = useState(0)
   const [tickerIndex, setTickerIndex] = useState(0)
+  const [levelUp, setLevelUp] = useState(null) // { level, title }
+  const [finalBanner, setFinalBanner] = useState(false)
+  const [victory, setVictory] = useState(false)
+
+  // Refs mirroring render-relevant state so the rAF loop can mount ONCE and
+  // never tear down. Reading these from state in the loop's dependency array
+  // would restart the loop on every hover/proximity change → frame hitches.
+  const phaseRef = useRef('loading')
+  const nearbyKeyRef = useRef(null)
+  const hoveredStationKeyRef = useRef(null)
+  const completedSetRef = useRef(completedSet)
+  const scanPulseAtRef = useRef(0)
 
   useEffect(() => {
     const touch = isTouchDevice()
     setIsTouch(touch)
     if (touch) setTrackerCollapsed(true)
+    // Baseline rank from any saved progress so resuming doesn't fire a level-up.
+    const stations = QUESTS.filter((q) => completedSet.has(q.id)).length
+    levelRef.current = rankFor(stations * XP_PER_STATION + collectedShards.size * XP_PER_SHARD).level
+  }, [])
+
+  useEffect(() => { collectedShardsRef.current = collectedShards }, [collectedShards])
+  useEffect(() => { phaseRef.current = phase }, [phase])
+  useEffect(() => { hoveredStationKeyRef.current = hoveredStationKey }, [hoveredStationKey])
+  useEffect(() => { completedSetRef.current = completedSet }, [completedSet])
+  useEffect(() => { scanPulseAtRef.current = scanPulseAt }, [scanPulseAt])
+
+  // Apply settings: graphics quality → DPR cap (re-trigger resize), reduce
+  // motion → body class that disables CSS animations.
+  useEffect(() => {
+    dprCapRef.current = QUALITY_DPR[settings.quality] || 2
+    window.dispatchEvent(new Event('resize'))
+    document.body.classList.toggle('reduce-motion', !settings.motion)
+  }, [settings.quality, settings.motion])
+
+  const changeSettings = useCallback((patch) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch }
+      updateSettings(next)
+      return next
+    })
   }, [])
 
   useEffect(() => {
-    collectedShardsRef.current = collectedShards
-  }, [collectedShards])
-
-  useEffect(() => {
-    pausedRef.current = phase !== 'play' || overlay !== null || pendingCompletion !== null
-  }, [phase, overlay, pendingCompletion])
+    pausedRef.current =
+      phase !== 'play' || overlay !== null || pendingCompletion !== null || paused || menuOverlay !== null
+  }, [phase, overlay, pendingCompletion, paused, menuOverlay])
 
   const pushObjective = useCallback((item) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -644,6 +1065,50 @@ export default function GameWorld() {
     playerRef.current.moving = false
   }, [])
 
+  // ──── Juice helpers (particles / floating text / shake) ────
+  const spawnBurst = useCallback((col, row, color, count = 16, power = 1) => {
+    const fx = fxRef.current
+    const c = isoTileCenter(col, row)
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2
+      const sp = (40 + Math.random() * 130) * power
+      fx.particles.push({
+        x: c.x, y: c.y - 14,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 70 * power,
+        life: 1, max: 0.7 + Math.random() * 0.5,
+        size: 2 + Math.random() * 2,
+        color,
+      })
+    }
+  }, [])
+
+  const spawnText = useCallback((col, row, text, color, big = false) => {
+    const c = isoTileCenter(col, row)
+    fxRef.current.texts.push({ x: c.x, y: c.y - 36, text, color, life: 1, big })
+  }, [])
+
+  const computeXp = useCallback(() => {
+    const stations = QUESTS.filter((q) => completedSetRef.current.has(q.id)).length
+    return stations * XP_PER_STATION + collectedShardsRef.current.size * XP_PER_SHARD
+  }, [])
+
+  // After any XP gain, check for a rank up and fire the celebration.
+  const checkProgress = useCallback(() => {
+    const xp = computeXp()
+    const rank = rankFor(xp)
+    if (rank.level > levelRef.current) {
+      levelRef.current = rank.level
+      setLevelUp({ level: rank.level, title: rank.title })
+      sfx.levelup()
+      fxRef.current.shake = 16
+      fxRef.current.flash = 1
+      spawnText(playerRef.current.col, playerRef.current.row, 'LEVEL UP', COLORS.gold, true)
+      spawnBurst(playerRef.current.col, playerRef.current.row, COLORS.gold, 30, 1.4)
+      setTimeout(() => setLevelUp(null), 2200)
+    }
+  }, [computeXp, spawnText, spawnBurst])
+
   const startPlay = useCallback(() => {
     setPhase('play')
     pushObjective({
@@ -654,8 +1119,23 @@ export default function GameWorld() {
     })
   }, [pushObjective])
 
+  // Enter the world directly from the title menu, optionally opening a station.
+  const enterWorld = useCallback((overlayId = null) => {
+    setPhase('play')
+    if (overlayId) setOverlay(overlayId)
+    else {
+      pushObjective({
+        kind: 'new',
+        kicker: 'EXPLORE',
+        title: 'You are in the studio',
+        detail: 'Walk to a glowing station and press E, or follow the path panel.',
+      })
+    }
+  }, [pushObjective])
+
   const triggerScan = useCallback(() => {
     const now = performance.now()
+    sfx.scan()
     setScanPulseAt(now)
     pushObjective({
       kind: 'new',
@@ -686,9 +1166,16 @@ export default function GameWorld() {
     const down = (e) => {
       const k = e.key.toLowerCase()
       if (k === 'escape') {
-        if (overlay) setOverlay(null)
-        if (pendingCompletion) setPendingCompletion(null)
-        resetMovementInput()
+        e.preventDefault()
+        if (menuOverlay) { sfx.back(); setMenuOverlay(null); return }
+        if (overlay) { closeOverlayRef.current?.(); return }
+        if (pendingCompletion) { sfx.back(); setPendingCompletion(null); return }
+        if (phase === 'play') {
+          const willPause = !paused
+          if (willPause) sfx.pause(); else sfx.resume()
+          setPaused(willPause)
+          resetMovementInput()
+        }
         return
       }
       const tag = (e.target && e.target.tagName) || ''
@@ -696,12 +1183,13 @@ export default function GameWorld() {
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'e', 'q', ' '].includes(k)) {
         e.preventDefault()
       }
+      const blocked = overlay || pendingCompletion || paused || menuOverlay
       keysRef.current[k] = true
-      if (k === 'q' && phase === 'play' && !overlay && !pendingCompletion) {
+      if (k === 'q' && phase === 'play' && !blocked) {
         triggerScan()
       }
       if (k === 'e' || k === ' ') {
-        if (phase === 'play' && !overlay && !pendingCompletion && interactRef.current) {
+        if (phase === 'play' && !blocked && interactRef.current) {
           openStation(interactRef.current)
         }
       }
@@ -720,14 +1208,17 @@ export default function GameWorld() {
       window.removeEventListener('blur', resetMovementInput)
       document.removeEventListener('visibilitychange', resetOnHidden)
     }
-  }, [phase, overlay, pendingCompletion, triggerScan, resetMovementInput])
+  }, [phase, overlay, pendingCompletion, paused, menuOverlay, triggerScan, resetMovementInput])
 
   // ──── Resize handling ────
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1
+      // Cap DPR: this is a fill-heavy renderer, and 3× phone displays would
+      // otherwise push ~9× the pixels for no visible gain. The cap is also the
+      // graphics-quality lever (low/medium/high) from Settings.
+      const dpr = Math.min(window.devicePixelRatio || 1, dprCapRef.current)
       const w = window.innerWidth
       const h = window.innerHeight
       canvas.width = Math.floor(w * dpr)
@@ -825,19 +1316,23 @@ export default function GameWorld() {
   }
 
   function openStation(s) {
+    sfx.open()
     setOverlay(s.key)
   }
 
   // ──── On overlay close, mark quest complete if applicable ────
   const handleCloseOverlay = useCallback(() => {
     const wasOverlay = overlay
+    sfx.close()
     setOverlay(null)
     if (wasOverlay && QUEST_BY_ID[wasOverlay] && !completedSet.has(wasOverlay)) {
       const next = new Set(completedSet)
       next.add(wasOverlay)
       setCompletedSet(next)
+      completedSetRef.current = next // keep ref in sync for immediate XP math
       saveCompletedQuests(next)
       const completedQuest = QUEST_BY_ID[wasOverlay]
+      const wasProjectsDoneBefore = PROJECT_QUEST_IDS.every((id) => completedSet.has(id))
       const allProjectsDone = PROJECT_QUEST_IDS.every((id) => next.has(id))
       const nextProjectId = PROJECT_QUEST_IDS.find((id) => !next.has(id))
       const nextProjectQuest = nextProjectId ? QUEST_BY_ID[nextProjectId] : null
@@ -852,10 +1347,52 @@ export default function GameWorld() {
             ? `Next suggested review: ${nextProjectQuest.title}`
             : 'Next step available in the guided path.',
       })
+
+      // Juice: reward burst + floating XP at the player.
+      spawnBurst(playerRef.current.col, playerRef.current.row, COLORS.green, 26, 1.2)
+      spawnText(playerRef.current.col, playerRef.current.row, `+${XP_PER_STATION} XP`, COLORS.green, true)
+      fxRef.current.shake = Math.max(fxRef.current.shake, 8)
+      checkProgress()
+
+      // Climax beats.
+      if (wasOverlay === 'contact' && allProjectsDone) {
+        fxRef.current.shake = 20
+        fxRef.current.flash = 1
+        spawnBurst(playerRef.current.col, playerRef.current.row, COLORS.gold, 44, 1.8)
+        sfx.victory()
+        setTimeout(() => setVictory(true), 360)
+        return
+      } else if (allProjectsDone && !wasProjectsDoneBefore) {
+        fxRef.current.shake = 14
+        fxRef.current.flash = 0.8
+        setFinalBanner(true)
+        setTimeout(() => setFinalBanner(false), 3200)
+        setTimeout(() => { sfx.complete(); setPendingCompletion(wasOverlay) }, 120)
+        return
+      }
+
       // Small delay so the close animation can play first
-      setTimeout(() => setPendingCompletion(wasOverlay), 120)
+      setTimeout(() => { sfx.complete(); setPendingCompletion(wasOverlay) }, 120)
     }
-  }, [overlay, completedSet, pushObjective])
+  }, [overlay, completedSet, pushObjective, checkProgress, spawnBurst, spawnText])
+
+  // Expose the latest close handler to imperative callers (Escape key).
+  useEffect(() => { closeOverlayRef.current = handleCloseOverlay }, [handleCloseOverlay])
+
+  const quitToTitle = useCallback(() => {
+    sfx.back()
+    setPaused(false)
+    setMenuOverlay(null)
+    setOverlay(null)
+    setPendingCompletion(null)
+    resetMovementInput()
+    setPhase('title')
+  }, [resetMovementInput])
+
+  const resumePlay = useCallback(() => {
+    sfx.resume()
+    setPaused(false)
+  }, [])
 
   // ──── Game loop ────
   useEffect(() => {
@@ -913,8 +1450,11 @@ export default function GameWorld() {
         // Nearby interactable
         const near = nearestInteractable(p.col, p.row, 2.0)
         interactRef.current = near
-        if ((near?.key || null) !== nearbyKey) {
-          setNearbyKey(near?.key || null)
+        const nk = near?.key || null
+        if (nk !== nearbyKeyRef.current) {
+          if (nk) sfx.proximity() // soft ping when entering a station's range
+          nearbyKeyRef.current = nk
+          setNearbyKey(nk)
           setNearbyMeta(near || null)
         }
 
@@ -933,13 +1473,18 @@ export default function GameWorld() {
             collectedShardsRef.current = next
             setCollectedShards(next)
             saveCollectedShards(next)
+            sfx.pickup()
+            spawnBurst(shard.col, shard.row, COLORS.cyan, 20, 1)
+            spawnText(shard.col, shard.row, `+${XP_PER_SHARD} XP`, COLORS.cyan)
+            fxRef.current.shake = Math.max(fxRef.current.shake, 5)
             pushObjective({
               kind: 'complete',
               kicker: 'DATA SHARD FOUND',
               title: shard.name,
-              detail: `+15 XP - ${next.size}/${DATA_SHARDS.length} world secrets recovered.`,
+              detail: `+${XP_PER_SHARD} XP - ${next.size}/${DATA_SHARDS.length} world secrets recovered.`,
               duration: 3000,
             })
+            checkProgress()
           }
         }
       }
@@ -947,11 +1492,25 @@ export default function GameWorld() {
       // Camera (always interpolating so it settles after overlay closes)
       const viewW = canvas.clientWidth
       const viewH = canvas.clientHeight
-      const playerIso = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
-      const targetX = playerIso.x + HALF_W - viewW / 2
-      const targetY = playerIso.y + HALF_H - viewH / 2
-      cameraRef.current.x += (targetX - cameraRef.current.x) * CAMERA_LERP
-      cameraRef.current.y += (targetY - cameraRef.current.y) * CAMERA_LERP
+      let targetX
+      let targetY
+      let camLerp = CAMERA_LERP
+      if (phaseRef.current !== 'play') {
+        // Cinematic menu camera: slow drifting pan/orbit across the studio so
+        // the world feels alive behind the title screen, like a AAA main menu.
+        const ct = now / 1000
+        const cx = WORLD_ISO_W * (0.5 + 0.2 * Math.sin(ct * 0.045))
+        const cy = WORLD_ISO_H * (0.46 + 0.14 * Math.cos(ct * 0.035))
+        targetX = cx - viewW / 2
+        targetY = cy - viewH / 2
+        camLerp = 0.02 // slower, smoother cinematic glide
+      } else {
+        const playerIso = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
+        targetX = playerIso.x + HALF_W - viewW / 2
+        targetY = playerIso.y + HALF_H - viewH / 2
+      }
+      cameraRef.current.x += (targetX - cameraRef.current.x) * camLerp
+      cameraRef.current.y += (targetY - cameraRef.current.y) * camLerp
 
       // Clamp camera so we don't pan past the world bounds (with margin).
       const margin = 80
@@ -965,8 +1524,19 @@ export default function GameWorld() {
       else cameraRef.current.y = (WORLD_ISO_H - viewH) / 2
 
       // ── Render
-      const camX = cameraRef.current.x
-      const camY = cameraRef.current.y
+      // Screen shake: decaying random offset added to the camera.
+      const fx = fxRef.current
+      let shakeX = 0
+      let shakeY = 0
+      if (fx.shake > 0.2) {
+        shakeX = (Math.random() - 0.5) * fx.shake
+        shakeY = (Math.random() - 0.5) * fx.shake
+        fx.shake *= Math.pow(0.0025, dt) // ~exponential decay, framerate independent
+      } else {
+        fx.shake = 0
+      }
+      const camX = cameraRef.current.x + shakeX
+      const camY = cameraRef.current.y + shakeY
       const t = now
 
       drawSky(ctx, viewW, viewH, t)
@@ -1019,14 +1589,14 @@ export default function GameWorld() {
           ctx.restore()
         } else if (it.kind === 'station') {
           const isNear = interactRef.current && interactRef.current.key === it.station.key
-          const isHovered = hoveredStationKey === it.station.key
-          const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
+          const isHovered = hoveredStationKeyRef.current === it.station.key
+          const scanAge = scanPulseAtRef.current ? t - scanPulseAtRef.current : Infinity
           const stationDist = Math.hypot(
             playerRef.current.col - (it.station.col + 1),
             playerRef.current.row - (it.station.row + 1),
           )
           const scanBoost = scanStationIntensity(scanAge, stationDist)
-          drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSet.has(it.station.key), scanBoost)
+          drawStation(ctx, it.station, camX, camY, t, isNear || isHovered, completedSetRef.current.has(it.station.key), scanBoost)
         } else if (it.kind === 'player') {
           const playerIsoP = isoProject(playerRef.current.col - 0.5, playerRef.current.row - 0.5)
           drawPlayer(
@@ -1051,23 +1621,23 @@ export default function GameWorld() {
       }
 
       for (const shard of DATA_SHARDS) {
-        if (!collectedShards.has(shard.id)) {
+        if (!collectedShardsRef.current.has(shard.id)) {
           drawDataShard(ctx, shard, camX, camY, t)
         }
       }
 
-      const scanAge = scanPulseAt ? t - scanPulseAt : Infinity
+      const scanAge = scanPulseAtRef.current ? t - scanPulseAtRef.current : Infinity
       if (scanAge >= 0 && scanAge < SCAN_TRAVEL_MS) {
         drawScanPulse(ctx, playerRef.current, camX, camY, scanAge)
       }
 
       // Quest markers (drawn on top, but skip when overlay is open or station is the active one)
-      if (phase === 'play') {
+      if (phaseRef.current === 'play') {
         for (const s of STATION_BLOCKS) {
           if (!QUEST_BY_ID[s.key]) continue
-          const isCompleted = completedSet.has(s.key)
+          const isCompleted = completedSetRef.current.has(s.key)
           const isNear = interactRef.current && interactRef.current.key === s.key
-          const isHovered = hoveredStationKey === s.key
+          const isHovered = hoveredStationKeyRef.current === s.key
           if (isNear || isHovered) continue // floating label already covers info
           const stationDist = Math.hypot(
             playerRef.current.col - (s.col + 1),
@@ -1077,14 +1647,70 @@ export default function GameWorld() {
         }
       }
 
+      // ── FX layer: particles + floating text (world-space, camera-offset) ──
+      if (fx.particles.length) {
+        ctx.save()
+        ctx.globalCompositeOperation = 'lighter'
+        for (let i = fx.particles.length - 1; i >= 0; i--) {
+          const p = fx.particles[i]
+          p.life -= dt / p.max
+          if (p.life <= 0) { fx.particles.splice(i, 1); continue }
+          p.vy += 220 * dt // gravity
+          p.vx *= 0.96
+          p.x += p.vx * dt
+          p.y += p.vy * dt
+          ctx.globalAlpha = Math.max(0, p.life)
+          ctx.fillStyle = p.color
+          const s = p.size * (0.4 + p.life * 0.6)
+          ctx.fillRect(p.x - camX - s / 2, p.y - camY - s / 2, s, s)
+        }
+        ctx.restore()
+      }
+      if (fx.texts.length) {
+        ctx.save()
+        ctx.textAlign = 'center'
+        for (let i = fx.texts.length - 1; i >= 0; i--) {
+          const tx = fx.texts[i]
+          tx.life -= dt / 1.1
+          if (tx.life <= 0) { fx.texts.splice(i, 1); continue }
+          tx.y -= 34 * dt
+          const a = Math.min(1, tx.life * 1.6)
+          const px = tx.x - camX
+          const py = tx.y - camY
+          ctx.globalAlpha = a
+          ctx.font = tx.big ? '800 22px ui-monospace, Menlo, Consolas, monospace' : '800 14px ui-monospace, Menlo, Consolas, monospace'
+          ctx.lineWidth = 3
+          ctx.strokeStyle = 'rgba(0,0,0,0.6)'
+          ctx.strokeText(tx.text, px, py)
+          ctx.fillStyle = tx.color
+          ctx.fillText(tx.text, px, py)
+        }
+        ctx.restore()
+      }
+
       drawAmbientDust(ctx, viewW, viewH, t)
       drawForegroundAtmosphere(ctx, viewW, viewH, t)
+
+      // Full-screen flash (level up / victory) — fades fast.
+      if (fx.flash > 0.01) {
+        ctx.save()
+        ctx.globalAlpha = fx.flash * 0.5
+        ctx.fillStyle = '#fff'
+        ctx.fillRect(0, 0, viewW, viewH)
+        ctx.restore()
+        fx.flash *= Math.pow(0.0005, dt)
+      } else {
+        fx.flash = 0
+      }
 
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [overlay, phase, nearbyKey, completedSet, pendingCompletion, hoveredStationKey, collectedShards, scanPulseAt, pushObjective])
+    // Loop mounts once. All render-relevant state is read through refs above,
+    // so the rAF loop is never torn down and rebuilt mid-session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const joyMove = useCallback((x, y) => { joyRef.current.x = x; joyRef.current.y = y }, [])
 
@@ -1139,15 +1765,15 @@ export default function GameWorld() {
             completedSet={completedSet}
             finalUnlocked={finalMissionUnlocked}
             collapsed={trackerCollapsed}
-            onToggleCollapsed={() => setTrackerCollapsed((v) => !v)}
-            onQuestClick={(id) => setOverlay(id)}
+            onToggleCollapsed={() => { sfx.tick(); setTrackerCollapsed((v) => !v) }}
+            onQuestClick={(id) => { sfx.open(); setOverlay(id) }}
           />
           {isTouch && (
             <MobileGuide
               completedSet={completedSet}
               nextQuest={nextQuest}
               finalUnlocked={finalMissionUnlocked}
-              onOpen={(id) => setOverlay(id)}
+              onOpen={(id) => { sfx.open(); setOverlay(id) }}
             />
           )}
           <ObjectiveFeed items={objectiveFeed} />
@@ -1168,7 +1794,7 @@ export default function GameWorld() {
                 <span className="route-chip"><span className="route-dot" /> next: {nextQuest?.title || 'Contact Viren'}</span>
               </div>
             )}
-            <button className="hud-btn" style={{ pointerEvents: 'auto' }} onClick={() => setOverlay('aria')}>
+            <button className="hud-btn" style={{ pointerEvents: 'auto' }} onClick={() => { sfx.open(); setOverlay('aria') }}>
               ⌬ Viren's Assistant
             </button>
           </div>
@@ -1188,11 +1814,61 @@ export default function GameWorld() {
         </>
       )}
 
-      {phase === 'boot' && <BootScreen onDone={() => setPhase('intro')} />}
+      {phase === 'loading' && <LoadingScreen onDone={() => setPhase('pressstart')} />}
+      {phase === 'pressstart' && (
+        <PressStartScreen onStart={() => { startAudio(); setPhase('title') }} />
+      )}
+      {phase === 'title' && (
+        <TitleScreen
+          hasProgress={completedSet.size > 0 || collectedShards.size > 0}
+          progressLabel={
+            completedSet.size > 0
+              ? `Resume · ${QUESTS.filter((q) => completedSet.has(q.id)).length}/${QUESTS.length} stations reviewed`
+              : 'Resume your visit'
+          }
+          onPlay={() => setPhase('intro')}
+          onContinue={() => enterWorld(null)}
+          onJump={(id) => enterWorld(id)}
+          onSettings={() => setMenuOverlay('settings')}
+          onCredits={() => setMenuOverlay('credits')}
+        />
+      )}
+      {phase === 'play' && paused && (
+        <PauseMenu
+          active={!menuOverlay}
+          onResume={resumePlay}
+          onSettings={() => { sfx.select(); setMenuOverlay('settings') }}
+          onCredits={() => { sfx.select(); setMenuOverlay('credits') }}
+          onQuit={quitToTitle}
+        />
+      )}
+      {menuOverlay === 'settings' && (
+        <SettingsOverlay settings={settings} onChange={changeSettings} onClose={() => { sfx.back(); setMenuOverlay(null) }} />
+      )}
+      {menuOverlay === 'credits' && (
+        <CreditsOverlay onClose={() => { sfx.back(); setMenuOverlay(null) }} />
+      )}
       {phase === 'intro' && <IntroScreen onStart={startPlay} />}
+      {phase === 'play' && finalBanner && <FinalBanner />}
+      {phase === 'play' && levelUp && <LevelUpBanner level={levelUp.level} title={levelUp.title} />}
       {renderOverlay()}
       {pendingCompletion && (
         <QuestCompleted questId={pendingCompletion} onDismiss={() => setPendingCompletion(null)} />
+      )}
+      {victory && (
+        <VictoryScreen
+          stats={{
+            title: rankFor(xpTotal).title,
+            level: rankFor(xpTotal).level,
+            stations: QUESTS.filter((q) => completedSet.has(q.id)).length,
+            totalStations: QUESTS.length,
+            shards: collectedShards.size,
+            totalShards: DATA_SHARDS.length,
+            xp: xpTotal,
+          }}
+          onTitle={() => { setVictory(false); quitToTitle() }}
+          onContact={() => { sfx.open(); setVictory(false); setOverlay('contact') }}
+        />
       )}
     </div>
   )
