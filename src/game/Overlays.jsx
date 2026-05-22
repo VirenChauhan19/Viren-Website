@@ -117,13 +117,13 @@ export function ProjectOverlay({ slug, onClose }) {
     <OverlayShell tint={tint} mode="mission-panel" onClose={onClose}>
       <div className={`mission-screen ${tint}`}>
         <div className="mission-topbar">
-          <span>MISSION SELECT</span>
+          <span>PROJECT REVIEW</span>
           <span>{p.type === 'ai' ? 'APPLIED AI' : 'GAME DEV'} / {p.year}</span>
         </div>
 
         <div className="mission-hero">
           <div>
-            <div className="mission-kicker">{quest?.title || 'Portfolio Quest'}</div>
+            <div className="mission-kicker">{quest?.title || 'Portfolio Review'}</div>
             <h2 className="overlay-title mission-title">{p.name}</h2>
             <p className="mission-objective">
               <span>Objective</span>
@@ -292,15 +292,15 @@ export function AboutOverlay({ onClose }) {
   )
 }
 
-// ───────────────────── Mission Log (was Trophy / Experience) ─────────────────────
+// ───────────────────── Experience timeline ─────────────────────
 
 export function TrophyOverlay({ onClose }) {
   return (
     <OverlayShell tint="info" onClose={onClose}>
       <div className="mission-log-head">
-        <div className="overlay-tag info">▌ MISSION LOG · CAREER</div>
-        <h2 className="overlay-title">Mission Log</h2>
-        <p className="overlay-role">Past deployments, leadership ops, and side quests.</p>
+        <div className="overlay-tag info">CAREER PATH</div>
+        <h2 className="overlay-title">Experience Timeline</h2>
+        <p className="overlay-role">Work, leadership, sport, film, and campus roles.</p>
       </div>
 
       <ul className="mission-list">

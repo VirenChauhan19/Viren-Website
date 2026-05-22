@@ -66,11 +66,11 @@ const DATA_SHARDS = [
   { id: 'recruit-signal', col: 24.7, row: 17.2, kind: 'career', name: 'Recruit Signal' },
 ]
 const WORLD_TICKER = [
-  'MIDNIGHT BUILD: neon storm rolling over the AI labs.',
-  'ARCADE DOCKS: cabinets warming up, input latency nominal.',
-  "VIREN'S ASSISTANT: recruiter questions ready offline.",
-  'SIMULATION DECK: project beacons synced to quest log.',
-  'RECRUIT SIGNAL: final terminal waiting for a serious player.',
+  'Start with Meet Viren, then follow the guided path.',
+  'Desktop gives the strongest walkthrough: keyboard movement, hover, and a wider map.',
+  "Viren's Assistant can answer questions about projects, experience, and skills.",
+  'Project stations are grouped by applied AI, creative tech, and game development.',
+  'Use Contact Viren when you are ready to move from review to conversation.',
 ]
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
@@ -124,20 +124,20 @@ function FunHud({ xp, shards, totalShards, ticker, onScan }) {
   return (
     <div className="fun-hud">
       <div className="vibe-chip">
-        <span>Vibe</span>
-        <strong>Neon Storm</strong>
+        <span>Mode</span>
+        <strong>Guided Tour</strong>
       </div>
       <div className="fun-stat">
-        <span>XP</span>
+        <span>Progress</span>
         <strong>{xp}</strong>
       </div>
       <div className="fun-stat">
-        <span>Data</span>
+        <span>Notes</span>
         <strong>{shards}/{totalShards}</strong>
       </div>
       <button className="scan-btn" onClick={onScan}>
         <span>Q</span>
-        Scan
+        Guide
       </button>
       <div className="world-ticker">{ticker}</div>
     </div>
@@ -155,9 +155,9 @@ const BOOT_LINES = [
   { text: 'VIREN.exe BIOS v0.7.0  ·  © Viren Chauhan', cls: '' },
   { text: 'Detecting recruiter…', cls: 'ok', delay: 220 },
   { text: 'Loading isometric world [32 × 22 tiles]', cls: 'ok', delay: 200 },
-  { text: 'Mounting 11 quest stations', cls: 'ok', delay: 180 },
+  { text: 'Mounting 11 portfolio stations', cls: 'ok', delay: 180 },
   { text: "Booting Viren's Assistant · retrieval-engine v0.4", cls: 'ok', delay: 200 },
-  { text: 'Loading quest log…', cls: 'ok', delay: 180 },
+  { text: 'Loading guided path...', cls: 'ok', delay: 180 },
   { text: 'Calibrating sun beam + cloud layer', cls: 'ok', delay: 180 },
   { text: 'Spawning ambient drone', cls: 'ok', delay: 160 },
   { text: 'Ready.', cls: '', delay: 240 },
@@ -280,20 +280,20 @@ function IntroScreen({ onStart }) {
     {
       tag: 'WELCOME TO VIREN.exe',
       name: "Viren's Assistant",
-      text: "Hey, player. I'm Viren's Assistant. You just loaded into Viren's playable portfolio, so I'm giving you the quick field briefing before I hand you the controls.",
-      objective: 'Objective: explore the studio and discover why Viren is worth recruiting.',
+      text: "I'm Viren's Assistant. This portfolio is an interactive studio tour: a guided way to review Viren's projects, skills, experience, and contact path.",
+      objective: 'Goal: follow the highlights without getting lost in the interface.',
     },
     {
-      tag: 'HOW TO PLAY',
+      tag: 'HOW TO NAVIGATE',
       name: "Viren's Assistant",
-      text: 'Walk up to glowing quest stations and press E. Each station opens a project, skill, timeline, or contact mission. Completed stations add XP and push you toward the final recruitment terminal.',
-      objective: 'Tip: press Q to scan. Only nearby quest signals will flare up.',
+      text: 'Move to a glowing station and press E. Each station opens one focused piece of the portfolio. XP simply tracks what you have reviewed.',
+      objective: 'Tip: press Q for guidance when the next station is not obvious.',
     },
     {
-      tag: 'READY CHECK',
+      tag: 'BEST EXPERIENCE',
       name: "Viren's Assistant",
-      text: "This is not a normal portfolio page. Treat it like a tiny RPG hub: move, inspect, ask questions, and follow the brightest clues.",
-      objective: 'Quest line unlocked: Meet the Operator.',
+      text: 'This works on a phone, but it was designed for desktop. On mobile, use the quick path panel to jump straight to the important sections.',
+      objective: 'First recommended stop: Meet Viren.',
     },
   ]
   const [pageIdx, setPageIdx] = useState(0)
@@ -367,8 +367,8 @@ function IntroScreen({ onStart }) {
               <div className="keys"><span className="kk">↑</span><span className="kk">↓</span><span className="kk">←</span><span className="kk">→</span></div>
               <span className="lab">also works</span>
             </div>
-            <div className="row"><span className="kk">E</span><span className="lab">interact / open quest</span></div>
-            <div className="row"><span className="kk">Q</span><span className="lab">scan nearby quests</span></div>
+            <div className="row"><span className="kk">E</span><span className="lab">open station</span></div>
+            <div className="row"><span className="kk">Q</span><span className="lab">show guidance</span></div>
           </div>
 
           <div className="intro-pips">
@@ -376,7 +376,7 @@ function IntroScreen({ onStart }) {
           </div>
 
           <button className="intro-start" onClick={next}>
-            {isLast ? 'Enter the studio' : 'Continue briefing'}
+            {isLast ? 'Start guided tour' : 'Continue'}
             <span className="arrow">→</span>
           </button>
         </div>
@@ -533,6 +533,57 @@ function VirtualJoystick({ onMove }) {
 
 // ──────────────────── Main game component ────────────────────
 
+function MobileGuide({ completedSet, nextQuest, finalUnlocked, onOpen }) {
+  const [expanded, setExpanded] = useState(true)
+  const nextId = finalUnlocked ? 'contact' : nextQuest?.id
+  const fallbackIds = ['about', 'skills', 'project:study-command-center', 'project:top-down-shooter', 'trophy', 'contact']
+  const actionIds = [nextId, ...fallbackIds]
+    .filter(Boolean)
+    .filter((id, index, arr) => arr.indexOf(id) === index)
+    .filter((id) => QUEST_BY_ID[id])
+    .slice(0, 4)
+  const done = QUESTS.filter((q) => completedSet.has(q.id)).length
+
+  if (!expanded) {
+    return (
+      <button className="mobile-guide-pill" onClick={() => setExpanded(true)}>
+        Desktop recommended
+      </button>
+    )
+  }
+
+  return (
+    <aside className="mobile-guide" aria-label="Mobile guidance">
+      <div className="mobile-guide-head">
+        <div>
+          <span>Best on desktop</span>
+          <strong>Use quick path on mobile</strong>
+        </div>
+        <button onClick={() => setExpanded(false)}>Close</button>
+      </div>
+      <p>
+        The full studio is built for keyboard, hover, and a wider screen. On this phone, jump straight to the strongest sections.
+      </p>
+      <div className="mobile-guide-actions">
+        {actionIds.map((id) => (
+          <button
+            key={id}
+            className={completedSet.has(id) ? 'done' : ''}
+            onClick={() => onOpen(id)}
+          >
+            <span>{completedSet.has(id) ? 'Reviewed' : id === nextId ? 'Next' : 'Open'}</span>
+            <strong>{QUEST_BY_ID[id].title}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="mobile-guide-progress">
+        <span>{done} of {QUESTS.length} reviewed</span>
+        <span>XP is progress, not the product</span>
+      </div>
+    </aside>
+  )
+}
+
 export default function GameWorld() {
   const canvasRef = useRef(null)
   const playerRef = useRef({
@@ -563,7 +614,11 @@ export default function GameWorld() {
   const [scanPulseAt, setScanPulseAt] = useState(0)
   const [tickerIndex, setTickerIndex] = useState(0)
 
-  useEffect(() => { setIsTouch(isTouchDevice()) }, [])
+  useEffect(() => {
+    const touch = isTouchDevice()
+    setIsTouch(touch)
+    if (touch) setTrackerCollapsed(true)
+  }, [])
 
   useEffect(() => {
     collectedShardsRef.current = collectedShards
@@ -593,9 +648,9 @@ export default function GameWorld() {
     setPhase('play')
     pushObjective({
       kind: 'new',
-      kicker: 'NEW OBJECTIVE',
-      title: 'Choose a quest station',
-      detail: 'Follow the markers, hover a station, or open the quest log.',
+      kicker: 'GUIDED TOUR',
+      title: 'Start with Meet Viren',
+      detail: 'Use the path panel or walk to a glowing station.',
     })
   }, [pushObjective])
 
@@ -604,9 +659,9 @@ export default function GameWorld() {
     setScanPulseAt(now)
     pushObjective({
       kind: 'new',
-      kicker: 'SCAN PULSE',
-      title: 'Quest signals revealed',
-      detail: 'Quest buildings are overcharged. Follow the brightest markers.',
+      kicker: 'GUIDANCE',
+      title: 'Nearby stations highlighted',
+      detail: 'Follow the brightest markers or use the mobile quick path.',
       duration: 3200,
     })
   }, [pushObjective])
@@ -792,10 +847,10 @@ export default function GameWorld() {
         kicker: wasOverlay.startsWith('project:') ? 'PROJECT REVIEWED' : 'QUEST UPDATED',
         title: completedQuest.title,
         detail: allProjectsDone
-          ? 'Final objective unlocked: Recruit Viren.'
+          ? 'Final step unlocked: Contact Viren.'
           : nextProjectQuest
-            ? `Next objective: ${nextProjectQuest.title}`
-            : 'New objective available in the quest log.',
+            ? `Next suggested review: ${nextProjectQuest.title}`
+            : 'Next step available in the guided path.',
       })
       // Small delay so the close animation can play first
       setTimeout(() => setPendingCompletion(wasOverlay), 120)
@@ -1087,22 +1142,30 @@ export default function GameWorld() {
             onToggleCollapsed={() => setTrackerCollapsed((v) => !v)}
             onQuestClick={(id) => setOverlay(id)}
           />
+          {isTouch && (
+            <MobileGuide
+              completedSet={completedSet}
+              nextQuest={nextQuest}
+              finalUnlocked={finalMissionUnlocked}
+              onOpen={(id) => setOverlay(id)}
+            />
+          )}
           <ObjectiveFeed items={objectiveFeed} />
 
           <div className="hud-bottom">
             {nearbyMeta ? (
               <div className="hud-prompt">
                 <span className="key">E</span>
-                <span className="label">{completedSet.has(nearbyMeta.key) ? 'revisit' : 'start quest'}</span>
+                <span className="label">{completedSet.has(nearbyMeta.key) ? 'revisit' : 'open'}</span>
                 <span style={{ opacity: 0.4 }}>·</span>
                 <span className="title">{nearbyMeta.label}</span>
               </div>
             ) : (
               <div className="hud-controls-hint">
                 <span><span className="k">W</span><span className="k">A</span><span className="k">S</span><span className="k">D</span> walk</span>
-                <span><span className="k">E</span> interact</span>
-                <span><span className="k">Q</span> scan</span>
-                <span className="route-chip"><span className="route-dot" /> next: {nextQuest?.title || 'Recruit Viren'}</span>
+                <span><span className="k">E</span> open</span>
+                <span><span className="k">Q</span> guide</span>
+                <span className="route-chip"><span className="route-dot" /> next: {nextQuest?.title || 'Contact Viren'}</span>
               </div>
             )}
             <button className="hud-btn" style={{ pointerEvents: 'auto' }} onClick={() => setOverlay('aria')}>

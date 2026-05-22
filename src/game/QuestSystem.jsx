@@ -16,15 +16,15 @@ export function QuestTracker({ activeKey, completedSet, onQuestClick, collapsed,
       </button>
       <div className="qt-head">
         <div className="qt-title">
-          <span className="qt-badge">QUEST LOG</span>
+          <span className="qt-badge">GUIDED PATH</span>
           <span className="qt-progress">{done} / {total}</span>
         </div>
         <div className="qt-bar">
           <div className="qt-bar-fill" style={{ width: `${pct}%` }} />
         </div>
         <div className="qt-current">
-          <span>{finalUnlocked ? 'FINAL OBJECTIVE' : 'CURRENT OBJECTIVE'}</span>
-          <strong>{finalUnlocked ? 'Recruit Viren' : nextQuest?.title || 'All quests cleared'}</strong>
+          <span>{finalUnlocked ? 'READY TO CONTACT' : 'NEXT STEP'}</span>
+          <strong>{finalUnlocked ? 'Contact Viren' : nextQuest?.title || 'All milestones reviewed'}</strong>
         </div>
       </div>
       <ul className="qt-list">
@@ -53,8 +53,8 @@ export function QuestTracker({ activeKey, completedSet, onQuestClick, collapsed,
         className={`qt-final ${finalUnlocked ? 'unlocked' : ''}`}
         onClick={() => onQuestClick && onQuestClick('contact')}
       >
-        <span>{finalUnlocked ? 'MISSION UNLOCKED' : 'FINAL MISSION'}</span>
-        <strong>Recruit Viren</strong>
+        <span>{finalUnlocked ? 'CONTACT READY' : 'FINAL STEP'}</span>
+        <strong>Contact Viren</strong>
       </button>
     </div>
   )
@@ -68,9 +68,9 @@ export function QuestCompleted({ questId, onDismiss }) {
   const isProject = questId?.startsWith('project:')
   const reward = quest?.reward || ''
   const xpMatch = reward.match(/\+?\d+\s*XP/i)
-  const skillMatch = reward.match(/Skill:\s*(.+)$/i)
+  const skillMatch = reward.match(/-\s*(.+)$/i)
   const xp = xpMatch ? xpMatch[0].toUpperCase() : '+100 XP'
-  const skill = skillMatch ? skillMatch[1].trim() : (isProject ? 'Portfolio Review' : 'Objective Progress')
+  const skill = skillMatch ? skillMatch[1].trim() : (isProject ? 'Portfolio Review' : 'Progress')
 
   useEffect(() => {
     if (!quest) return
@@ -90,17 +90,17 @@ export function QuestCompleted({ questId, onDismiss }) {
       </div>
       <div className="qc-stack">
         <div className="qc-banner">
-          <div className="qc-sfx">SFX READY</div>
+          <div className="qc-sfx">PROGRESS SAVED</div>
           <div className="qc-stars">
             <span /><span /><span /><span /><span />
           </div>
-          <div className="qc-kicker">{isProject ? 'PROJECT REVIEWED' : 'ACHIEVEMENT UNLOCKED'}</div>
-          <div className="qc-headline">{isProject ? 'QUEST COMPLETED' : quest.completion.headline}</div>
+          <div className="qc-kicker">{isProject ? 'PROJECT REVIEWED' : 'MILESTONE REVIEWED'}</div>
+          <div className="qc-headline">{isProject ? 'Project Reviewed' : quest.completion.headline}</div>
           <div className="qc-sub">{quest.completion.sub}</div>
           <div className="qc-reward-grid">
-            <span><b>XP GAINED</b>{xp}</span>
-            <span><b>SKILL UNLOCKED</b>{skill}</span>
-            <span><b>NEW OBJECTIVE</b>{isProject ? 'Hire Viren' : 'Continue quest line'}</span>
+            <span><b>XP ADDED</b>{xp}</span>
+            <span><b>FOCUS</b>{skill}</span>
+            <span><b>NEXT</b>{isProject ? 'Continue review' : 'Follow guided path'}</span>
           </div>
           <div className="qc-reward">{reward}</div>
         </div>

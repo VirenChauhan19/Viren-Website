@@ -1,124 +1,121 @@
-// Quest definitions. Each station that should appear in the tracker maps
-// to a quest object. The tracker shows them in order; completing a quest
-// triggers the "Quest Completed" overlay using `completion.headline` /
-// `completion.sub` / `reward`.
+// Portfolio milestones. Each station maps to a guided step in the tracker.
+// XP is kept as light progress feedback, but the framing stays portfolio-first.
 
 export const QUESTS = [
   {
     id: 'about',
-    title: 'Meet the Operator',
-    objective: 'Talk to Viren at the profile pedestal',
-    reward: '+50 XP · Lore Unlocked',
+    title: 'Meet Viren',
+    objective: 'Start with the profile pedestal',
+    reward: '+50 XP - Profile context',
     completion: {
-      headline: 'Quest Completed: Met the Operator',
-      sub: "You've seen who you're dealing with. Worth recruiting.",
+      headline: 'Milestone Saved: Profile Reviewed',
+      sub: "You've seen who Viren is and what he is building.",
     },
   },
   {
     id: 'skills',
-    title: 'Inspect the Perk Tree',
-    objective: 'Open the Skills terminal and review the loadout',
-    reward: '+80 XP · Loadout Revealed',
+    title: 'Review Skills',
+    objective: 'Open the Skills terminal',
+    reward: '+80 XP - Skill map',
     completion: {
-      headline: 'Achievement Unlocked: Loadout Confirmed',
-      sub: 'Game Dev, Applied AI, Tools, Endurance: all green.',
+      headline: 'Milestone Saved: Skills Reviewed',
+      sub: 'Game development, applied AI, tools, and endurance are mapped.',
     },
   },
   {
     id: 'project:study-command-center',
-    title: 'The Calendar Heist',
-    objective: 'Boot the AI Study Console',
-    reward: '+120 XP · Skill: Applied AI',
+    title: 'Study Command Center',
+    objective: 'Review the AI study console',
+    reward: '+120 XP - Applied AI',
     completion: {
-      headline: 'Quest Completed: AI Engineer Confirmed',
-      sub: 'A deployed RAG app that students actually use. Hire him.',
+      headline: 'Milestone Saved: AI Project Reviewed',
+      sub: 'A deployed RAG app that helps students work with their own materials.',
     },
   },
   {
     id: 'aria',
     title: "Ask Viren's Assistant",
     objective: "Chat with Viren's Assistant",
-    reward: '+90 XP · Conversational AI Verified',
+    reward: '+90 XP - Conversational AI',
     completion: {
-      headline: 'Quest Completed: Conversational AI Verified',
+      headline: 'Milestone Saved: Assistant Tested',
       sub: "Viren's Assistant runs entirely offline. Viren built that.",
     },
   },
   {
     id: 'project:la-ultra-running-plans',
-    title: 'Field Trial: The Clinic',
-    objective: 'Examine the Patient App workstation',
-    reward: '+150 XP · Skill: Applied AI for the Real World',
+    title: 'Patient Planning App',
+    objective: 'Review the clinical AI workstation',
+    reward: '+150 XP - Applied AI in practice',
     completion: {
-      headline: 'Quest Completed: Ships AI to Real Users',
-      sub: "A practicing doctor uses this in clinic. That's the bar he ships at.",
+      headline: 'Milestone Saved: Real-World AI Reviewed',
+      sub: 'A practicing doctor uses this workflow in clinic.',
     },
   },
   {
     id: 'showreel',
-    title: 'Roll the Reel',
-    objective: 'Watch the Showreel TV',
-    reward: '+70 XP · Visual Storytelling',
+    title: 'Film & Video Work',
+    objective: 'Open the showreel station',
+    reward: '+70 XP - Visual storytelling',
     completion: {
-      headline: 'Quest Completed: Visual Storyteller',
-      sub: 'Award-adjacent documentary credit at age 19.',
+      headline: 'Milestone Saved: Reel Reviewed',
+      sub: 'Documentary, ultramarathon, and impact-driven video work reviewed.',
     },
   },
   {
     id: 'project:top-down-shooter',
-    title: 'Boss Rush: Top-Down',
-    objective: 'Play the Top-Down Shooter cabinet',
-    reward: '+120 XP · Skill: Game Feel',
+    title: 'Top-Down Shooter',
+    objective: 'Review the arcade shooter prototype',
+    reward: '+120 XP - Game feel',
     completion: {
-      headline: 'Quest Completed: Tight Gameplay Confirmed',
-      sub: 'Snappy controls, wave AI, satisfying feedback. Hire your gameplay programmer.',
+      headline: 'Milestone Saved: Gameplay Prototype Reviewed',
+      sub: 'Movement, wave AI, shooting feel, and feedback loops reviewed.',
     },
   },
   {
     id: 'project:peggle',
-    title: 'Physics 101',
-    objective: 'Play the Peggle-style cabinet',
-    reward: '+110 XP · Skill: Physics & Systems',
+    title: 'Peggle Physics Prototype',
+    objective: 'Review the physics and scoring prototype',
+    reward: '+110 XP - Physics systems',
     completion: {
-      headline: 'Quest Completed: Physics Engineer Found',
-      sub: '2D physics, collision response, scoring loops: under control.',
+      headline: 'Milestone Saved: Physics Prototype Reviewed',
+      sub: '2D physics, collision response, and scoring loops reviewed.',
     },
   },
   {
     id: 'project:3d-environment',
-    title: 'The Wanderer',
-    objective: 'Step into the 3D Environment cabinet',
-    reward: '+130 XP · Skill: Environment Art',
+    title: '3D Environment Study',
+    objective: 'Review the real-time environment scene',
+    reward: '+130 XP - Environment art',
     completion: {
-      headline: 'Quest Completed: Environment Artist Spotted',
+      headline: 'Milestone Saved: Environment Study Reviewed',
       sub: 'Composed, explorable real-time 3D space. Mood, lighting, atmosphere: all there.',
     },
   },
   {
     id: 'trophy',
-    title: 'Read the Mission Log',
-    objective: 'Inspect the Trophy Cabinet (Experience)',
-    reward: '+100 XP · Trust Established',
+    title: 'Experience Timeline',
+    objective: 'Review the experience cabinet',
+    reward: '+100 XP - Track record',
     completion: {
-      headline: 'Quest Completed: Track Record Verified',
-      sub: 'Race director, FIFA volunteer, ambassador, student athlete. He delivers.',
+      headline: 'Milestone Saved: Experience Reviewed',
+      sub: 'Leadership, operations, sport, film, and campus work reviewed.',
     },
   },
   {
     id: 'contact',
-    title: 'Final Objective: Recruit Viren',
-    objective: 'Reach the Recruitment Terminal',
-    reward: '+999 XP · NEW PARTY MEMBER',
+    title: 'Contact Viren',
+    objective: 'Open the contact terminal',
+    reward: '+999 XP - Contact ready',
     completion: {
-      headline: 'Final Objective Unlocked: Recruit Viren',
-      sub: 'Press the button below to send a message. He replies within a day.',
+      headline: 'Final Step: Contact Viren',
+      sub: 'Use the terminal to send a message.',
     },
   },
 ]
 
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map((q) => [q.id, q]))
 
-// localStorage helpers
 const STORAGE_KEY = 'viren_exe_quests_v1'
 
 export function loadCompletedQuests() {

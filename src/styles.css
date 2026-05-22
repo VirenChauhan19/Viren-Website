@@ -1673,6 +1673,127 @@ textarea,
 
 /* ───────────── Quest tracker (HUD sidebar) ───────────── */
 
+/* Mobile guidance */
+
+.mobile-guide,
+.mobile-guide-pill {
+  position: fixed;
+  z-index: 16;
+  pointer-events: auto;
+  font-family: var(--mono);
+}
+
+.mobile-guide {
+  right: 16px;
+  bottom: 132px;
+  width: min(380px, calc(100vw - 32px));
+  padding: 14px;
+  background: rgba(8, 12, 18, 0.94);
+  border: 1px solid rgba(255, 209, 102, 0.36);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow), 0 0 42px rgba(255, 209, 102, 0.09);
+}
+
+.mobile-guide-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mobile-guide-head span {
+  display: block;
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.mobile-guide-head strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.mobile-guide-head button,
+.mobile-guide-pill {
+  padding: 7px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink-dim);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mobile-guide p {
+  margin: 0 0 12px;
+  color: var(--ink-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mobile-guide-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mobile-guide-actions button {
+  min-width: 0;
+  min-height: 58px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  text-align: left;
+}
+
+.mobile-guide-actions button.done {
+  border-color: rgba(108, 245, 169, 0.34);
+  background: rgba(108, 245, 169, 0.07);
+}
+
+.mobile-guide-actions button span {
+  display: block;
+  color: var(--gold);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.mobile-guide-actions button strong {
+  display: block;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mobile-guide-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--ink-ghost);
+  font-size: 10px;
+}
+
+.mobile-guide-pill {
+  right: 16px;
+  bottom: 132px;
+  color: var(--gold);
+  border-color: rgba(255, 209, 102, 0.36);
+  background: rgba(8, 12, 18, 0.9);
+  backdrop-filter: blur(10px);
+}
+
 .quest-tracker {
   position: fixed;
   top: 140px;
@@ -2963,39 +3084,44 @@ textarea,
   .intro-scene { height: 128px; }
   .intro-dialogue p { font-size: 14px; }
   .intro-controls { grid-template-columns: 1fr; gap: 8px; }
-  .quest-tracker {
+  .mobile-guide {
+    top: 130px;
     left: 10px;
     right: 10px;
-    top: 142px;
     bottom: auto;
     width: auto;
-    max-height: min(42dvh, 330px);
-    padding: 12px 12px 10px;
-    border-radius: 10px;
-    z-index: 11;
+    max-height: 40dvh;
+    overflow-y: auto;
+    padding: 12px;
   }
-  .quest-tracker.collapsed {
-    transform: translateY(calc(-100% + 34px));
+  .mobile-guide-head strong {
+    font-size: 13px;
   }
-  .qt-toggle {
-    top: auto;
-    bottom: -28px;
-    right: 14px;
-    border-radius: 0 0 8px 8px;
-    border-left: 1px solid var(--line-strong);
-    border-top: 0;
+  .mobile-guide p {
+    font-size: 11.5px;
+    margin-bottom: 10px;
   }
-  .qt-list {
-    max-height: 190px;
+  .mobile-guide-actions {
+    gap: 7px;
   }
-  .qt-item {
-    padding: 7px 6px;
+  .mobile-guide-actions button {
+    min-height: 52px;
+    padding: 8px;
   }
-  .qt-q-title {
+  .mobile-guide-actions button strong {
     font-size: 11px;
   }
-  .qt-q-obj {
-    font-size: 9.5px;
+  .mobile-guide-progress {
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mobile-guide-pill {
+    top: 126px;
+    right: 10px;
+    bottom: auto;
+  }
+  .quest-tracker {
+    display: none;
   }
   .touch-joy {
     width: 94px;

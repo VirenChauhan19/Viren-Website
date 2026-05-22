@@ -55,7 +55,7 @@ export const STATIONS = [
   { key: 'showreel',                           kind: 'tv',       accent: 'green', col: 27, row: 5, label: 'Showreel',              subtitle: 'Film & video' },
 
   // Bottom-row (Game zone)
-  { key: 'trophy',                             kind: 'trophy',   accent: 'gold',  col: 3,  row: 15, label: 'Mission Log',          subtitle: 'Career timeline' },
+  { key: 'trophy',                             kind: 'trophy',   accent: 'gold',  col: 3,  row: 15, label: 'Experience Timeline',  subtitle: 'Career path' },
   { key: 'project:top-down-shooter',           kind: 'arcade',   accent: 'warm',  col: 8,  row: 15, label: 'Top Down Shooter',      subtitle: 'Game · 2024', slug: 'top-down-shooter' },
   { key: 'project:peggle',                     kind: 'arcade',   accent: 'warm',  col: 13, row: 15, label: 'Peggle-Style Physics',  subtitle: 'Game · 2024', slug: 'peggle' },
   { key: 'project:3d-environment',             kind: 'arcade',   accent: 'warm',  col: 18, row: 15, label: '3D Environment',        subtitle: 'Game · 2024', slug: '3d-environment' },
