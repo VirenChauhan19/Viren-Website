@@ -2,18 +2,19 @@
 
 export const profile = {
   name: 'Viren Chauhan',
-  title: 'Game Developer & Applied AI',
+  title: 'Software Engineer · Game Dev & Applied AI',
   tagline:
-    'I build games, intelligent tools, and interactive experiences where creative tech meets real-world problems.',
+    "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
-    "I'm an undergraduate Game Development student at the Savannah College of Art and Design (SCAD) in Atlanta, GA, pursuing a minor in Applied AI.",
-    'My work sits at the intersection of game design and applied artificial intelligence, from gameplay systems and 3D environments to AI assistants that help students study and tools that help doctors care for patients.',
-    "I'm also a student athlete with a background in ultra-endurance sport, which shapes how I approach hard problems: long game, steady reps, finish what you start.",
+    "I'm a software engineer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
+    "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a study app real students use and a clinical app a doctor uses with patients.",
+    "Away from the keyboard I'm a student athlete with an ultra endurance background. It taught me to play the long game, keep showing up, and finish what I start.",
   ],
-  email: 'vchauh21@student.scad.edu',
+  email: 'chauhan.viren08@gmail.com',
+  location: 'Atlanta, GA',
   links: [
     { label: 'GitHub', url: 'https://github.com/VirenChauhan19' },
-    { label: 'Email', url: 'mailto:vchauh21@student.scad.edu' },
+    { label: 'Email', url: 'mailto:chauhan.viren08@gmail.com' },
   ],
   photo: 'headshot.jpeg',
 }
@@ -29,52 +30,98 @@ export const education = [
 
 export const experience = [
   {
-    role: 'Anti-Doping Volunteer (Upcoming)',
+    role: 'Volunteer, Anti-Doping Team',
     org: 'FIFA World Cup 2026',
-    dates: '2026',
-    detail:
-      'Selected to volunteer in anti-doping operations at the FIFA World Cup 2026, supporting doping control procedures to help ensure clean, fair competition and protect the integrity of the game.',
+    dates: 'May 2026 - Present',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Selected as one of only 4 volunteers for the Anti-Doping Team out of more than 100,000 applications.',
+      'Support confidential tournament operations tied to athlete integrity, compliance, and professional event standards.',
+      'Represent FIFA World Cup 2026 in a high-trust role that calls for discretion, reliability, and a sharp eye for detail.',
+    ],
   },
   {
-    role: 'Professional Playmaker, Apprenticeship',
+    role: 'Professional Playmaker',
     org: 'Georgia World Congress Center Authority',
-    dates: 'Mar 2026 - Present',
+    dates: 'Mar 2026 - May 2026',
+    location: 'Atlanta, GA',
     bullets: [
-      'Collaborated with team members and event staff to ensure smooth operations, quickly adapting to changes in a fast-paced, high-volume environment.',
-      'Provided direct guest support by answering questions, giving directions, and helping resolve issues to maintain a positive event experience.',
+      'Worked with team members and event staff to keep operations smooth, adapting quickly in a fast-paced, high-volume environment.',
+      'Gave direct guest support by answering questions, giving directions, and resolving issues to keep the event experience positive.',
+    ],
+  },
+  {
+    role: 'UX/UI Lead, SCADpro x Atlanta United',
+    org: 'Atlanta United FC (Internship)',
+    dates: 'Jan 2026 - Mar 2026',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Led UX/UI for a confidential SCADpro collaboration with Atlanta United, focused on user experience, interaction standards, and interface consistency across digital and experiential brand touchpoints.',
+      'Defined the UX/UI direction for intuitive, accessible, and consistent fan-facing experiences while aligning with brand and project goals.',
+      'Worked with a multidisciplinary team to shape interaction flow, interface clarity, and overall user-experience strategy, while respecting project confidentiality.',
     ],
   },
   {
     role: 'SCADHome Office Assistant',
     org: 'Savannah College of Art and Design',
     dates: 'Dec 2025 - Present',
+    location: 'Atlanta, GA',
     bullets: [
-      'Provide front desk support for residence life operations and assist students with housing services and campus resources.',
-      'Manage student inquiries and housing check-ins/check-outs through StarRez, and coordinate with residence life staff to resolve concerns.',
-      'Support major campus housing events and assist community directors with administrative operations.',
+      'Provide front desk support for residence life operations and help students with housing services and campus resources.',
+      'Manage student inquiries and housing check-ins and check-outs through StarRez, and coordinate with residence life staff to resolve concerns.',
+      'Support major campus housing events and assist community directors with day-to-day administrative operations.',
     ],
   },
   {
-    role: 'Student Athlete',
+    role: 'SCADfit Front Desk',
     org: 'Savannah College of Art and Design',
-    dates: 'Dec 2024 - Present · Full time',
+    dates: 'Aug 2025 - Dec 2025',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Checked students and members in at the campus fitness center and kept the front desk running through every shift.',
+      'Handled equipment checkout, facility access, and day-to-day questions so the gym stayed smooth and welcoming.',
+    ],
   },
   {
-    role: 'International Student Ambassador',
+    role: 'Intramurals and Recreational Assistant',
     org: 'Savannah College of Art and Design',
-    dates: 'Mar 2025 - Sep 2025 · Part time',
-    location: 'Atlanta, Georgia, United States',
+    dates: 'Aug 2025 - Nov 2025',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Helped run intramural sports and recreational programs, from setup and sign-ups to keeping games organized and on schedule.',
+      'Supported students throughout activities and events, keeping things safe, fair, and fun.',
+    ],
   },
   {
     role: 'Event Operations Volunteer',
     org: 'FIFA Club World Cup',
     dates: 'May 2025 - Jul 2025',
-    location: 'Atlanta, Georgia, United States',
+    location: 'Atlanta, GA',
     bullets: [
-      'Supported the Ceremonies and Fan Operations team during tournament matches.',
-      'Assisted fans with navigation, seating guidance, and event information inside the stadium.',
-      'Contributed to crowd coordination and fan experience, ensuring smooth operations during matches and ceremonies.',
-      "Collaborated with event staff and volunteers to support one of the world's largest international football tournaments.",
+      'Supported Ceremonies and Fan Operations during FIFA Club World Cup 2025 matches in Atlanta.',
+      'Helped with fan movement, seating guidance, event information, and overall matchday support inside the stadium.',
+      'Kept crowd flow smooth and the guest experience positive through ceremonies, matches, and live moments.',
+      'Worked alongside event staff and volunteers to support operations for a major international football tournament.',
+    ],
+  },
+  {
+    role: 'International Student Ambassador',
+    org: 'Savannah College of Art and Design',
+    dates: 'Mar 2025 - Sep 2025',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Represented SCAD to prospective and incoming international students, sharing what campus life and the student experience are really like.',
+      'Helped new international students settle in and answered questions from students and families during orientation and events.',
+    ],
+  },
+  {
+    role: 'Student Athlete',
+    org: 'Savannah College of Art and Design',
+    dates: 'Dec 2024 - Present',
+    location: 'Atlanta, GA',
+    bullets: [
+      'Train and compete as a SCAD student athlete while carrying a full course load.',
+      'Balance daily training and competition with academics, built on an ultra-endurance background.',
     ],
   },
   {
@@ -82,10 +129,10 @@ export const experience = [
     org: 'La Ultra: The High',
     dates: 'Jan 2016 - Nov 2019',
     bullets: [
-      "Logistics & Operations: Directed the 55 km category for the 10th edition of one of the world's most extreme ultramarathons, managing operations between 12,000 ft and 15,500 ft elevation.",
-      'Risk Mitigation: Conducted primary health assessments for all participants to ensure fitness for high-altitude exertion and monitored medical reporting throughout the race.',
-      'Stakeholder Management: Led a multi-functional team including medical personnel and aid station volunteers, ensuring real-time communication across remote Himalayan terrain.',
-      'Protocol Enforcement: Managed the sensitive process of athlete disqualification based on cut-off times, prioritizing participant safety and race integrity through effective communication and conflict resolution.',
+      "Logistics and operations: directed the 55 km category for the 10th edition of one of the world's most extreme ultramarathons, running operations between 12,000 ft and 15,500 ft of elevation.",
+      'Risk mitigation: ran primary health assessments for every participant to confirm fitness for high-altitude exertion, and monitored medical reporting throughout the race.',
+      'Stakeholder management: led a multi-functional team of medical personnel and aid-station volunteers, keeping real-time communication going across remote Himalayan terrain.',
+      'Protocol enforcement: handled the sensitive process of disqualifying athletes on cut-off times, putting participant safety and race integrity first through clear communication and conflict resolution.',
     ],
     media: [{ type: 'youtube', src: 'qswe4uUq1lc', caption: 'La Ultra: The High' }],
   },
@@ -94,7 +141,7 @@ export const experience = [
     org: 'Moving Mountains Within (Documentary Film)',
     dates: '2019',
     detail:
-      'Contributed to an award-winning documentary covering the 2019 La Ultra ultra-marathon in Ladakh.',
+      'Contributed to an award-winning documentary covering the 2019 La Ultra ultramarathon in Ladakh.',
     media: [{ type: 'youtube', src: 'FJnZ0Qukpjo', caption: 'Moving Mountains Within' }],
   },
   {
@@ -111,7 +158,7 @@ export const experience = [
   },
 ]
 
-// ───────── Skills (perk tree) ─────────
+// Skills (perk tree)
 // branch: 'game' | 'ai' | 'tools' | 'soft'. level: 1-5 (filled dots).
 export const skills = [
   // Game Dev branch
@@ -170,44 +217,50 @@ export const projects = [
     slug: 'study-command-center',
     name: 'Study Command Center',
     type: 'ai',
+    category: 'Web App · Front-End · UI/UX',
     year: '2025',
-    role: 'Solo, built for my Applied AI class',
+    role: 'I built this one solo, design through deployment.',
+    disciplines: ['Front-End Design', 'UI Design', 'UX Design', 'Software Engineering'],
     summary:
-      'An AI study assistant for students. Upload your notes and syllabus, sync deadlines straight to Google Calendar, and ask the chatbot anything about your class.',
+      "A study app I designed and built end to end. Students upload their notes and syllabus, it pulls out their deadlines and drops them into Google Calendar, and a built-in assistant answers questions using their own material.",
     description: [
-      'Built for my Applied AI coursework, Study Command Center turns a messy pile of notes and syllabi into an organized, queryable study hub.',
-      'Students upload their notes and syllabus; the app parses the schedule and pushes assignment and exam deadlines into Google Calendar automatically.',
-      'A retrieval-based AI chatbot answers questions about the uploaded material ("When is the midterm?", "Summarize lecture 4", "What’s the late policy?"), grounding answers in the student’s own documents.',
+      'I built Study Command Center to turn a messy pile of notes and syllabi into something a student can actually search and stay on top of.',
+      'You upload your notes and syllabus, and the app reads the schedule and drops your assignment and exam deadlines straight into Google Calendar.',
+      'There is also a chat panel that answers questions about your own uploaded material, like when the midterm is or what the late policy says. It only pulls from your documents, so the answers stay grounded.',
     ],
-    tech: ['React', 'AI Chatbot / RAG', 'Google Calendar API', 'Document Parsing'],
+    tech: ['React', 'UI / UX Design', 'Design System', 'REST APIs', 'Google Calendar API', 'Retrieval / RAG'],
     highlights: [
-      'Notes & syllabus upload with automatic deadline extraction',
-      'One-click Google Calendar sync for assignments and exams',
-      'Conversational Q&A grounded in your own class material',
+      'I owned all of it: the UX, the UI, the front-end code, and the deploy',
+      'Responsive React app with a consistent, reusable design system',
+      'Syncs deadlines straight to Google Calendar through its API',
+      "The assistant only answers from the user's own uploaded docs",
     ],
     live: 'https://virenchauhan19.github.io/ReactBox/',
     repo: 'https://github.com/VirenChauhan19/ReactBox',
   },
   {
     slug: 'la-ultra-running-plans',
-    name: 'La Ultra: AI Running Plans for Patients',
+    name: 'La Ultra: Clinical Patient Web App',
     type: 'ai',
+    category: 'Web App · UI/UX · Engineering',
     year: '2025',
-    role: 'Solo, built for my father, a doctor',
+    role: 'I built this one solo too, UX through hosting.',
+    disciplines: ['UX Design', 'UI Design', 'Front-End', 'Software Engineering'],
     summary:
-      'A health app that generates personalized AI running plans for a doctor’s patients, plus tools to track progress and manage care.',
+      "A clinical web app I designed and built for a working doctor. It handles patient management, progress tracking, and personalized plans, with an interface simple enough for someone who isn't technical.",
     description: [
-      'My father is a doctor, and he asked me to build something that would genuinely help him with his patients. The result is an app that creates AI-generated running and activity plans tailored to each patient.',
-      'Plans adapt to the patient’s profile and goals, giving the doctor a structured, prescribable program instead of generic advice, and giving patients a clear path to follow.',
-      'Beyond plan generation, the app includes additional patient-management features to support day-to-day care, all in one place.',
+      'My dad is a doctor, and he asked me to build something that would actually help him with his patients, so I did.',
+      'The app builds a running and activity plan around each patient based on their profile and goals, so the doctor can hand them a real, structured program instead of generic advice.',
+      'On top of the plans, it has patient management tools so the day to day care lives in one place.',
     ],
-    tech: ['Flutter / Web', 'AI Plan Generation', 'Patient Management', 'Firebase'],
+    tech: ['Flutter / Web', 'UI / UX Design', 'Firebase', 'Auth & Firestore', 'Plan Generation'],
     highlights: [
-      'Personalized AI-generated running & activity plans',
-      'Designed with a practicing doctor for real clinical use',
-      'Patient tracking and care tools beyond just plans',
+      'Built for a real doctor who uses it with actual patients',
+      'I handled all of it: UX, UI, front-end, data model, auth, and hosting',
+      'Generates a personalized plan from each patient profile',
+      'Designed to stay fast and clear for a non-technical user',
     ],
-    live: 'https://gentle-badass.web.app/#/',
+    live: 'https://laultrarunandbee.web.app/',
     repo: null,
   },
   {
@@ -215,7 +268,9 @@ export const projects = [
     name: 'Top Down Shooter',
     type: 'game',
     year: '2024',
+    category: 'Game · Gameplay Systems',
     role: 'Solo, gameplay & systems',
+    disciplines: ['Gameplay Programming', 'Enemy AI', 'Game Feel', 'Software Engineering'],
     summary:
       'A fast-paced top-down shooter focused on tight controls, enemy waves, and responsive combat feel.',
     description: [
@@ -237,7 +292,9 @@ export const projects = [
     name: 'Peggle-Style Physics Game',
     type: 'game',
     year: '2024',
+    category: 'Game · Physics',
     role: 'Solo, physics & game logic',
+    disciplines: ['Physics Programming', 'Game Logic', 'Software Engineering'],
     summary:
       'A Peggle-inspired physics game built around ball bounce dynamics, peg clearing, and score chasing.',
     description: [
@@ -259,7 +316,9 @@ export const projects = [
     name: '3D Environment',
     type: 'game',
     year: '2024',
+    category: 'Game · 3D Art',
     role: 'Solo, environment art & lighting',
+    disciplines: ['3D / Environment Art', 'Lighting', 'Real-Time Rendering'],
     summary:
       'A real-time 3D environment built to explore composition, lighting, and atmosphere in a game engine.',
     description: [
