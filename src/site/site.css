@@ -205,6 +205,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .edu-row strong { display: block; color: var(--text); }
 .edu-row span { display: block; color: var(--muted); font-size: 0.9rem; }
 .edu-row small { display: block; color: var(--faint); font-size: 0.82rem; margin-top: 5px; }
+.edu-row .edu-grad { color: var(--acc); font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em; margin-top: 7px; }
 
 .focus-stack { display: flex; flex-direction: column; gap: 14px; }
 .focus-card { position: relative; padding: 18px 20px 18px 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transform-style: preserve-3d; transition: transform 0.25s ease, border-color 0.2s; }
@@ -299,6 +300,48 @@ ul { margin: 0; padding: 0; list-style: none; }
 .browser-view { position: relative; height: 340px; background: #0c1016; }
 .browser-view iframe { width: 100%; height: 100%; border: 0; display: block; background: #0c1016; }
 .live-cap { font-family: var(--mono); font-size: 0.7rem; color: var(--faint); padding: 9px 12px; text-align: center; }
+
+/* ---------- Featured project ---------- */
+.featured-badge {
+  display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--acc);
+  border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
+  background: color-mix(in srgb, var(--acc) 10%, transparent);
+  padding: 5px 12px; border-radius: 999px; margin-bottom: 16px;
+}
+
+.project-card.featured {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: 1.12fr 0.88fr; align-items: stretch;
+  border-color: color-mix(in srgb, var(--acc) 40%, var(--line2));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 18%, transparent), 0 30px 70px rgba(0, 0, 0, 0.55);
+}
+.project-card.featured:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--acc) 55%, var(--line2));
+}
+.project-card.featured .live-embed,
+.project-card.featured > .proj-media {
+  height: 100%; display: flex; flex-direction: column;
+  border-bottom: 0; border-right: 1px solid var(--line);
+}
+.project-card.featured > .proj-media { aspect-ratio: auto; }
+.project-card.featured .browser-view { flex: 1 1 auto; height: auto; min-height: 384px; }
+.project-card.featured > .proj-media video,
+.project-card.featured > .proj-media img { flex: 1 1 auto; height: 100%; }
+.project-card.featured .proj-body { padding: 32px 34px; }
+.project-card.featured .proj-name { font-size: 1.7rem; }
+.project-card.featured .proj-summary { font-size: 1.02rem; }
+
+@media (max-width: 860px) {
+  .project-card.featured { grid-template-columns: 1fr; }
+  .project-card.featured .live-embed,
+  .project-card.featured > .proj-media { border-right: 0; border-bottom: 1px solid var(--line); }
+  .project-card.featured .browser-view { min-height: 300px; }
+  .project-card.featured .proj-body { padding: 24px; }
+  .project-card.featured .proj-name { font-size: 1.4rem; }
+}
 
 /* ---------- Experience timeline ---------- */
 .timeline { position: relative; margin-left: 8px; padding-left: 30px; }
@@ -466,6 +509,20 @@ ul { margin: 0; padding: 0; list-style: none; }
 .feat-card p { color: var(--muted); font-size: 0.92rem; flex: 1; margin: 0 0 16px; }
 .feat-go { font-family: var(--mono); font-size: 0.82rem; color: var(--acc); }
 .featured-cta { display: flex; justify-content: center; margin-top: 36px; }
+
+/* Home: featured highlight on the lead card */
+.feat-card.is-featured {
+  border-color: color-mix(in srgb, var(--acc) 38%, var(--line2));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 16%, transparent), 0 22px 50px rgba(0, 0, 0, 0.45);
+}
+.feat-flag {
+  display: inline-flex; align-self: flex-start; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--acc);
+  border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
+  background: color-mix(in srgb, var(--acc) 10%, transparent);
+  padding: 4px 9px; border-radius: 999px; margin-bottom: 12px;
+}
 
 /* Project detail page */
 .detail-section { max-width: 980px; }

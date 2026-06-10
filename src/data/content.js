@@ -24,6 +24,7 @@ export const education = [
     school: 'Savannah College of Art and Design (SCAD)',
     location: 'Atlanta, GA',
     degree: 'B.F.A. Game Development',
+    grad: '2028',
     detail: 'Minor in Applied AI: ethics, intelligent tools, creative computing, and agentic design.',
   },
 ]
@@ -242,6 +243,7 @@ export const projects = [
     slug: 'la-ultra-running-plans',
     name: 'La Ultra: Clinical Patient Web App',
     type: 'ai',
+    featured: true,
     category: 'Web App · UI/UX · Engineering',
     year: '2025',
     role: 'I built this one solo too, UX through hosting.',

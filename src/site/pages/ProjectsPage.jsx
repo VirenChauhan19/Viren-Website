@@ -18,7 +18,7 @@ function ProjectCard({ p }) {
 
   return (
     <article
-      className={`project-card ${isAi ? 'ai' : 'game'}`}
+      className={`project-card ${isAi ? 'ai' : 'game'}${p.featured ? ' featured' : ''}`}
       ref={spot.ref}
       onMouseMove={spot.onMouseMove}
     >
@@ -29,6 +29,7 @@ function ProjectCard({ p }) {
       ) : null}
 
       <div className="proj-body">
+        {p.featured && <span className="featured-badge">★ Featured build</span>}
         <div className="proj-tagline-row">
           <span className={`type-tag ${isAi ? 'ai' : 'game'}`}>{p.category || (isAi ? 'Web · UI/UX' : 'Game Dev')}</span>
           <span className="proj-year">{p.year}</span>
@@ -67,7 +68,10 @@ function ProjectCard({ p }) {
 
 export default function ProjectsPage() {
   const [filter, setFilter] = useState('all')
-  const list = projects.filter((p) => filter === 'all' || p.type === filter)
+  const list = projects
+    .filter((p) => filter === 'all' || p.type === filter)
+    .slice()
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
 
   return (
     <Page>

@@ -45,6 +45,7 @@ export default function About() {
                 <div>
                   <strong>{e.degree}</strong>
                   <span>{e.school} · {e.location}</span>
+                  {e.grad && <span className="edu-grad">Expected graduation {e.grad}</span>}
                   {e.detail && <small>{e.detail}</small>}
                 </div>
               </div>
