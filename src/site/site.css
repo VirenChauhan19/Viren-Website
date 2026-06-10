@@ -421,12 +421,6 @@ ul { margin: 0; padding: 0; list-style: none; }
     linear-gradient(180deg, rgba(12, 13, 17, 0.34), rgba(12, 13, 17, 0.66));
 }
 
-.scroll-progress {
-  position: fixed; top: 0; left: 0; height: 2px; width: 100%;
-  transform-origin: left center; transform: scaleX(0);
-  background: var(--acc); z-index: 60;
-}
-
 /* Hero role typewriter */
 .hero-role { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: clamp(1rem, 2.4vw, 1.35rem); color: var(--acc); margin-bottom: 22px; min-height: 1.7em; }
 .role-prefix { color: var(--violet); opacity: 0.85; }

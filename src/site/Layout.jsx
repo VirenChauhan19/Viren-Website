@@ -3,7 +3,6 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { profile } from '../data/content.js'
 import AuroraBackground from './AuroraBackground.jsx'
-import { useScrollProgress } from './fx.js'
 import Nav from './Nav.jsx'
 import Home from './pages/Home.jsx'
 import AboutPage from './pages/AboutPage.jsx'
@@ -20,7 +19,6 @@ function ScrollToTop() {
 
 export default function Layout() {
   const location = useLocation()
-  const progress = useScrollProgress()
   const year = new Date().getFullYear()
 
   return (
@@ -28,7 +26,6 @@ export default function Layout() {
       <AuroraBackground />
       <div className="bg-scrim" aria-hidden="true" />
       <div className="bg-scan" aria-hidden="true" />
-      <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
 
       <Nav />
       <ScrollToTop />
