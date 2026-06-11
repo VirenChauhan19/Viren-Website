@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { projects } from '../../data/content.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
+import AppDemo from '../AppDemo.jsx'
 import Page from '../Page.jsx'
 
 export default function ProjectDetail() {
@@ -36,9 +37,15 @@ export default function ProjectDetail() {
         <h1 className="detail-title reveal">{p.name}</h1>
         <p className="detail-role reveal">{p.role}</p>
 
-        {(media || p.live) && (
+        {(p.demo || media || p.live) && (
           <div className="detail-media reveal">
-            {media ? <Media m={media} name={p.name} /> : <LiveEmbed url={p.live} name={p.name} />}
+            {p.demo ? (
+              <AppDemo kind={p.demo} title={p.name} />
+            ) : media ? (
+              <Media m={media} name={p.name} />
+            ) : (
+              <LiveEmbed url={p.live} name={p.name} />
+            )}
           </div>
         )}
 

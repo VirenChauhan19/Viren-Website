@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { projects } from '../../data/content.js'
 import { useSpotlight } from '../fx.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
+import AppDemo from '../AppDemo.jsx'
 import Page from '../Page.jsx'
 
 const FILTERS = [
@@ -22,7 +23,9 @@ function ProjectCard({ p }) {
       ref={spot.ref}
       onMouseMove={spot.onMouseMove}
     >
-      {media ? (
+      {p.demo ? (
+        <AppDemo kind={p.demo} title={p.name} />
+      ) : media ? (
         <Media m={media} name={p.name} />
       ) : p.live ? (
         <LiveEmbed url={p.live} name={p.name} />

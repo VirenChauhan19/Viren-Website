@@ -3,7 +3,7 @@ import { useTilt } from './fx.js'
 
 const FOCUS = [
   { k: 'fe', tag: 'Front-End & UI/UX', accent: 'cyan', desc: 'React apps, design systems, and responsive, accessible interfaces. I sweat the UX and the small details.' },
-  { k: 'swe', tag: 'Software Engineering', accent: 'violet', desc: 'Component architecture, state, APIs, auth, and getting things deployed. Plus smart features when a project needs them.' },
+  { k: 'swe', tag: 'Software Development', accent: 'violet', desc: 'Component architecture, state, APIs, auth, and getting things deployed. Plus smart features when a project needs them.' },
   { k: 'game', tag: 'Game Development', accent: 'amber', desc: 'Gameplay programming, 2D and 3D physics, enemy AI, and real-time 3D scenes.' },
 ]
 

@@ -1,13 +1,14 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { profile } from '../data/content.js'
+import { profile, education } from '../data/content.js'
 import { asset } from './asset.js'
 import { useTypewriter, useMagnetic } from './fx.js'
 
-const ROLES = ['Software Engineer', 'Front-End Developer', 'UI / UX Designer', 'Game Developer']
+const ROLES = ['Software Developer', 'Front-End Developer', 'UI / UX Designer', 'Game Developer']
 
 export default function Hero() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
+  const grad = education[0]?.grad
   const typed = useTypewriter(ROLES)
   const cta1 = useMagnetic()
   const cta2 = useMagnetic()
@@ -36,7 +37,7 @@ export default function Hero() {
 
           <h1 className="hero-name">Viren Chauhan</h1>
 
-          <div className="hero-role" aria-label="Software Engineer, Front-End Developer, UI/UX Designer, Game Developer">
+          <div className="hero-role" aria-label="Software Developer, Front-End Developer, UI/UX Designer, Game Developer">
             <span className="role-prefix">&gt;</span>
             <span className="role-text">{typed}</span>
             <span className="type-caret" />
@@ -78,6 +79,7 @@ export default function Hero() {
           <div className="spec-panel">
             <div className="spec-row"><span>focus</span><strong>Front-End · UI/UX · Games</strong></div>
             <div className="spec-row"><span>studying</span><strong>B.F.A. Game Dev · SCAD</strong></div>
+            {grad && <div className="spec-row"><span>graduating</span><strong>{grad} (expected)</strong></div>}
             <div className="spec-row"><span>now</span><strong className="ok">Building side projects</strong></div>
           </div>
         </aside>

@@ -2,11 +2,11 @@
 
 export const profile = {
   name: 'Viren Chauhan',
-  title: 'Software Engineer · Game Dev & Applied AI',
+  title: 'Software Developer · Game Dev & Applied AI',
   tagline:
     "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
-    "I'm a software engineer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
+    "I'm a software developer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
     "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a study app real students use and a clinical app a doctor uses with patients.",
     "Away from the keyboard I'm a student athlete with an ultra endurance background. It taught me to play the long game, keep showing up, and finish what I start.",
   ],
@@ -218,10 +218,11 @@ export const projects = [
     slug: 'study-command-center',
     name: 'Study Command Center',
     type: 'ai',
+    demo: 'study',
     category: 'Web App · Front-End · UI/UX',
     year: '2025',
     role: 'I built this one solo, design through deployment.',
-    disciplines: ['Front-End Design', 'UI Design', 'UX Design', 'Software Engineering'],
+    disciplines: ['Front-End Design', 'UI Design', 'UX Design', 'Software Development'],
     summary:
       "A study app I designed and built end to end. Students upload their notes and syllabus, it pulls out their deadlines and drops them into Google Calendar, and a built-in assistant answers questions using their own material.",
     description: [
@@ -244,10 +245,11 @@ export const projects = [
     name: 'La Ultra: Clinical Patient Web App',
     type: 'ai',
     featured: true,
-    category: 'Web App · UI/UX · Engineering',
+    demo: 'laultra',
+    category: 'Web App · UI/UX · Development',
     year: '2025',
     role: 'I built this one solo too, UX through hosting.',
-    disciplines: ['UX Design', 'UI Design', 'Front-End', 'Software Engineering'],
+    disciplines: ['UX Design', 'UI Design', 'Front-End', 'Software Development'],
     summary:
       "A clinical web app I designed and built for a working doctor. It handles patient management, progress tracking, and personalized plans, with an interface simple enough for someone who isn't technical.",
     description: [
@@ -272,7 +274,7 @@ export const projects = [
     year: '2024',
     category: 'Game · Gameplay Systems',
     role: 'Solo, gameplay & systems',
-    disciplines: ['Gameplay Programming', 'Enemy AI', 'Game Feel', 'Software Engineering'],
+    disciplines: ['Gameplay Programming', 'Enemy AI', 'Game Feel', 'Software Development'],
     summary:
       'A fast-paced top-down shooter focused on tight controls, enemy waves, and responsive combat feel.',
     description: [
@@ -296,7 +298,7 @@ export const projects = [
     year: '2024',
     category: 'Game · Physics',
     role: 'Solo, physics & game logic',
-    disciplines: ['Physics Programming', 'Game Logic', 'Software Engineering'],
+    disciplines: ['Physics Programming', 'Game Logic', 'Software Development'],
     summary:
       'A Peggle-inspired physics game built around ball bounce dynamics, peg clearing, and score chasing.',
     description: [
