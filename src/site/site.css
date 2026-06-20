@@ -79,7 +79,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   font-family: var(--mono); font-weight: 700; font-size: 1.02rem; letter-spacing: 0.04em;
   display: inline-flex; align-items: center; gap: 9px; color: var(--text);
 }
-.nav-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--acc); }
+.nav-logo {
+  width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--acc) 52%, rgba(255, 255, 255, 0.2));
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.08);
+}
 .dotexe { color: var(--acc); }
 .nav-links { display: flex; align-items: center; gap: 6px; }
 .nav-links a {

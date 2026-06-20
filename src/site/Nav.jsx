@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, LayoutGroup } from 'framer-motion'
+import { profile } from '../data/content.js'
+import { asset } from './asset.js'
 
 const LINKS = [
   { to: '/', label: 'Home', end: true },
@@ -18,7 +20,7 @@ export default function Nav() {
     <header className="nav">
       <div className="nav-inner">
         <NavLink to="/" end className="nav-brand" onClick={close}>
-          <span className="nav-dot" />
+          <img className="nav-logo" src={asset(profile.photo)} alt="" aria-hidden="true" />
           VIREN<span className="dotexe">.exe</span>
         </NavLink>
 
