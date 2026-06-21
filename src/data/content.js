@@ -17,6 +17,7 @@ export const profile = {
     { label: 'Email', url: 'mailto:chauhan.viren08@gmail.com' },
   ],
   photo: 'headshot.jpeg',
+  logo: 'headshot-cutout.png',
 }
 
 export const education = [
