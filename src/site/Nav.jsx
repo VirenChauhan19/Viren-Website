@@ -20,7 +20,7 @@ export default function Nav() {
     <header className="nav">
       <div className="nav-inner">
         <NavLink to="/" end className="nav-brand" onClick={close}>
-          <img className="nav-logo" src={asset(profile.logo || profile.photo)} alt="" aria-hidden="true" />
+          <img className="nav-logo" src={asset(profile.photo)} alt="" aria-hidden="true" />
           VIREN<span className="dotexe">.exe</span>
         </NavLink>
 
