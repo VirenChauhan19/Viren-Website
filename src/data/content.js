@@ -145,18 +145,6 @@ export const experience = [
       'Contributed to an award-winning documentary covering the 2019 La Ultra ultramarathon in Ladakh.',
     media: [{ type: 'youtube', src: 'FJnZ0Qukpjo', caption: 'Moving Mountains Within' }],
   },
-  {
-    role: 'Video Editor',
-    org: 'Run2Fly Initiative',
-    dates: '2019',
-    detail:
-      'Produced promotional films for an organization empowering underprivileged girls in rural India through running.',
-    media: [
-      { type: 'youtube', src: 'VCubJmdrExA', caption: 'Run2Fly' },
-      { type: 'image', src: 'run2fly-1.jpg', caption: 'On location · Run2Fly' },
-      { type: 'image', src: 'run2fly-2.jpg', caption: 'Behind the scenes' },
-    ],
-  },
 ]
 
 // Skills (perk tree)
