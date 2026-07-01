@@ -333,7 +333,7 @@ export const projects = [
     type: 'game',
     year: '2026',
     category: 'Game · 3D Environment Art',
-    role: 'Solo — modeling, texturing, lighting & real-time scene',
+    role: 'Solo, modeling, texturing, lighting & real-time scene',
     disciplines: ['3D / Environment Art', 'Modeling', 'PBR Texturing', 'Lighting', 'Real-Time Rendering'],
     summary:
       'A moody, real-time medieval environment, stone corridors, a candlelit altar, and a sword on its pedestal, built as a cinematic flythrough in Unreal Engine.',
@@ -348,7 +348,7 @@ export const projects = [
       'Atmospheric lighting: candlelight, volumetric glow, and a controlled, moody palette',
       'Composed as a cinematic flythrough that reads clearly from every camera angle',
     ],
-    media: [{ type: 'video', src: 'unreal-environment.mp4', caption: 'Real-time flythrough — Unreal Engine' }],
+    media: [{ type: 'video', src: 'unreal-environment.mp4', caption: 'Real-time flythrough, Unreal Engine' }],
     live: null,
     repo: null,
   },
@@ -358,7 +358,7 @@ export const projects = [
     type: 'game',
     year: '2026',
     category: 'Game · Gameplay & Systems Programming',
-    role: 'Solo — gameplay, systems & optimization',
+    role: 'Solo, gameplay, systems & optimization',
     disciplines: ['Gameplay Programming', 'Systems Programming', 'VFX (Niagara)', 'Procedural Generation (PCG)', 'Performance Optimization'],
     summary:
       'A real-time systems build I coded: a storm front and a snow front collide across one world, driven by a single balance value, with Niagara weather, PCG territory, and a real performance-optimization pass.',
