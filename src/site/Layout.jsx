@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { profile } from '../data/content.js'
-import AuroraBackground from './AuroraBackground.jsx'
 import Nav from './Nav.jsx'
 import Home from './pages/Home.jsx'
 import AboutPage from './pages/AboutPage.jsx'
@@ -23,8 +22,6 @@ export default function Layout() {
 
   return (
     <div className="site">
-      <AuroraBackground />
-      <div className="bg-scrim" aria-hidden="true" />
       <div className="bg-scan" aria-hidden="true" />
 
       <Nav />
