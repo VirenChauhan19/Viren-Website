@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, LayoutGroup } from 'framer-motion'
 import { profile } from '../data/content.js'
+import { hasStoredSession } from '../analytics/tracker.js'
 import { asset } from './asset.js'
 
 const LINKS = [
@@ -12,9 +13,26 @@ const LINKS = [
   { to: '/contact', label: 'Contact' },
 ]
 
+// Only the site owner sees this tab: it appears when a Supabase
+// dashboard session exists on this device (see src/analytics).
+const OWNER_LINK = { to: '/analytics', label: 'Analytics' }
+
 export default function Nav() {
   const [open, setOpen] = useState(false)
+  const [owner, setOwner] = useState(hasStoredSession)
   const close = () => setOpen(false)
+
+  useEffect(() => {
+    const sync = () => setOwner(hasStoredSession())
+    window.addEventListener('va-auth', sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener('va-auth', sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
+
+  const links = owner ? [...LINKS, OWNER_LINK] : LINKS
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
   const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
 
@@ -52,7 +70,7 @@ export default function Nav() {
 
         <LayoutGroup>
           <nav className={`nav-links ${open ? 'open' : ''}`}>
-            {LINKS.map((l) => (
+            {links.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}

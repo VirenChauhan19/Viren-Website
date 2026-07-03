@@ -1,0 +1,262 @@
+/* ============================================================
+   Visitor analytics dashboard — HUD theme on pure black.
+   Loaded only with the lazy /analytics chunk.
+   ============================================================ */
+
+.va-wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: calc(var(--nav-h) + 48px) 24px 90px;
+}
+
+.va-head { margin-bottom: 30px; }
+.va-head .section-sub { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.va-badge {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--acc);
+  border: 1px solid color-mix(in srgb, var(--acc) 45%, transparent);
+  border-radius: 999px; padding: 3px 10px; white-space: nowrap;
+}
+
+/* ---------- Setup / login panels ---------- */
+.va-panel {
+  border: 1px solid var(--line); border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02); padding: 28px;
+  max-width: 640px;
+}
+.va-panel-title { font-family: var(--display); font-size: 1.25rem; margin-bottom: 8px; }
+.va-panel-sub { color: var(--muted); margin-bottom: 18px; }
+.va-steps { list-style: decimal; padding-left: 22px; margin-bottom: 22px; display: grid; gap: 10px; color: var(--text); }
+.va-steps li::marker { color: var(--acc); font-family: var(--mono); }
+.va-steps a { color: var(--acc); }
+.va-steps code {
+  font-family: var(--mono); font-size: 0.85em; color: var(--acc);
+  background: rgba(56, 189, 248, 0.08); padding: 2px 6px; border-radius: 6px;
+}
+
+.va-login { max-width: 420px; }
+.va-login form { display: grid; gap: 14px; margin-bottom: 14px; }
+.va-login label { display: grid; gap: 6px; }
+.va-login label span {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.va-login input {
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line2);
+  border-radius: 10px; color: var(--text); font: inherit; padding: 11px 13px;
+}
+.va-login input:focus { outline: 2px solid var(--acc); outline-offset: 1px; border-color: transparent; }
+.va-linkbtn {
+  background: none; border: 0; cursor: pointer; padding: 4px 0;
+  font-family: var(--mono); font-size: 0.82rem; color: var(--muted);
+}
+.va-linkbtn:hover { color: var(--acc); }
+.va-boot { color: var(--muted); font-family: var(--mono); padding: 40px 0; }
+
+.va-error { color: #f87171; font-size: 0.9rem; margin: 0; }
+.va-error-wide { margin: 0 0 18px; }
+
+/* ---------- Toolbar (filters scope everything below) ---------- */
+.va-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap; margin-bottom: 22px;
+}
+.va-chips {
+  display: inline-flex; gap: 5px; padding: 5px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+  max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.va-chips::-webkit-scrollbar { display: none; }
+.va-chip {
+  border: 0; background: none; cursor: pointer; white-space: nowrap;
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em;
+  color: var(--muted); padding: 7px 14px; border-radius: 999px;
+  transition: color 0.2s, background 0.2s;
+}
+.va-chip:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+.va-chip.on { color: #04121d; background: var(--acc); font-weight: 700; }
+.va-tools { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.va-ghostbtn {
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line2);
+  border-radius: 999px; cursor: pointer; color: var(--muted);
+  font-family: var(--mono); font-size: 0.78rem; padding: 8px 14px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.va-ghostbtn:hover:not(:disabled) { color: var(--text); border-color: var(--acc); }
+.va-ghostbtn:disabled { opacity: 0.55; cursor: default; }
+
+.va-switch {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+}
+.va-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.va-switch-track {
+  width: 34px; height: 19px; border-radius: 999px; position: relative;
+  background: rgba(255, 255, 255, 0.09); border: 1px solid var(--line2);
+  transition: background 0.2s; flex: 0 0 auto;
+}
+.va-switch-track::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px;
+  border-radius: 50%; background: var(--muted); transition: transform 0.2s, background 0.2s;
+}
+.va-switch input:checked + .va-switch-track { background: rgba(56, 189, 248, 0.35); }
+.va-switch input:checked + .va-switch-track::after { transform: translateX(15px); background: var(--acc); }
+.va-switch input:focus-visible + .va-switch-track { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* ---------- Body / refetch keeps the frame ---------- */
+.va-body { display: grid; gap: 18px; }
+.va-body.loading { opacity: 0.55; transition: opacity 0.25s; }
+
+/* ---------- KPI tiles ---------- */
+.va-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.va-tile {
+  border: 1px solid var(--line); border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02); padding: 16px 18px;
+  display: grid; gap: 6px; align-content: start; min-width: 0;
+}
+.va-tile-label {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.va-tile-value {
+  font-family: var(--sans); font-weight: 650; font-size: 1.7rem;
+  line-height: 1.1; color: var(--text); overflow-wrap: anywhere;
+}
+.va-tile-delta { font-family: var(--mono); font-size: 0.74rem; }
+.va-tile-delta.up { color: #34d399; }
+.va-tile-delta.down { color: #f87171; }
+.va-tile-delta em { color: var(--faint); font-style: normal; }
+.va-tile-hint { font-size: 0.76rem; color: var(--faint); }
+
+/* ---------- Cards & grids ---------- */
+.va-card {
+  border: 1px solid var(--line); border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02); padding: 20px 20px 18px; min-width: 0;
+}
+.va-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 16px;
+}
+.va-card-title {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--text);
+}
+.va-card-title::before { content: '// '; color: var(--acc); }
+.va-card-sub { color: var(--faint); font-size: 0.8rem; margin: 4px 0 0; }
+.va-grid { display: grid; gap: 18px; }
+.va-grid.two { grid-template-columns: 1fr 1fr; }
+.va-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+/* ---------- Charts ---------- */
+.va-chart { position: relative; width: 100%; }
+.va-chart svg { display: block; overflow: visible; border-radius: 8px; }
+.va-axis {
+  font-family: var(--mono); font-size: 11px; fill: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.va-endlabel { font-family: var(--mono); font-size: 12px; font-weight: 700; fill: var(--text); }
+.va-legend { display: flex; gap: 16px; align-items: center; }
+.va-legend-item {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 0.74rem; color: var(--muted); white-space: nowrap;
+}
+.va-tip {
+  position: absolute; top: 8px; z-index: 5; pointer-events: none;
+  background: rgba(13, 20, 32, 0.96); border: 1px solid var(--line2);
+  border-radius: 10px; padding: 9px 12px; min-width: 130px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.va-tip-head { color: var(--faint); margin-bottom: 6px; white-space: nowrap; }
+.va-tip-row { display: flex; align-items: center; gap: 7px; line-height: 1.7; white-space: nowrap; }
+.va-tip-row strong { color: var(--text); font-weight: 700; }
+.va-tip-key { width: 12px; height: 2px; border-radius: 1px; display: inline-block; flex: 0 0 auto; }
+.va-empty {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--faint); font-family: var(--mono); font-size: 0.82rem;
+  border: 1px dashed var(--line); border-radius: 10px;
+}
+
+/* ---------- Bar lists ---------- */
+.va-bars { display: grid; gap: 13px; }
+.va-bars li { min-width: 0; }
+.va-bar-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.va-bar-label {
+  font-family: var(--mono); font-size: 0.82rem; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.va-bar-icon { margin-right: 7px; }
+.va-bar-value {
+  font-family: var(--mono); font-size: 0.82rem; color: var(--muted);
+  font-variant-numeric: tabular-nums; flex: 0 0 auto;
+}
+.va-bar-track { height: 8px; border-radius: 0 4px 4px 0; background: rgba(255, 255, 255, 0.05); }
+.va-bar-fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--acc); }
+.va-bars li:hover .va-bar-fill { background: #7dd3fc; }
+
+/* ---------- Recent activity table ---------- */
+.va-table { display: grid; gap: 0; font-size: 0.86rem; }
+.va-tr {
+  display: grid; align-items: baseline; gap: 6px 16px;
+  grid-template-columns: 86px 1.35fr 1fr 0.8fr 1.1fr;
+  padding: 10px 4px; border-top: 1px solid var(--line);
+}
+.va-tr:first-child { border-top: 0; }
+.va-thead span {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--faint);
+}
+.va-td { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.va-td-time { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.va-td-visitor { color: var(--text); }
+.va-flag { margin-right: 7px; }
+.va-td-page { font-family: var(--mono); font-size: 0.8rem; color: var(--acc); }
+.va-td-ref, .va-td-client { color: var(--muted); font-size: 0.8rem; }
+.va-new {
+  font-family: var(--mono); font-style: normal; font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4); border-radius: 999px;
+  padding: 1px 7px; margin-left: 8px; vertical-align: 1px;
+}
+
+/* ============================================================
+   Responsive: designed per breakpoint, text never shrinks.
+   ============================================================ */
+@media (max-width: 1080px) {
+  .va-kpis { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .va-grid.two, .va-grid.three { grid-template-columns: 1fr; }
+  .va-toolbar { flex-direction: column; align-items: stretch; }
+  .va-chips { justify-content: space-between; }
+  .va-chip { flex: 1; text-align: center; }
+  .va-tools { justify-content: space-between; }
+}
+
+@media (max-width: 720px) {
+  .va-wrap { padding: calc(var(--nav-h) + 34px) 18px 70px; }
+  .va-thead { display: none; }
+  .va-tr {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'visitor time'
+      'page    page'
+      'meta    meta';
+    padding: 13px 2px;
+  }
+  .va-td-visitor { grid-area: visitor; white-space: normal; }
+  .va-td-time { grid-area: time; }
+  .va-td-page { grid-area: page; }
+  .va-td-ref { display: none; }
+  .va-td-client { grid-area: meta; }
+  .va-panel { padding: 22px 18px; }
+}
+
+@media (max-width: 560px) {
+  .va-kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .va-tile { padding: 14px 15px; }
+  .va-card-head { flex-wrap: wrap; } /* legend wraps below the title, never disappears */
+}

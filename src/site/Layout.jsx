@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { profile } from '../data/content.js'
+import { usePageTracking } from '../analytics/tracker.js'
 import Nav from './Nav.jsx'
 import Home from './pages/Home.jsx'
 import AboutPage from './pages/AboutPage.jsx'
@@ -9,6 +10,9 @@ import ProjectsPage from './pages/ProjectsPage.jsx'
 import ProjectDetail from './pages/ProjectDetail.jsx'
 import ExperiencePage from './pages/ExperiencePage.jsx'
 import ContactPage from './pages/ContactPage.jsx'
+
+// Private analytics dashboard: lazy so visitors never download it.
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx'))
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -19,6 +23,7 @@ function ScrollToTop() {
 export default function Layout() {
   const location = useLocation()
   const year = new Date().getFullYear()
+  usePageTracking()
 
   return (
     <div className="site">
@@ -35,6 +40,14 @@ export default function Layout() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/experience" element={<ExperiencePage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route
+            path="/analytics"
+            element={
+              <Suspense fallback={null}>
+                <AnalyticsPage />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
