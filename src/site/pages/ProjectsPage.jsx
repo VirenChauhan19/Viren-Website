@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { projects } from '../../data/content.js'
-import { useSpotlight } from '../fx.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
 import AppDemo from '../AppDemo.jsx'
 import Page from '../Page.jsx'
@@ -15,14 +14,9 @@ const FILTERS = [
 function ProjectCard({ p }) {
   const isAi = p.type === 'ai'
   const media = p.media && p.media[0]
-  const spot = useSpotlight()
 
   return (
-    <article
-      className={`project-card ${isAi ? 'ai' : 'game'}${p.featured ? ' featured' : ''}`}
-      ref={spot.ref}
-      onMouseMove={spot.onMouseMove}
-    >
+    <article className={`project-card ${isAi ? 'ai' : 'game'}${p.featured ? ' featured' : ''}`}>
       {p.demo ? (
         <AppDemo kind={p.demo} title={p.name} />
       ) : media ? (

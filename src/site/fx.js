@@ -61,19 +61,6 @@ export function useTilt(max = 8) {
   return { ref, onMouseMove, onMouseLeave }
 }
 
-// Cursor-tracked spotlight only (no tilt). Safe for cards that hold iframes.
-export function useSpotlight() {
-  const ref = useRef(null)
-  const onMouseMove = useCallback((e) => {
-    const el = ref.current
-    if (!el) return
-    const r = el.getBoundingClientRect()
-    el.style.setProperty('--mx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`)
-    el.style.setProperty('--my', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`)
-  }, [])
-  return { ref, onMouseMove }
-}
-
 // Buttons that lean toward the cursor while hovered.
 export function useMagnetic(strength = 0.32) {
   const ref = useRef(null)

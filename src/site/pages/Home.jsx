@@ -1,19 +1,15 @@
 import { Link } from 'react-router-dom'
 import { projects } from '../../data/content.js'
-import { useSpotlight } from '../fx.js'
 import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 
 const FEATURED = ['la-ultra-running-plans', 'scad-distance-team-hub', 'top-down-shooter']
 
 function FeatCard({ p }) {
-  const spot = useSpotlight()
   return (
     <Link
       to={`/projects/${p.slug}`}
       className={`feat-card ${p.type === 'ai' ? 'ai' : 'game'}${p.featured ? ' is-featured' : ''} reveal`}
-      ref={spot.ref}
-      onMouseMove={spot.onMouseMove}
     >
       {p.featured && <span className="feat-flag">★ Featured</span>}
       <span className="feat-cat">{p.category || (p.type === 'ai' ? 'Web · UI/UX' : 'Game Dev')}</span>

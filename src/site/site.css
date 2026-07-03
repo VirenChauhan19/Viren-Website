@@ -429,14 +429,7 @@ body { -webkit-tap-highlight-color: transparent; }
 .watch-link { font-family: var(--mono); font-size: 0.8rem; color: var(--acc); border: 1px solid color-mix(in srgb, var(--acc) 30%, transparent); border-radius: 8px; padding: 6px 12px; transition: background 0.2s; }
 .watch-link:hover { background: color-mix(in srgb, var(--acc) 10%, transparent); }
 
-/* Interactive timeline: scroll reveal, spotlight cards, glowing nodes */
-.tl-card { position: relative; overflow: hidden; }
-.tl-card > * { position: relative; z-index: 2; }
-.tl-card::after {
-  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.35s;
-  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--acc) 12%, transparent), transparent 60%);
-}
-.tl-card:hover::after { opacity: 1; }
+/* Interactive timeline: scroll reveal, glowing nodes */
 .tl-item.seen .tl-node { border-color: color-mix(in srgb, var(--acc) 70%, var(--faint)); }
 .tl-item.active .tl-node { border-color: var(--green); background: var(--green); animation: tlPulse 2.6s infinite; }
 @keyframes tlPulse {
@@ -644,16 +637,6 @@ body { -webkit-tap-highlight-color: transparent; }
 /* Display typeface on key headings */
 .contact-title, .proj-name, .tl-role, .branch-head h3 { font-family: var(--display); }
 
-/* Cursor spotlight on cards */
-.project-card { position: relative; }
-.skill-branch { position: relative; overflow: hidden; }
-.focus-card::after, .skill-branch::after, .project-card::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s; z-index: 1;
-  background: radial-gradient(440px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--acc) 12%, transparent), transparent 60%);
-}
-.focus-card:hover::after, .skill-branch:hover::after, .project-card:hover::after { opacity: 1; }
-.focus-card > *, .skill-branch > *, .project-card > * { position: relative; z-index: 2; }
-
 /* ---------- Multi-page layout ---------- */
 .site { position: relative; display: flex; flex-direction: column; min-height: 100vh; }
 .page { flex: 1 0 auto; }
@@ -668,8 +651,6 @@ body { -webkit-tap-highlight-color: transparent; }
 .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: feat; }
 .feat-card { position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); transition: transform 0.22s ease, border-color 0.22s, box-shadow 0.22s; }
 .feat-card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--acc) 45%, var(--line2)); box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45); }
-.feat-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--acc) 12%, transparent), transparent 60%); }
-.feat-card:hover::after { opacity: 1; }
 .feat-card > * { position: relative; z-index: 2; }
 /* Ghost index numeral, HUD-style */
 .feat-card::before {

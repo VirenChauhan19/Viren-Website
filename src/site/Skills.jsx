@@ -1,5 +1,4 @@
 import { skills } from '../data/content.js'
-import { useSpotlight } from './fx.js'
 
 // Front-end and engineering lead; games are where the systems thinking started.
 const BRANCHES = [
@@ -20,10 +19,9 @@ function Dots({ level }) {
 }
 
 function Branch({ b }) {
-  const s = useSpotlight()
   const nodes = skills.filter((n) => n.branch === b.id)
   return (
-    <div className={`skill-branch a-${b.accent} reveal`} ref={s.ref} onMouseMove={s.onMouseMove}>
+    <div className={`skill-branch a-${b.accent} reveal`}>
       <div className="branch-head">
         <span className="branch-bar" />
         <div>

@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { experience } from '../data/content.js'
 import { youtubeWatchUrl } from './asset.js'
-import { useSpotlight } from './fx.js'
 
 function TimelineItem({ exp, index }) {
   const [seen, setSeen] = useState(false)
-  const spot = useSpotlight()
   const active = exp.dates && /present|upcoming/i.test(exp.dates)
   const reels = (exp.media || []).filter((m) => m.type === 'youtube')
 
@@ -20,7 +18,7 @@ function TimelineItem({ exp, index }) {
       onViewportEnter={() => setSeen(true)}
     >
       <span className="tl-node" />
-      <div className="tl-card" ref={spot.ref} onMouseMove={spot.onMouseMove}>
+      <div className="tl-card">
         <div className="tl-top">
           <span className="tl-dates">{exp.dates || ''}</span>
           {active && <span className="tl-badge">ACTIVE</span>}
