@@ -17,9 +17,19 @@ const SCRIPTS = {
     { screen: 'plan',      dur: 3800, cap: <>Build a <b>personalized plan</b> in one tap</> },
     { screen: 'progress',  dur: 3400, cap: <>Track <b>real progress</b> over time</> },
   ],
+  xc: [
+    { screen: 'week',     dur: 3600, cap: <>Coaches build <b>each athlete&apos;s week</b></> },
+    { screen: 'teamcal',  dur: 3200, cap: <>One <b>shared calendar</b> for the whole team</> },
+    { screen: 'dm',       dur: 3800, cap: <><b>Direct messaging</b>, coach to athlete</> },
+    { screen: 'feedback', dur: 4200, cap: <><b>Honest feedback</b> after every workout</> },
+  ],
 }
 
-const APP_NAME = { study: 'Study Command Center', laultra: 'La Ultra · Patient App' }
+const APP_NAME = {
+  study: 'Study Command Center',
+  laultra: 'La Ultra · Patient App',
+  xc: 'SCAD Distance · Team Hub',
+}
 
 const prefersReduced = () =>
   typeof window !== 'undefined' &&
@@ -86,6 +96,71 @@ function Scene({ kind, screen }) {
           </div>
         </div>
         <div className="composer"><span className="ph">Ask about your notes…</span><span className="send">↑</span></div>
+      </>
+    )
+  }
+
+  if (kind === 'xc') {
+    if (screen === 'week') {
+      return (
+        <>
+          <div className="sc-head">Viren C. — week of Mar 9</div>
+          <ul className="wk">
+            <li><b>Mon</b> Easy run · 8 km</li>
+            <li><b>Tue</b> Track · 10 × 400 m</li>
+            <li><b>Wed</b> Recovery + core</li>
+            <li><b>Thu</b> Tempo · 5 km</li>
+            <li><b>Sat</b> Long run · 16 km</li>
+          </ul>
+          <span className="cur" aria-hidden="true" />
+        </>
+      )
+    }
+    if (screen === 'teamcal') {
+      const days = [
+        { d: 9 }, { d: 10, ev: 'Track AM' }, { d: 11 }, { d: 12, ev: 'Tempo' },
+        { d: 13 }, { d: 14, ev: 'Meet day', g: true }, { d: 15 },
+      ]
+      return (
+        <>
+          <div className="sc-head">Team calendar · March</div>
+          <div className="cal">
+            {days.map((c, i) => (
+              <div className="cell" key={c.d}>
+                <span className="dnum">{c.d}</span>
+                {c.ev && <span className={`ev ev${i} ${c.g ? 'g' : ''}`}>{c.ev}</span>}
+              </div>
+            ))}
+          </div>
+        </>
+      )
+    }
+    if (screen === 'dm') {
+      return (
+        <>
+          <div className="sc-head">Coach · direct message</div>
+          <div className="bubbles">
+            <div className="bub ai">How did the 400s feel today?</div>
+            <div className="bub me">Strong through 8, legs faded on the last two.</div>
+          </div>
+          <div className="composer"><span className="ph">Message your coach…</span><span className="send">↑</span></div>
+        </>
+      )
+    }
+    // feedback
+    return (
+      <>
+        <div className="sc-head">Post-workout · Track 10 × 400 m</div>
+        <div className="fb">
+          <div className="fb-sess">Effort <b>7 / 10</b></div>
+          <div className="fb-scale" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, i) => (
+              <i key={i} className={i < 7 ? 'on' : ''} />
+            ))}
+          </div>
+          <div className="fb-note">“Hit all the splits, hamstrings tight on the last two reps.”</div>
+          <div className="fb-sess">Sent to <b>Coach ✓</b></div>
+        </div>
       </>
     )
   }

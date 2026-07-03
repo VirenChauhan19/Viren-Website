@@ -8,6 +8,7 @@ const ROLES = ['Software Developer', 'Front-End Developer', 'UI / UX Designer', 
 
 export default function Hero() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
+  const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
   const grad = education[0]?.grad
   const typed = useTypewriter(ROLES)
   const cta1 = useMagnetic()
@@ -58,6 +59,9 @@ export default function Hero() {
             {github && (
               <a href={github} target="_blank" rel="noreferrer">GitHub ↗</a>
             )}
+            {linkedin && (
+              <a href={linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
+            )}
             <a href={`mailto:${profile.email}`}>Email ↗</a>
           </div>
         </div>
@@ -80,7 +84,7 @@ export default function Hero() {
             <div className="spec-row"><span>focus</span><strong>Front-End · UI/UX · Games</strong></div>
             <div className="spec-row"><span>studying</span><strong>B.F.A. Game Dev · SCAD</strong></div>
             {grad && <div className="spec-row"><span>graduating</span><strong>{grad} (expected)</strong></div>}
-            <div className="spec-row"><span>now</span><strong className="ok">Building side projects</strong></div>
+            <div className="spec-row"><span>now</span><strong className="ok">Classes at SCAD + side projects</strong></div>
           </div>
         </aside>
       </div>

@@ -4,7 +4,7 @@ import { useSpotlight } from '../fx.js'
 import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 
-const FEATURED = ['la-ultra-running-plans', 'study-command-center', 'top-down-shooter']
+const FEATURED = ['la-ultra-running-plans', 'scad-distance-team-hub', 'top-down-shooter']
 
 function FeatCard({ p }) {
   const spot = useSpotlight()
@@ -19,7 +19,7 @@ function FeatCard({ p }) {
       <span className="feat-cat">{p.category || (p.type === 'ai' ? 'Web · UI/UX' : 'Game Dev')}</span>
       <h3>{p.name}</h3>
       <p>{p.summary}</p>
-      <span className="feat-go">View details →</span>
+      <span className="feat-go">View details <span className="arr">→</span></span>
     </Link>
   )
 }
@@ -40,6 +40,7 @@ export default function Home() {
             <FeatCard key={p.slug} p={p} />
           ))}
         </div>
+        <div className="swipe-hint" aria-hidden="true">swipe →</div>
         <div className="featured-cta reveal">
           <Link to="/projects" className="btn btn-primary">
             See all projects <span className="arr">→</span>

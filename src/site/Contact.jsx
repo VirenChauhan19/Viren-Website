@@ -2,6 +2,7 @@ import { profile } from '../data/content.js'
 
 export default function Contact() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
+  const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
   const facts = [
     `Based in ${profile.location}, currently at SCAD`,
     'I read every message myself',
@@ -26,6 +27,11 @@ export default function Contact() {
           {github && (
             <a className="btn btn-ghost" href={github} target="_blank" rel="noreferrer">
               GitHub ↗
+            </a>
+          )}
+          {linkedin && (
+            <a className="btn btn-ghost" href={linkedin} target="_blank" rel="noreferrer">
+              LinkedIn ↗
             </a>
           )}
         </div>

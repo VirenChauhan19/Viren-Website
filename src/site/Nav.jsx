@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, LayoutGroup } from 'framer-motion'
 import { profile } from '../data/content.js'
@@ -15,11 +15,28 @@ const LINKS = [
 export default function Nav() {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
+  const github = profile.links.find((l) => l.label === 'GitHub')?.url
+  const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
+
+  // Brand click: go home and scroll to the very top, even when already on "/"
+  // (route doesn't change then, so ScrollToTop in Layout never fires).
+  // Plain scrollTo(0, 0) follows the CSS scroll-behavior: smooth normally,
+  // instant for reduced-motion users.
+  const onBrand = () => {
+    close()
+    window.scrollTo(0, 0)
+  }
+
+  // Lock page scroll while the mobile menu is open.
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   return (
     <header className="nav">
       <div className="nav-inner">
-        <NavLink to="/" end className="nav-brand" onClick={close}>
+        <NavLink to="/" end className="nav-brand" onClick={onBrand}>
           <img className="nav-logo" src={asset(profile.photo)} alt="" aria-hidden="true" />
           VIREN<span className="dotexe">.exe</span>
         </NavLink>
@@ -51,6 +68,16 @@ export default function Nav() {
                 )}
               </NavLink>
             ))}
+
+            <div className="nav-menu-foot">
+              {github && (
+                <a href={github} target="_blank" rel="noreferrer" onClick={close}>GitHub ↗</a>
+              )}
+              {linkedin && (
+                <a href={linkedin} target="_blank" rel="noreferrer" onClick={close}>LinkedIn ↗</a>
+              )}
+              <a href={`mailto:${profile.email}`} onClick={close}>Email ↗</a>
+            </div>
           </nav>
         </LayoutGroup>
       </div>

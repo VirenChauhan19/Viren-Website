@@ -46,7 +46,6 @@ export default function Layout() {
             <span className="footer-tag">{profile.title}</span>
           </div>
           <div className="footer-meta">
-            <span>Built with React and Vite. Hand-coded, no template. There is a playable game version of this site too.</span>
             <span>© {year} Viren Chauhan</span>
           </div>
         </div>
