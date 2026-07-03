@@ -1,11 +1,10 @@
 // Private visitor-analytics dashboard, lazy-loaded at /#/analytics.
 // Regular visitors never download this chunk (or the Supabase SDK).
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Page from '../Page.jsx'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, isConfigured } from '../../analytics/config.js'
 import { startOfDay } from '../../analytics/aggregate.js'
 import Dashboard, { RANGES } from '../../analytics/Dashboard.jsx'
-import { demoRows } from '../../analytics/demo.js'
 import '../../analytics/analytics.css'
 
 const DAY = 86400000
@@ -20,7 +19,7 @@ function getSupabase() {
   return sbPromise
 }
 
-function SetupPanel({ onDemo }) {
+function SetupPanel() {
   return (
     <div className="va-panel">
       <h2 className="va-panel-title">One-time setup</h2>
@@ -35,12 +34,11 @@ function SetupPanel({ onDemo }) {
         <li>Under <b>Project Settings → API</b>, copy the <b>Project URL</b> and <b>anon public key</b> into <code>src/analytics/config.js</code>.</li>
         <li>Commit and push. Once deployed, sign in here and the numbers start flowing.</li>
       </ol>
-      <button className="btn btn-ghost" onClick={onDemo}>Preview the dashboard with sample data →</button>
     </div>
   )
 }
 
-function LoginPanel({ onDemo }) {
+function LoginPanel() {
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [err, setErr] = useState(null)
@@ -81,14 +79,12 @@ function LoginPanel({ onDemo }) {
         {err && <p className="va-error" role="alert">{err}</p>}
         <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
       </form>
-      <button className="va-linkbtn" onClick={onDemo}>or preview with sample data →</button>
     </div>
   )
 }
 
 export default function AnalyticsPage() {
   const configured = isConfigured()
-  const [demo, setDemo] = useState(false)
   const [session, setSession] = useState(undefined) // undefined = still checking
   const [rangeKey, setRangeKey] = useState('30')
   const [data, setData] = useState({ rows: [], prevRows: null })
@@ -97,7 +93,6 @@ export default function AnalyticsPage() {
   const [optout, setOptout] = useState(() => {
     try { return localStorage.getItem('va_optout') === '1' } catch { return false }
   })
-  const demoCache = useRef(null)
 
   const range = RANGES.find((r) => r.key === rangeKey)
 
@@ -133,24 +128,16 @@ export default function AnalyticsPage() {
         prevStart.setDate(prevStart.getDate() - days)
         sinceMs = prevStart.getTime() // previous period, for the deltas
       }
-      let all
-      if (demo) {
-        if (!demoCache.current) demoCache.current = demoRows(80)
-        all = sinceMs != null
-          ? demoCache.current.filter((r) => new Date(r.created_at).getTime() >= sinceMs)
-          : demoCache.current
-      } else {
-        const sb = await getSupabase()
-        const sinceIso = sinceMs != null ? new Date(sinceMs).toISOString() : null
-        all = []
-        for (let from = 0; from < 10000; from += 1000) {
-          let q = sb.from('page_views').select('*').order('created_at', { ascending: false }).range(from, from + 999)
-          if (sinceIso) q = q.gte('created_at', sinceIso)
-          const { data: chunk, error: err } = await q
-          if (err) throw err
-          all = all.concat(chunk)
-          if (chunk.length < 1000) break
-        }
+      const sb = await getSupabase()
+      const sinceIso = sinceMs != null ? new Date(sinceMs).toISOString() : null
+      let all = []
+      for (let from = 0; from < 10000; from += 1000) {
+        let q = sb.from('page_views').select('*').order('created_at', { ascending: false }).range(from, from + 999)
+        if (sinceIso) q = q.gte('created_at', sinceIso)
+        const { data: chunk, error: err } = await q
+        if (err) throw err
+        all = all.concat(chunk)
+        if (chunk.length < 1000) break
       }
       if (splitAt != null) {
         const rows = []
@@ -168,9 +155,9 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }, [demo, range.days])
+  }, [range.days])
 
-  const active = demo || (configured && Boolean(session))
+  const active = configured && Boolean(session)
 
   useEffect(() => {
     if (active) load()
@@ -178,10 +165,10 @@ export default function AnalyticsPage() {
 
   // Light auto-refresh so the "Recent activity" feed feels live.
   useEffect(() => {
-    if (!active || demo) return undefined
+    if (!active) return undefined
     const id = setInterval(() => { if (!document.hidden) load() }, 60000)
     return () => clearInterval(id)
-  }, [active, demo, load])
+  }, [active, load])
 
   const toggleOptout = () => {
     setOptout((v) => {
@@ -204,13 +191,12 @@ export default function AnalyticsPage() {
           <h1 className="section-title">Visitor <span className="hl-cyan">Analytics</span></h1>
           <p className="section-sub">
             Who&apos;s opening virenchauhan.com — where they&apos;re from, what they read, and how they got here.
-            {demo && <span className="va-badge">sample data</span>}
           </p>
         </header>
 
-        {!configured && !demo && <SetupPanel onDemo={() => setDemo(true)} />}
-        {configured && !demo && session === undefined && <div className="va-boot">Connecting…</div>}
-        {configured && !demo && session === null && <LoginPanel onDemo={() => setDemo(true)} />}
+        {!configured && <SetupPanel />}
+        {configured && session === undefined && <div className="va-boot">Connecting…</div>}
+        {configured && session === null && <LoginPanel />}
 
         {active && (
           <>
@@ -232,16 +218,12 @@ export default function AnalyticsPage() {
                 <button type="button" className="va-ghostbtn" onClick={load} disabled={loading}>
                   {loading ? 'Refreshing…' : '⟳ Refresh'}
                 </button>
-                {!demo && (
-                  <label className="va-switch" title="Keeps your own browsing on this device out of the stats">
-                    <input type="checkbox" checked={optout} onChange={toggleOptout} />
-                    <span className="va-switch-track" aria-hidden="true" />
-                    Ignore my visits
-                  </label>
-                )}
-                {demo
-                  ? <button type="button" className="va-ghostbtn" onClick={() => setDemo(false)}>Exit sample data</button>
-                  : <button type="button" className="va-ghostbtn" onClick={signOut}>Sign out</button>}
+                <label className="va-switch" title="Keeps your own browsing on this device out of the stats">
+                  <input type="checkbox" checked={optout} onChange={toggleOptout} />
+                  <span className="va-switch-track" aria-hidden="true" />
+                  Ignore my visits
+                </label>
+                <button type="button" className="va-ghostbtn" onClick={signOut}>Sign out</button>
               </div>
             </div>
 
