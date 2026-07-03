@@ -65,8 +65,8 @@ function LoginPanel() {
 
   return (
     <div className="va-panel va-login">
-      <h2 className="va-panel-title">Owner sign-in</h2>
-      <p className="va-panel-sub">This data is private. Sign in with the account you created in Supabase.</p>
+      <h2 className="va-panel-title">Just me back here</h2>
+      <p className="va-panel-sub">This is where I peek at the site&apos;s visitor stats. If you&apos;re me — welcome back. If not, the projects page is way more fun.</p>
       <form onSubmit={submit}>
         <label>
           <span>Email</span>
