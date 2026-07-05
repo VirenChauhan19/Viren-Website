@@ -1,14 +1,28 @@
+import { useState } from 'react'
 import { profile } from '../data/content.js'
+import { asset } from './asset.js'
+import { trackPageView } from '../analytics/tracker.js'
 
 export default function Contact() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
   const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
+  const [copied, setCopied] = useState(false)
   const facts = [
     `Based in ${profile.location}, currently at SCAD`,
     'I read every message myself',
     'Usually reply within a day',
   ]
   const subject = encodeURIComponent('Hello Viren')
+
+  // mailto fails quietly on machines with no mail client — recruiters on
+  // corporate laptops, mostly — so the address can also be copied directly.
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(profile.email)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* clipboard blocked: mailto button still works */ }
+  }
 
   return (
     <section id="contact" className="section contact">
@@ -19,10 +33,34 @@ export default function Contact() {
           Want to work on something together, talk shop, or just say hi? Email is the best way to
           reach me, and I always write back.
         </p>
+        <p className="contact-recruit">
+          Recruiting?{' '}
+          <a
+            href={asset(profile.resume)}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackPageView('/resume')}
+          >
+            Grab my resume (PDF) ↗
+          </a>{' '}
+          — I&apos;m open to Summer 2027 software engineering internships.
+        </p>
 
         <div className="contact-cta">
           <a className="btn btn-primary" href={`mailto:${profile.email}?subject=${subject}`}>
             ✉ {profile.email}
+          </a>
+          <button className="btn btn-ghost" type="button" onClick={copyEmail}>
+            {copied ? 'Copied ✓' : 'Copy email'}
+          </button>
+          <a
+            className="btn btn-ghost"
+            href={asset(profile.resume)}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackPageView('/resume')}
+          >
+            Resume ↗
           </a>
           {github && (
             <a className="btn btn-ghost" href={github} target="_blank" rel="noreferrer">

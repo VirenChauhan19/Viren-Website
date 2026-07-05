@@ -8,7 +8,7 @@
 //    row-level security in setup.sql is what protects the data)
 // 4. Authentication -> Users -> Add user: create yourself a
 //    login (use the same email as in setup.sql), then sign in
-//    at virenchauhan.com/#/analytics
+//    at virenchauhan.com/analytics
 //
 // Until both values are filled in, tracking is silently off and
 // the /analytics page shows these setup steps.

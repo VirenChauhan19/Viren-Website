@@ -8,16 +8,6 @@ const BRANCHES = [
   { id: 'soft', label: 'Leadership & Field', accent: 'green', desc: 'Field leadership, ops, communication, crisis management.' },
 ]
 
-function Dots({ level }) {
-  return (
-    <span className="dots" aria-label={`${level} of 5`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={`dot ${n <= level ? 'on' : ''}`} />
-      ))}
-    </span>
-  )
-}
-
 function Branch({ b }) {
   const nodes = skills.filter((n) => n.branch === b.id)
   return (
@@ -34,7 +24,6 @@ function Branch({ b }) {
           <li key={n.id} className="skill-node">
             <div className="skill-top">
               <span className="skill-name">{n.name}</span>
-              <Dots level={n.level} />
             </div>
             <p className="skill-desc">{n.desc}</p>
           </li>

@@ -3,6 +3,12 @@ import { motion } from 'framer-motion'
 import { experience } from '../data/content.js'
 import { youtubeWatchUrl } from './asset.js'
 
+// Engineering signal first; the ops/sport track record follows.
+const GROUPS = [
+  { id: 'tech', label: 'Engineering & Design', desc: 'Shipped software and client design work.' },
+  { id: 'ops', label: 'Operations, Sport & Leadership', desc: 'Big events, campus roles, and the endurance world that built the work ethic.' },
+]
+
 function TimelineItem({ exp, index }) {
   const [seen, setSeen] = useState(false)
   const active = exp.dates && /present|upcoming/i.test(exp.dates)
@@ -57,10 +63,8 @@ function TimelineItem({ exp, index }) {
   )
 }
 
-export default function Experience() {
+function Timeline({ items }) {
   const timelineRef = useRef(null)
-  const total = experience.length
-  const activeCount = experience.filter((e) => e.dates && /present|upcoming/i.test(e.dates)).length
 
   // Fill the timeline line with accent as the section scrolls past (no re-render).
   useEffect(() => {
@@ -81,12 +85,26 @@ export default function Experience() {
   }, [])
 
   return (
+    <ol className="timeline" ref={timelineRef}>
+      {items.map((exp, i) => (
+        <TimelineItem key={`${exp.role}-${exp.org}`} exp={exp} index={i} />
+      ))}
+    </ol>
+  )
+}
+
+export default function Experience() {
+  const total = experience.length
+  const activeCount = experience.filter((e) => e.dates && /present|upcoming/i.test(e.dates)).length
+
+  return (
     <section id="experience" className="section experience">
       <div className="section-head reveal">
         <span className="kicker">experience</span>
         <h2 className="section-title">Track record</h2>
         <p className="section-sub">
-          Leadership, operations, design, sport, and film. Everything I have built up so far.
+          Engineering and design first, then everything else that built the work ethic: events,
+          operations, sport, and film.
         </p>
         <div className="exp-stats">
           <span className="exp-stat"><strong>{total}</strong> roles</span>
@@ -95,11 +113,19 @@ export default function Experience() {
         </div>
       </div>
 
-      <ol className="timeline" ref={timelineRef}>
-        {experience.map((exp, i) => (
-          <TimelineItem key={i} exp={exp} index={i} />
-        ))}
-      </ol>
+      {GROUPS.map((g) => {
+        const items = experience.filter((e) => (e.group || 'ops') === g.id)
+        if (items.length === 0) return null
+        return (
+          <div key={g.id} className="tl-group">
+            <div className="tl-group-head reveal">
+              <h3>{g.label}</h3>
+              <span className="tl-group-desc">{g.desc}</span>
+            </div>
+            <Timeline items={items} />
+          </div>
+        )
+      })}
     </section>
   )
 }

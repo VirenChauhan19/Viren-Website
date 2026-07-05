@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, LayoutGroup } from 'framer-motion'
 import { profile } from '../data/content.js'
-import { hasStoredSession } from '../analytics/tracker.js'
+import { hasStoredSession, trackPageView } from '../analytics/tracker.js'
 import { asset } from './asset.js'
 
 const LINKS = [
@@ -86,6 +86,16 @@ export default function Nav() {
                 )}
               </NavLink>
             ))}
+
+            <a
+              className="nav-resume"
+              href={asset(profile.resume)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => { close(); trackPageView('/resume') }}
+            >
+              Resume ↗
+            </a>
 
             <div className="nav-menu-foot">
               {github && (

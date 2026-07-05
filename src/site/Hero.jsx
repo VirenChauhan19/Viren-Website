@@ -3,16 +3,19 @@ import { Link } from 'react-router-dom'
 import { profile, education } from '../data/content.js'
 import { asset } from './asset.js'
 import { useTypewriter, useMagnetic } from './fx.js'
+import { trackPageView } from '../analytics/tracker.js'
 
-const ROLES = ['Software Developer', 'Front-End Developer', 'UI / UX Designer', 'Game Developer']
+// One identity, rotating flavors — recruiters should never wonder what I am.
+const FLAVORS = ['front-end & UI/UX', 'full products, shipped', 'games & real-time 3D', 'applied AI features']
 
 export default function Hero() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
   const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
   const grad = education[0]?.grad
-  const typed = useTypewriter(ROLES)
+  const typed = useTypewriter(FLAVORS)
   const cta1 = useMagnetic()
   const cta2 = useMagnetic()
+  const cta3 = useMagnetic()
   const heroRef = useRef(null)
 
   const onParallax = (e) => {
@@ -33,14 +36,16 @@ export default function Hero() {
         <div className="hero-main reveal">
           <div className="status-chip">
             <span className="pulse-dot" />
-            Based in {profile.location}
+            {profile.seeking}
+            <span className="chip-sep">·</span>
+            <span className="chip-muted">{profile.location}</span>
           </div>
 
           <h1 className="hero-name">Viren Chauhan</h1>
 
-          <div className="hero-role" aria-label="Software Developer, Front-End Developer, UI/UX Designer, Game Developer">
+          <div className="hero-role" aria-label="Software Developer — front-end and UI/UX, full products, games and real-time 3D, applied AI">
             <span className="role-prefix">&gt;</span>
-            <span className="role-text">{typed}</span>
+            <span className="role-text">Software Developer <span className="role-flavor">· {typed}</span></span>
             <span className="type-caret" />
           </div>
 
@@ -50,6 +55,18 @@ export default function Hero() {
             <Link className="btn btn-primary" to="/projects" ref={cta1.ref} onMouseMove={cta1.onMouseMove} onMouseLeave={cta1.onMouseLeave}>
               See my work <span className="arr">→</span>
             </Link>
+            <a
+              className="btn btn-ghost"
+              href={asset(profile.resume)}
+              target="_blank"
+              rel="noreferrer"
+              ref={cta3.ref}
+              onMouseMove={cta3.onMouseMove}
+              onMouseLeave={cta3.onMouseLeave}
+              onClick={() => trackPageView('/resume')}
+            >
+              Resume ↗
+            </a>
             <Link className="btn btn-ghost" to="/contact" ref={cta2.ref} onMouseMove={cta2.onMouseMove} onMouseLeave={cta2.onMouseLeave}>
               Get in touch
             </Link>
@@ -84,7 +101,7 @@ export default function Hero() {
             <div className="spec-row"><span>focus</span><strong>Front-End · UI/UX · Games</strong></div>
             <div className="spec-row"><span>studying</span><strong>B.F.A. Game Dev · SCAD</strong></div>
             {grad && <div className="spec-row"><span>graduating</span><strong>{grad} (expected)</strong></div>}
-            <div className="spec-row"><span>now</span><strong className="ok">Classes at SCAD + side projects</strong></div>
+            <div className="spec-row"><span>status</span><strong className="ok">Open to Summer 2027 internships</strong></div>
           </div>
         </aside>
       </div>

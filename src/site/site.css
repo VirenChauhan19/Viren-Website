@@ -287,9 +287,6 @@ body { -webkit-tap-highlight-color: transparent; }
 .skill-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
 .skill-name { font-weight: 600; color: var(--text); font-size: 0.98rem; }
 .skill-desc { margin: 0; color: var(--muted); font-size: 0.86rem; }
-.dots { display: inline-flex; gap: 5px; flex-shrink: 0; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); }
-.dot.on { background: var(--acc); }
 
 /* ---------- Projects ---------- */
 .filters { display: inline-flex; gap: 6px; margin-top: 22px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.02); }
@@ -1004,4 +1001,59 @@ body { -webkit-tap-highlight-color: transparent; }
    (Lives after the 860px carousel block so it wins the cascade.) */
 @media (max-width: 480px) {
   .feat-grid { margin-inline: -18px; padding-inline: 18px; scroll-padding-inline: 18px; }
+}
+
+/* ============================================================
+   Recruiter kit: availability chip, resume links, experience
+   groups, contact fast path (added 2026-07)
+   ============================================================ */
+
+/* Availability chip can hold two segments; let it wrap on narrow screens. */
+.status-chip { flex-wrap: wrap; max-width: 100%; row-gap: 4px; }
+
+/* Hero role line: fixed identity, muted rotating flavor. */
+.role-flavor { color: var(--muted); }
+
+/* Resume pill in the desktop nav. */
+.nav-links .nav-resume {
+  margin-left: 8px;
+  padding: 8px 15px;
+  font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.02em;
+  color: var(--acc);
+  border: 1px solid color-mix(in srgb, var(--acc) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--acc) 7%, transparent);
+}
+.nav-links .nav-resume:hover {
+  color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 14%, transparent);
+  border-color: var(--acc);
+}
+
+/* Experience page groups: engineering first, then ops/sport. */
+.tl-group + .tl-group { margin-top: 40px; }
+.tl-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin: 0 0 20px 2px; }
+.tl-group-head h3 { font-family: var(--display); font-size: 1.12rem; font-weight: 600; letter-spacing: 0.01em; }
+.tl-group-head h3::before { content: '▸ '; color: var(--acc); }
+.tl-group-desc { font-family: var(--mono); font-size: 0.78rem; color: var(--faint); }
+
+/* Recruiter fast path on the contact card. */
+.contact-recruit { margin: -6px auto 26px; max-width: 56ch; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+.contact-recruit a { color: var(--acc); border-bottom: 1px solid color-mix(in srgb, var(--acc) 45%, transparent); }
+.contact-recruit a:hover { border-bottom-color: var(--acc); }
+
+@media (max-width: 860px) {
+  /* In the full-screen menu the resume link becomes a big numbered
+     item like the rest, in accent so it stands out. */
+  .nav-links > a.nav-resume {
+    margin-left: 0;
+    padding: 19px 6px;
+    font-family: var(--display); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--acc);
+    border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+    background: none;
+  }
+  /* Stagger slots 6 and 7 (resume, plus the owner-only analytics tab). */
+  .nav-links.open > a:nth-child(6) { transition-delay: 0.29s; }
+  .nav-links.open > a:nth-child(7) { transition-delay: 0.34s; }
 }

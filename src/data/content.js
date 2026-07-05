@@ -2,13 +2,16 @@
 
 export const profile = {
   name: 'Viren Chauhan',
-  title: 'Software Developer · Game Dev & Applied AI',
+  title: 'Software Developer · Front-End, Games & Applied AI',
+  seeking: 'Open to Summer 2027 SWE internships',
+  resume: 'Viren-Chauhan-Resume.pdf',
   tagline:
     "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
     "I'm a software developer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
     "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a study app real students use and a clinical app a doctor uses with patients.",
-    "Away from the keyboard I'm a student athlete with an ultra endurance background. It taught me to play the long game, keep showing up, and finish what I start.",
+    "Away from the keyboard I'm a SCAD student athlete with an ultra-endurance background. I grew up around La Ultra: The High, an extreme ultramarathon in the Indian Himalayas, and by its 10th edition I was directing its 55 km category. This summer I'm one of four volunteers on the FIFA World Cup 2026 Anti-Doping team, selected from more than 100,000 applications.",
+    "That background taught me to play the long game, keep showing up, and finish what I start.",
   ],
   email: 'chauhan.viren08@gmail.com',
   location: 'Atlanta, GA',
@@ -26,11 +29,38 @@ export const education = [
     location: 'Atlanta, GA',
     degree: 'B.F.A. Game Development',
     grad: '2028',
-    detail: 'Minor in Applied AI: ethics, intelligent tools, creative computing, and agentic design.',
+    detail:
+      'Minor in Applied AI: ethics, intelligent tools, creative computing, and agentic design. Relevant coursework: programming, game design, UX/UI, Unity, and Unreal Engine.',
   },
 ]
 
+// group: 'tech' renders under "Engineering & Design", everything else
+// under "Operations, Sport & Leadership" on the experience page.
 export const experience = [
+  {
+    role: 'Independent Developer — Shipped Web Apps',
+    org: 'Self-directed',
+    dates: '2025 - Present',
+    location: 'Atlanta, GA',
+    group: 'tech',
+    bullets: [
+      'Designed, built, and shipped three production web apps solo: a training hub the SCAD Atlanta distance team runs on, a clinical patient app a practicing physician uses, and a study app that syncs deadlines to Google Calendar with a document-grounded assistant.',
+      'Own the full stack on every build: UX and UI design, React or Flutter front end, Firebase auth and data model, and deployment.',
+      'Also built this portfolio site itself: React + Vite with hand-rolled, privacy-friendly visitor analytics on Supabase.',
+    ],
+  },
+  {
+    role: 'UX/UI Lead, SCADpro x Atlanta United',
+    org: 'Atlanta United FC (Internship)',
+    dates: 'Jan 2026 - Mar 2026',
+    location: 'Atlanta, GA',
+    group: 'tech',
+    bullets: [
+      'Led UX/UI for a confidential SCADpro collaboration with Atlanta United, focused on user experience, interaction standards, and interface consistency across digital and experiential brand touchpoints.',
+      'Defined the UX/UI direction for intuitive, accessible, and consistent fan-facing experiences while aligning with brand and project goals.',
+      'Worked with a multidisciplinary team to shape interaction flow, interface clarity, and overall user-experience strategy, while respecting project confidentiality.',
+    ],
+  },
   {
     role: 'Volunteer, Anti-Doping Team',
     org: 'FIFA World Cup 2026',
@@ -43,24 +73,13 @@ export const experience = [
     ],
   },
   {
-    role: 'Professional Playmaker',
+    role: 'Guest Services Staff ("Playmaker")',
     org: 'Georgia World Congress Center Authority',
     dates: 'Mar 2026 - May 2026',
     location: 'Atlanta, GA',
     bullets: [
       'Worked with team members and event staff to keep operations smooth, adapting quickly in a fast-paced, high-volume environment.',
       'Gave direct guest support by answering questions, giving directions, and resolving issues to keep the event experience positive.',
-    ],
-  },
-  {
-    role: 'UX/UI Lead, SCADpro x Atlanta United',
-    org: 'Atlanta United FC (Internship)',
-    dates: 'Jan 2026 - Mar 2026',
-    location: 'Atlanta, GA',
-    bullets: [
-      'Led UX/UI for a confidential SCADpro collaboration with Atlanta United, focused on user experience, interaction standards, and interface consistency across digital and experiential brand touchpoints.',
-      'Defined the UX/UI direction for intuitive, accessible, and consistent fan-facing experiences while aligning with brand and project goals.',
-      'Worked with a multidisciplinary team to shape interaction flow, interface clarity, and overall user-experience strategy, while respecting project confidentiality.',
     ],
   },
   {
@@ -72,6 +91,16 @@ export const experience = [
       'Provide front desk support for residence life operations and help students with housing services and campus resources.',
       'Manage student inquiries and housing check-ins and check-outs through StarRez, and coordinate with residence life staff to resolve concerns.',
       'Support major campus housing events and assist community directors with day-to-day administrative operations.',
+    ],
+  },
+  {
+    role: 'Chief Finance Officer, Student Athlete Advisory Committee',
+    org: 'Savannah College of Art and Design',
+    dates: 'Sep 2025 - Jun 2026',
+    location: 'Atlanta, GA',
+    bullets: [
+      "Manage the committee's finance-related responsibilities as CFO of SAAC.",
+      'Support student-athlete initiatives, event planning, and campus communication.',
     ],
   },
   {
@@ -127,11 +156,11 @@ export const experience = [
     ],
   },
   {
-    role: 'Race Director (55 km) & Core Crew Member',
+    role: 'Core Crew → Race Director (55 km)',
     org: 'La Ultra: The High',
-    dates: 'Jan 2016 - Nov 2019',
+    dates: '2016 - 2019',
     bullets: [
-      "Logistics and operations: directed the 55 km category for the 10th edition of one of the world's most extreme ultramarathons, running operations between 12,000 ft and 15,500 ft of elevation.",
+      "Grew up around the race and worked on core crew from 2016; by the 10th edition (2019) directed the 55 km category of one of the world's most extreme ultramarathons, running operations between 12,000 ft and 15,500 ft in the Indian Himalayas.",
       'Risk mitigation: ran primary health assessments for every participant to confirm fitness for high-altitude exertion, and monitored medical reporting throughout the race.',
       'Stakeholder management: led a multi-functional team of medical personnel and aid-station volunteers, keeping real-time communication going across remote Himalayan terrain.',
       'Protocol enforcement: handled the sensitive process of disqualifying athletes on cut-off times, putting participant safety and race integrity first through clear communication and conflict resolution.',
@@ -148,55 +177,55 @@ export const experience = [
   },
 ]
 
-// Skills (perk tree)
-// branch: 'game' | 'ai' | 'tools' | 'soft'. level: 1-5 (filled dots).
+// Skills, grouped by branch: 'game' | 'ai' | 'tools' | 'soft'.
+// Each one cites where the skill was actually used — no self-ratings.
 export const skills = [
   // Game Dev branch
-  { id: 'gameplay-prog', branch: 'game', name: 'Gameplay Programming', level: 4,
+  { id: 'gameplay-prog', branch: 'game', name: 'Gameplay Programming',
     desc: 'Player movement, aiming, projectile systems, combat feel.' },
-  { id: 'enemy-ai', branch: 'game', name: 'Enemy AI', level: 3,
+  { id: 'enemy-ai', branch: 'game', name: 'Enemy AI',
     desc: 'Wave spawning, behavior states, escalating difficulty curves.' },
-  { id: '3d-env', branch: 'game', name: '3D Environment Art', level: 3,
+  { id: '3d-env', branch: 'game', name: '3D Environment Art',
     desc: 'Maya modeling, Substance Painter texturing, Unreal lighting & composition.' },
-  { id: 'physics', branch: 'game', name: '2D / 3D Physics', level: 4,
+  { id: 'physics', branch: 'game', name: '2D / 3D Physics',
     desc: 'Collision response, bounce dynamics, deterministic systems.' },
-  { id: 'level-design', branch: 'game', name: 'Level Design', level: 3,
+  { id: 'level-design', branch: 'game', name: 'Level Design',
     desc: 'Layouts that reward precision and reinforce the core loop.' },
 
   // Applied AI branch
-  { id: 'rag', branch: 'ai', name: 'Retrieval-Augmented Chat', level: 4,
+  { id: 'rag', branch: 'ai', name: 'Retrieval-Augmented Chat',
     desc: 'TF-IDF + embeddings over user-uploaded docs; grounded answers.' },
-  { id: 'doc-parse', branch: 'ai', name: 'Document Parsing', level: 3,
+  { id: 'doc-parse', branch: 'ai', name: 'Document Parsing',
     desc: 'Extracting structured data (deadlines, policies) from PDFs and notes.' },
-  { id: 'plan-gen', branch: 'ai', name: 'AI Plan Generation', level: 3,
+  { id: 'plan-gen', branch: 'ai', name: 'AI Plan Generation',
     desc: 'Personalized running/activity plans from patient profiles.' },
-  { id: 'api-glue', branch: 'ai', name: 'API Integration', level: 4,
+  { id: 'api-glue', branch: 'ai', name: 'API Integration',
     desc: 'Google Calendar, Firebase, third-party services as first-class glue.' },
-  { id: 'ai-ethics', branch: 'ai', name: 'Applied AI Ethics', level: 3,
+  { id: 'ai-ethics', branch: 'ai', name: 'Applied AI Ethics',
     desc: 'Minor coursework: agentic design, intelligent tools, creative computing.' },
 
   // Tools branch
-  { id: 'react', branch: 'tools', name: 'React', level: 4,
+  { id: 'react', branch: 'tools', name: 'React',
     desc: 'Hooks, refs, RAF-driven canvas apps, accessible UI patterns.' },
-  { id: 'cs', branch: 'tools', name: 'Unity & Unreal Engine', level: 3,
+  { id: 'cs', branch: 'tools', name: 'Unity & Unreal Engine',
     desc: 'C# gameplay in Unity; systems, Niagara VFX, and PCG in Unreal.' },
-  { id: 'flutter', branch: 'tools', name: 'Flutter / Web', level: 3,
+  { id: 'flutter', branch: 'tools', name: 'Flutter / Web',
     desc: 'Cross-platform deployment: see La Ultra patient app.' },
-  { id: 'firebase', branch: 'tools', name: 'Firebase', level: 3,
+  { id: 'firebase', branch: 'tools', name: 'Firebase',
     desc: 'Auth, Firestore, hosting for the clinical app.' },
-  { id: 'git', branch: 'tools', name: 'Git', level: 4,
+  { id: 'git', branch: 'tools', name: 'Git',
     desc: 'Branching, PR hygiene, code review, careful merges.' },
 
   // Endurance / Soft branch
-  { id: 'leadership', branch: 'soft', name: 'Field Leadership', level: 5,
+  { id: 'leadership', branch: 'soft', name: 'Field Leadership',
     desc: 'Race director, 55km category at La Ultra: multi-functional teams.' },
-  { id: 'ops', branch: 'soft', name: 'Logistics & Ops', level: 5,
+  { id: 'ops', branch: 'soft', name: 'Logistics & Ops',
     desc: 'High-altitude (12k-15k ft) race operations and medical reporting.' },
-  { id: 'endurance', branch: 'soft', name: 'Endurance', level: 5,
-    desc: 'Long-form ultra-sport background. Finishes what he starts.' },
-  { id: 'comms', branch: 'soft', name: 'Communication', level: 4,
+  { id: 'endurance', branch: 'soft', name: 'Endurance',
+    desc: 'Long-form ultra-sport background. I finish what I start.' },
+  { id: 'comms', branch: 'soft', name: 'Communication',
     desc: 'International student ambassador; guest-facing event ops.' },
-  { id: 'crisis', branch: 'soft', name: 'Crisis Management', level: 4,
+  { id: 'crisis', branch: 'soft', name: 'Crisis Management',
     desc: 'Athlete cut-off enforcement, on-the-fly disqualifications, real-time medical.' },
 ]
 
@@ -281,6 +310,32 @@ export const projects = [
     ],
     live: 'https://laultrarunandbee.web.app/',
     repo: 'https://github.com/VirenChauhan19/La-Ultra-Run-and-Bee-App',
+  },
+  {
+    slug: 'this-website',
+    name: 'This Website + Private Analytics',
+    type: 'ai',
+    year: '2026',
+    category: 'Web App · Design System · Analytics',
+    role: 'You are looking at it — designed, built, and instrumented solo.',
+    disciplines: ['UI Design', 'Front-End', 'Software Development', 'Analytics'],
+    summary:
+      'The site you are on right now: a custom-designed React portfolio with its own hand-rolled, privacy-friendly visitor analytics — a Supabase pipeline and an owner-only dashboard instead of Google Analytics.',
+    description: [
+      'I treated my own portfolio like a product: a custom design system on a pure-black HUD theme, built in React with Vite, animated with Framer Motion, and deployed by GitHub Actions to GitHub Pages on a custom domain.',
+      'It ships with its own analytics. Every page view sends one lightweight fetch to Supabase — no tracking SDK and no cookies — with bot filtering and country-level geo. Postgres row-level security keeps the table insert-only for visitors.',
+      'The dashboard lives behind Supabase auth on a route only I can see, with custom charts for visitors, paths, referrers, devices, and countries. Even the resume button on this site reports clicks to it.',
+    ],
+    tech: ['React', 'Vite', 'Framer Motion', 'Supabase', 'React Router', 'GitHub Pages'],
+    highlights: [
+      'Custom design system and interaction layer, no UI framework',
+      'Hand-rolled analytics: one fetch per page view, insert-only via Postgres RLS',
+      'Owner-only dashboard with custom charts, gated by Supabase auth',
+      'Deployed by GitHub Actions to virenchauhan.com',
+    ],
+    embed: false,
+    live: 'https://virenchauhan.com',
+    repo: 'https://github.com/VirenChauhan19/Viren-Website',
   },
   {
     slug: 'top-down-shooter',

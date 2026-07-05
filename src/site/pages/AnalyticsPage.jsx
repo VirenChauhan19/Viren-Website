@@ -1,4 +1,4 @@
-// Private visitor-analytics dashboard, lazy-loaded at /#/analytics.
+// Private visitor-analytics dashboard, lazy-loaded at /analytics.
 // Regular visitors never download this chunk (or the Supabase SDK).
 import { useCallback, useEffect, useState } from 'react'
 import Page from '../Page.jsx'

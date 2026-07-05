@@ -21,7 +21,7 @@ function ProjectCard({ p }) {
         <AppDemo kind={p.demo} title={p.name} />
       ) : media ? (
         <Media m={media} name={p.name} />
-      ) : p.live ? (
+      ) : p.live && p.embed !== false ? (
         <LiveEmbed url={p.live} name={p.name} />
       ) : null}
 

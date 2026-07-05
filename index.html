@@ -6,8 +6,58 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Viren Chauhan is a software developer focused on front-end / UI/UX who builds web apps, games, and interactive tools. Studying Game Development at SCAD in Atlanta."
+      content="Viren Chauhan is a software developer at SCAD Atlanta who designs, builds, and ships web apps (React, Firebase), games (Unity, Unreal), and applied-AI tools. Open to Summer 2027 software engineering internships."
     />
+    <link rel="canonical" href="https://virenchauhan.com/" />
+
+    <!-- Social preview cards (LinkedIn, Slack, iMessage, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://virenchauhan.com/" />
+    <meta property="og:site_name" content="Viren Chauhan" />
+    <meta property="og:title" content="Viren Chauhan — Software Developer (Front-End, Games & Applied AI)" />
+    <meta
+      property="og:description"
+      content="SCAD student who ships real products: web apps in React and Firebase, games in Unity and Unreal. Open to Summer 2027 SWE internships."
+    />
+    <meta property="og:image" content="https://virenchauhan.com/headshot.jpeg" />
+    <meta property="og:image:alt" content="Viren Chauhan headshot" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Viren Chauhan — Software Developer" />
+    <meta
+      name="twitter:description"
+      content="SCAD student who ships real products: web apps in React and Firebase, games in Unity and Unreal. Open to Summer 2027 SWE internships."
+    />
+    <meta name="twitter:image" content="https://virenchauhan.com/headshot.jpeg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Viren Chauhan",
+        "url": "https://virenchauhan.com/",
+        "image": "https://virenchauhan.com/headshot.jpeg",
+        "jobTitle": "Software Developer",
+        "email": "mailto:chauhan.viren08@gmail.com",
+        "address": { "@type": "PostalAddress", "addressLocality": "Atlanta", "addressRegion": "GA", "addressCountry": "US" },
+        "affiliation": { "@type": "CollegeOrUniversity", "name": "Savannah College of Art and Design" },
+        "sameAs": [
+          "https://github.com/VirenChauhan19",
+          "https://www.linkedin.com/in/viren-chauhan-7b1067333/"
+        ]
+      }
+    </script>
+
+    <!-- Old links used hash routes (/#/projects/x). Rewrite them to real paths
+         before the router mounts so bookmarks and shared links keep working. -->
+    <script>
+      ;(function () {
+        var h = window.location.hash
+        if (h && h.indexOf('#/') === 0) {
+          history.replaceState(null, '', h.slice(1) + window.location.search)
+        }
+      })()
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

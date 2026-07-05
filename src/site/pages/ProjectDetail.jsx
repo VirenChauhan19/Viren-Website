@@ -37,7 +37,7 @@ export default function ProjectDetail() {
         <h1 className="detail-title reveal">{p.name}</h1>
         <p className="detail-role reveal">{p.role}</p>
 
-        {(p.demo || media || p.live) && (
+        {(p.demo || media || (p.live && p.embed !== false)) && (
           <div className="detail-media reveal">
             {p.demo ? (
               <AppDemo kind={p.demo} title={p.name} />
