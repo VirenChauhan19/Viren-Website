@@ -2,7 +2,7 @@ import { skills } from '../data/content.js'
 
 // Front-end and engineering lead; games are where the systems thinking started.
 const BRANCHES = [
-  { id: 'tools', label: 'Front-End & Engineering', accent: 'cyan', desc: 'React, UI/UX, C# / engine scripting, Flutter, Firebase, Git.' },
+  { id: 'tools', label: 'Front-End & Engineering', accent: 'cyan', desc: 'React, TypeScript / Next.js, UI/UX, C# / engine scripting, Flutter, Firebase, Git.' },
   { id: 'ai', label: 'Applied AI', accent: 'violet', desc: 'Retrieval, document parsing, API glue, deployed tools.' },
   { id: 'game', label: 'Game Development', accent: 'amber', desc: 'Gameplay, physics, enemy AI, level design.' },
   { id: 'soft', label: 'Leadership & Field', accent: 'green', desc: 'Field leadership, ops, communication, crisis management.' },

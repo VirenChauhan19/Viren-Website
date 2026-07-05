@@ -9,7 +9,7 @@ export const profile = {
     "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
     "I'm a software developer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
-    "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a study app real students use and a clinical app a doctor uses with patients.",
+    "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a clinical app with 134 registered users and a private training hub my own cross country team runs on.",
     "Away from the keyboard I'm a SCAD student athlete with an ultra-endurance background. I grew up around La Ultra: The High, an extreme ultramarathon in the Indian Himalayas, and by its 10th edition I was directing its 55 km category. This summer I'm one of four volunteers on the FIFA World Cup 2026 Anti-Doping team, selected from more than 100,000 applications.",
     "That background taught me to play the long game, keep showing up, and finish what I start.",
   ],
@@ -44,8 +44,8 @@ export const experience = [
     location: 'Atlanta, GA',
     group: 'tech',
     bullets: [
-      'Designed, built, and shipped three production web apps solo: a training hub the SCAD Atlanta distance team runs on, a clinical patient app a practicing physician uses, and a study app that syncs deadlines to Google Calendar with a document-grounded assistant.',
-      'Own the full stack on every build: UX and UI design, React or Flutter front end, Firebase auth and data model, and deployment.',
+      'Designed, built, and shipped three production web apps solo: a training hub the SCAD Atlanta distance team runs on, a clinical patient app with 134 registered users built for a practicing physician, and a study app that syncs deadlines to Google Calendar with a document-grounded assistant.',
+      'Own the full stack on every build: UX and UI design; Next.js, React, or Flutter front ends; Prisma + PostgreSQL or Firebase data layers; auth; and deployment.',
       'Also built this portfolio site itself: React + Vite with hand-rolled, privacy-friendly visitor analytics on Supabase.',
     ],
   },
@@ -207,6 +207,8 @@ export const skills = [
   // Tools branch
   { id: 'react', branch: 'tools', name: 'React',
     desc: 'Hooks, refs, RAF-driven canvas apps, accessible UI patterns.' },
+  { id: 'ts-next', branch: 'tools', name: 'TypeScript & Next.js',
+    desc: 'The SCAD team hub: Next.js + Prisma on PostgreSQL with custom session auth.' },
   { id: 'cs', branch: 'tools', name: 'Unity & Unreal Engine',
     desc: 'C# gameplay in Unity; systems, Niagara VFX, and PCG in Unreal.' },
   { id: 'flutter', branch: 'tools', name: 'Flutter / Web',
@@ -246,14 +248,14 @@ export const projects = [
     description: [
       'I run on the SCAD Atlanta distance team, and our training lived across group chats, spreadsheets, and screenshots. So I built the team its own private hub.',
       'Coaches build each athlete a personalized schedule, the whole team shares one calendar, and direct messaging plus post-workout feedback means the coach knows how a session actually went, not just that it happened. There are separate coach and athlete roles, so each side only sees what it needs.',
-      'I built it in React on Firebase, with auth for the role-based accounts, Firestore for schedules, messages, and feedback, and Firebase Hosting to ship it. It is private and secure by design, made for a real coaching relationship instead of a social feed.',
+      'I built it in Next.js and TypeScript, with Prisma on PostgreSQL for schedules, messages, and feedback, and I wrote the session auth myself for the separate coach and athlete roles. It ships through Firebase Hosting in front of Cloud Run, and it is private by design, made for a real coaching relationship instead of a social feed.',
     ],
-    tech: ['React', 'Firebase', 'Auth & Firestore', 'UI / UX Design', 'Role-Based Access'],
+    tech: ['Next.js', 'TypeScript', 'React', 'Prisma + PostgreSQL', 'Custom Auth & Roles', 'Cloud Run'],
     highlights: [
       'Built for my own team and used for real training, not a demo',
       'Separate coach and athlete roles with personalized schedules per athlete',
       'Shared team calendar, direct messaging, and post-workout feedback in one place',
-      'I owned all of it: UX, UI, React front end, Firebase data model, auth, and hosting',
+      'I owned all of it: UX, UI, Next.js front end, Prisma + PostgreSQL data model, custom session auth, and deployment',
     ],
     live: 'https://scadxctf.web.app/',
     repo: 'https://github.com/VirenChauhan19/SCADxctf',
@@ -295,14 +297,15 @@ export const projects = [
     role: 'I built this one solo too, UX through hosting.',
     disciplines: ['UX Design', 'UI Design', 'Front-End', 'Software Development'],
     summary:
-      "A clinical web app I designed and built for a working doctor. It handles patient management, progress tracking, and personalized plans, with an interface simple enough for someone who isn't technical.",
+      "A clinical web app I designed and built for a working doctor, with 134 registered users. It handles patient management, progress tracking, and personalized plans, with an interface simple enough for someone who isn't technical.",
     description: [
       'My dad is a doctor, and he asked me to build something that would actually help him with his patients, so I did.',
       'The app builds a running and activity plan around each patient based on their profile and goals, so the doctor can hand them a real, structured program instead of generic advice.',
-      'On top of the plans, it has patient management tools so the day to day care lives in one place.',
+      'On top of the plans, it has patient management tools so the day to day care lives in one place. As of July 2026 it has 134 registered users, with new sign-ups every week.',
     ],
     tech: ['Flutter / Web', 'UI / UX Design', 'Firebase', 'Auth & Firestore', 'Plan Generation'],
     highlights: [
+      '134 registered users as of July 2026, and growing every week',
       'Built for a real doctor who uses it with actual patients',
       'I handled all of it: UX, UI, front-end, data model, auth, and hosting',
       'Generates a personalized plan from each patient profile',
