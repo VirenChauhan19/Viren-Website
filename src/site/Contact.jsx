@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { profile } from '../data/content.js'
 import { asset } from './asset.js'
 import { trackPageView } from '../analytics/tracker.js'
@@ -6,7 +5,6 @@ import { trackPageView } from '../analytics/tracker.js'
 export default function Contact() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
   const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
-  const [copied, setCopied] = useState(false)
   const facts = [
     `Based in ${profile.location}, currently at SCAD`,
     'I read every message myself',
@@ -15,13 +13,9 @@ export default function Contact() {
   const subject = encodeURIComponent('Hello Viren')
 
   // mailto fails quietly on machines with no mail client — recruiters on
-  // corporate laptops, mostly — so the address can also be copied directly.
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(profile.email)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch { /* clipboard blocked: mailto button still works */ }
+  // corporate laptops, mostly — so clicking also copies the address.
+  const copyEmail = () => {
+    try { navigator.clipboard?.writeText(profile.email) } catch { /* clipboard blocked */ }
   }
 
   return (
@@ -47,12 +41,14 @@ export default function Contact() {
         </p>
 
         <div className="contact-cta">
-          <a className="btn btn-primary" href={`mailto:${profile.email}?subject=${subject}`}>
+          <a
+            className="btn btn-primary"
+            href={`mailto:${profile.email}?subject=${subject}`}
+            title="Opens your mail app — and copies the address, just in case"
+            onClick={copyEmail}
+          >
             ✉ {profile.email}
           </a>
-          <button className="btn btn-ghost" type="button" onClick={copyEmail}>
-            {copied ? 'Copied ✓' : 'Copy email'}
-          </button>
           <a
             className="btn btn-ghost"
             href={asset(profile.resume)}
