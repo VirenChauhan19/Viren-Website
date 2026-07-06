@@ -2,13 +2,13 @@
 
 export const profile = {
   name: 'Viren Chauhan',
-  title: 'Software Developer · Front-End, Games & Applied AI',
-  seeking: 'Open to Summer 2027 SWE internships',
+  title: 'Software & Game Developer · Front-End, Real-Time 3D & Applied AI',
+  seeking: 'Open to Summer 2027 SWE & game dev internships',
   resume: 'Viren-Chauhan-Resume.pdf',
   tagline:
     "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
-    "I'm a software developer who cares a lot about the front end and how a product feels to use. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
+    "I'm a software developer and a game developer, and I care most about how a thing feels to use — the front end of an app or the moment-to-moment feel of a game loop. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
     "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a clinical app with 134 registered users and a private training hub my own cross country team runs on.",
     "Away from the keyboard I'm a SCAD student athlete with an ultra-endurance background. I grew up around La Ultra: The High, an extreme ultramarathon in the Indian Himalayas, and by its 10th edition I was directing its 55 km category. This summer I'm one of four volunteers on the FIFA World Cup 2026 Anti-Doping team, selected from more than 100,000 applications.",
     "That background taught me to play the long game, keep showing up, and finish what I start.",

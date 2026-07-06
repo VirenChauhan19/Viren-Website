@@ -40,7 +40,7 @@ export default function Skills() {
         <span className="kicker">02 / skills</span>
         <h2 className="section-title">What I work with</h2>
         <p className="section-sub">
-          Front-end and engineering are my core. Games are where I learned to think in systems, and they still teach me the most.
+          Two tracks, one builder: web software and games. The systems thinking transfers both ways, and each side makes the other sharper.
         </p>
       </div>
 

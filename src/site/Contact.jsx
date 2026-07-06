@@ -43,7 +43,7 @@ export default function Contact() {
           >
             Grab my resume (PDF) ↗
           </a>{' '}
-          — I&apos;m open to Summer 2027 software engineering internships.
+          — I&apos;m open to Summer 2027 software engineering and game development internships.
         </p>
 
         <div className="contact-cta">

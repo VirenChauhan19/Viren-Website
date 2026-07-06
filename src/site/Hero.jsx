@@ -5,8 +5,8 @@ import { asset } from './asset.js'
 import { useTypewriter, useMagnetic } from './fx.js'
 import { trackPageView } from '../analytics/tracker.js'
 
-// One identity, rotating flavors — recruiters should never wonder what I am.
-const FLAVORS = ['front-end & UI/UX', 'full products, shipped', 'games & real-time 3D', 'applied AI features']
+// One dual-track identity, rotating flavors — recruiters should never wonder what I am.
+const FLAVORS = ['front-end & UI/UX', 'full products, shipped', 'gameplay & real-time 3D', 'applied AI features']
 
 export default function Hero() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
@@ -43,9 +43,9 @@ export default function Hero() {
 
           <h1 className="hero-name">Viren Chauhan</h1>
 
-          <div className="hero-role" aria-label="Software Developer — front-end and UI/UX, full products, games and real-time 3D, applied AI">
+          <div className="hero-role" aria-label="Software and Game Developer — front-end and UI/UX, full products, gameplay and real-time 3D, applied AI">
             <span className="role-prefix">&gt;</span>
-            <span className="role-text">Software Developer <span className="role-flavor">· {typed}</span></span>
+            <span className="role-text">Software & Game Developer <span className="role-flavor">· {typed}</span></span>
             <span className="type-caret" />
           </div>
 
