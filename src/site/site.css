@@ -148,6 +148,9 @@ body { -webkit-tap-highlight-color: transparent; }
   max-width: var(--maxw); margin: 0 auto;
   padding: calc(var(--nav-h) + 56px) 24px 64px;
   min-height: 100svh; display: flex; flex-direction: column; justify-content: center; position: relative;
+  /* The two glows below are deliberately wider than the hero, so clip them here.
+     Without this they push the document ~38px past the viewport on a phone. */
+  overflow-x: clip;
 }
 /* Two soft, local accent glows: one behind the headline, one behind the portrait.
    Kept faint on purpose — the page itself stays pure black. */
@@ -472,17 +475,20 @@ body { -webkit-tap-highlight-color: transparent; }
   .nav-toggle { display: flex; }
   .nav-toggle { flex: 0 0 auto; margin-left: auto; }
 
-  /* Full-screen menu: big numbered links that stagger in */
+  /* Full-screen menu: big numbered links that stagger in.
+     Opaque on purpose — this panel is nested inside .nav, which already has a
+     backdrop-filter, and a nested backdrop-filter renders the page straight
+     through the menu. Solid fill, no second blur. */
   .nav-links {
     position: absolute; top: var(--nav-h); left: 0; right: 0; height: calc(100svh - var(--nav-h));
     flex-direction: column; align-items: stretch; gap: 0; overflow-y: auto;
     background:
-      radial-gradient(120% 46% at 50% 0%, rgba(56, 189, 248, 0.06), transparent 62%),
-      rgba(4, 7, 11, 0.97);
+      radial-gradient(120% 46% at 50% 0%, rgba(56, 189, 248, 0.07), transparent 62%),
+      #04070b;
     border-bottom: 1px solid var(--line);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    padding: 26px max(26px, env(safe-area-inset-right)) 34px max(26px, env(safe-area-inset-left));
+    padding: 26px max(26px, env(safe-area-inset-right))
+             max(34px, calc(env(safe-area-inset-bottom) + 20px))
+             max(26px, env(safe-area-inset-left));
     counter-reset: navlink;
     transform: translateY(-12px); opacity: 0; pointer-events: none; transition: opacity 0.22s, transform 0.22s;
   }
@@ -507,14 +513,18 @@ body { -webkit-tap-highlight-color: transparent; }
   .nav-links.open > a:nth-child(5) { transition-delay: 0.24s; }
   .nav-underline { display: none; }
   .nav-menu-foot {
-    margin-top: auto; padding-top: 30px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    margin-top: auto; padding-top: 30px; display: flex; align-items: stretch; gap: 10px;
     opacity: 0; transform: translateY(14px);
     transition: opacity 0.4s ease 0.3s, transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s;
   }
   .nav-links.open .nav-menu-foot { opacity: 1; transform: none; }
+  /* Equal thirds that never wrap — "LinkedIn ↗" used to break onto a second
+     line and leave the three buttons different heights. */
   .nav-menu-foot a {
-    flex: 1; text-align: center; font-family: var(--mono); font-size: 0.84rem; color: var(--muted);
-    padding: 13px 16px; border: 1px solid var(--line2); border-radius: 11px;
+    flex: 1 1 0; min-width: 0; white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+    padding: 13px 8px; border: 1px solid var(--line2); border-radius: 11px;
   }
   .nav-menu-foot a:active { color: var(--acc); border-color: var(--acc); }
 
@@ -564,13 +574,6 @@ body { -webkit-tap-highlight-color: transparent; }
   .hero-name { font-size: clamp(2.35rem, 11vw, 2.85rem); line-height: 1.04; }
   .hero-role { font-size: 0.96rem; margin-bottom: 18px; }
   .hero-tagline { font-size: 1.02rem; }
-  .status-chip {
-    max-width: 100%;
-    margin-bottom: 22px;
-    font-size: 0.68rem;
-    letter-spacing: 0.11em;
-    white-space: normal;
-  }
   .scroll-cue { display: none; }
   .contact { padding-bottom: 90px; }
   .contact-card { padding: 36px 20px; }
@@ -621,11 +624,15 @@ body { -webkit-tap-highlight-color: transparent; }
     linear-gradient(180deg, rgba(12, 13, 17, 0.34), rgba(12, 13, 17, 0.66));
 }
 
-/* Hero role typewriter */
-.hero-role { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: clamp(1rem, 2.4vw, 1.35rem); color: var(--acc); margin-bottom: 22px; min-height: 1.7em; }
+/* Hero role typewriter. Capped so the longest flavor still clears the hero
+   column on one line — at 1.35rem it needed 671px in a 610px column, so the
+   line flipped between one and two rows as the word cycled. */
+.hero-role { display: flex; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: clamp(1rem, 2.4vw, 1.12rem); color: var(--acc); margin-bottom: 22px; min-height: 1.7em; }
 .role-prefix { color: var(--violet); opacity: 0.85; }
 .role-text { color: var(--acc); }
-.type-caret { width: 9px; height: 1.05em; background: var(--acc); animation: caretBlink 1s steps(1) infinite; }
+/* inline-block so the caret keeps its box whether it sits in the flex row
+   (desktop, one line) or inline after the flavor text (phones, second line). */
+.type-caret { display: inline-block; width: 9px; height: 1.05em; vertical-align: -0.14em; background: var(--acc); animation: caretBlink 1s steps(1) infinite; }
 @keyframes caretBlink { 50% { opacity: 0; } }
 
 /* Hero parallax: portrait drifts opposite the cursor */
@@ -970,7 +977,10 @@ body { -webkit-tap-highlight-color: transparent; }
 
 /* ---------- Tablet (861–1080): keep the desktop layout, ease the squeeze ---------- */
 @media (min-width: 861px) and (max-width: 1080px) {
-  .hero-inner { grid-template-columns: 1.25fr 1fr; gap: 40px; }
+  /* The left column has to clear the availability line, otherwise the chip
+     wraps and the pill turns into a lozenge. */
+  .hero-inner { grid-template-columns: 1.45fr 1fr; gap: 36px; }
+  .status-chip { font-size: 0.72rem; letter-spacing: 0.1em; }
   .section { padding: 92px 24px; }
   .feat-grid { gap: 16px; }
   .project-grid { gap: 20px; }
@@ -1011,8 +1021,13 @@ body { -webkit-tap-highlight-color: transparent; }
 /* Availability chip can hold two segments; let it wrap on narrow screens. */
 .status-chip { flex-wrap: wrap; max-width: 100%; row-gap: 4px; }
 
-/* Hero role line: fixed identity, muted rotating flavor. */
-.role-flavor { color: var(--muted); }
+/* Hero role line: fixed identity, muted rotating flavor.
+   The flavor holds a constant box — wide enough for the longest word (23ch)
+   plus the separator and caret — so the typewriter can never grow the line and
+   reflow the page under it. Spacing is margins, not literal spaces: an
+   inline-block swallows whitespace at its own start. */
+.role-flavor { color: var(--muted); display: inline-block; min-width: 26ch; margin-left: 0.45em; }
+.role-sep { margin-right: 0.4em; }
 
 /* Resume pill in the desktop nav. */
 .nav-links .nav-resume {
@@ -1056,4 +1071,88 @@ body { -webkit-tap-highlight-color: transparent; }
   /* Stagger slots 6 and 7 (resume, plus the owner-only analytics tab). */
   .nav-links.open > a:nth-child(6) { transition-delay: 0.29s; }
   .nav-links.open > a:nth-child(7) { transition-delay: 0.34s; }
+}
+
+/* ============================================================
+   Availability card. "Open to Summer 2027 SWE & game dev internships ·
+   Atlanta, GA" is too long for a one-line pill on a phone, and also in the
+   narrow left hero column between 861px and 1000px. At those widths the 999px
+   pill wrapped into a lozenge with the dot stranded on its own line and the
+   city on a third, so it becomes a proper card instead.
+   ============================================================ */
+@media (max-width: 560px), (min-width: 861px) and (max-width: 1000px) {
+  .status-chip {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: 10px;
+    row-gap: 1px;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    letter-spacing: 0.05em;
+    white-space: normal;
+    background: color-mix(in srgb, var(--acc) 6%, rgba(255, 255, 255, 0.02));
+    border-color: color-mix(in srgb, var(--acc) 26%, var(--line2));
+  }
+  .status-chip .pulse-dot { margin-top: 5px; }
+  .status-chip .chip-role { grid-column: 2; }
+  .status-chip .chip-sep { display: none; }
+  .status-chip .chip-muted { grid-column: 2; font-size: 0.68rem; letter-spacing: 0.08em; }
+}
+
+/* ============================================================
+   Phone hero. The first screen gets its own layout instead of a squeezed
+   desktop one: the rotating role gets its own line, and the CTAs form a grid.
+   ============================================================ */
+@media (max-width: 560px) {
+  /* Role: line 1 is the fixed identity, line 2 is the typewriter. Reserving
+     both lines stops the rotating text from reflowing the page as it types. */
+  .hero-role {
+    gap: 8px;
+    min-height: 3.2em;
+    line-height: 1.5;
+  }
+  .role-sep { display: none; }
+  .role-flavor { display: block; margin-left: 0; }
+
+  /* Primary CTA leads full-width, the two ghosts share the row under it. */
+  .hero-cta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .hero-cta .btn { justify-content: center; }
+  .hero-cta .btn-primary { grid-column: 1 / -1; }
+
+  /* Tighten the vertical rhythm so the portrait is in reach on first paint. */
+  .hero { padding-top: calc(var(--nav-h) + 28px); }
+  .hero-name { margin-bottom: 10px; }
+  .hero-tagline { margin-bottom: 24px; }
+}
+
+/* index.html sets viewport-fit=cover, so keep content out from under the
+   notch in landscape and off the home indicator at the bottom. Each
+   breakpoint keeps its own gutter as the floor. */
+@media (max-width: 860px) {
+  .hero, .section {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+  .footer-inner {
+    padding-bottom: max(30px, calc(env(safe-area-inset-bottom) + 14px));
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 480px) {
+  .hero, .section {
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+  }
 }

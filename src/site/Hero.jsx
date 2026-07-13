@@ -36,7 +36,7 @@ export default function Hero() {
         <div className="hero-main reveal">
           <div className="status-chip">
             <span className="pulse-dot" />
-            {profile.seeking}
+            <span className="chip-role">{profile.seeking}</span>
             <span className="chip-sep">·</span>
             <span className="chip-muted">{profile.location}</span>
           </div>
@@ -45,8 +45,9 @@ export default function Hero() {
 
           <div className="hero-role" aria-label="Software and Game Developer — front-end and UI/UX, full products, gameplay and real-time 3D, applied AI">
             <span className="role-prefix">&gt;</span>
-            <span className="role-text">Software & Game Developer <span className="role-flavor">· {typed}</span></span>
-            <span className="type-caret" />
+            <span className="role-text">
+              Software &amp; Game Developer<span className="role-flavor"><span className="role-sep">·</span>{typed}<span className="type-caret" /></span>
+            </span>
           </div>
 
           <p className="hero-tagline">{profile.tagline}</p>

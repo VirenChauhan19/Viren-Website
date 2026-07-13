@@ -315,32 +315,6 @@ export const projects = [
     repo: 'https://github.com/VirenChauhan19/La-Ultra-Run-and-Bee-App',
   },
   {
-    slug: 'this-website',
-    name: 'This Website + Private Analytics',
-    type: 'ai',
-    year: '2026',
-    category: 'Web App · Design System · Analytics',
-    role: 'You are looking at it — designed, built, and instrumented solo.',
-    disciplines: ['UI Design', 'Front-End', 'Software Development', 'Analytics'],
-    summary:
-      'The site you are on right now: a custom-designed React portfolio with its own hand-rolled, privacy-friendly visitor analytics — a Supabase pipeline and an owner-only dashboard instead of Google Analytics.',
-    description: [
-      'I treated my own portfolio like a product: a custom design system on a pure-black HUD theme, built in React with Vite, animated with Framer Motion, and deployed by GitHub Actions to GitHub Pages on a custom domain.',
-      'It ships with its own analytics. Every page view sends one lightweight fetch to Supabase — no tracking SDK and no cookies — with bot filtering and country-level geo. Postgres row-level security keeps the table insert-only for visitors.',
-      'The dashboard lives behind Supabase auth on a route only I can see, with custom charts for visitors, paths, referrers, devices, and countries. Even the resume button on this site reports clicks to it.',
-    ],
-    tech: ['React', 'Vite', 'Framer Motion', 'Supabase', 'React Router', 'GitHub Pages'],
-    highlights: [
-      'Custom design system and interaction layer, no UI framework',
-      'Hand-rolled analytics: one fetch per page view, insert-only via Postgres RLS',
-      'Owner-only dashboard with custom charts, gated by Supabase auth',
-      'Deployed by GitHub Actions to virenchauhan.com',
-    ],
-    embed: false,
-    live: 'https://virenchauhan.com',
-    repo: 'https://github.com/VirenChauhan19/Viren-Website',
-  },
-  {
     slug: 'top-down-shooter',
     name: 'Top Down Shooter',
     type: 'game',
