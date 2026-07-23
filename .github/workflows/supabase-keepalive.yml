@@ -1,0 +1,40 @@
+# Supabase pauses Free-tier projects after 7 days with zero requests. This
+# site's analytics only reach Supabase when someone loads a page, so a quiet
+# week would pause the project — silently breaking page_views inserts and the
+# /analytics dashboard. This job sends one lightweight request a day so the
+# project never crosses the 7-day idle threshold. It also fails the run (red X)
+# if the project is unreachable, doubling as a simple uptime check.
+#
+# The URL and key below are the PUBLIC anon/publishable values already committed
+# in src/analytics/config.js and shipped in the client bundle by design — row
+# level security protects the data, not the key. Safe to keep here; if you ever
+# rotate the key, update it in both places.
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # daily at 06:17 UTC (off the hour to dodge GitHub's scheduling backlog)
+  workflow_dispatch:        # lets you trigger a run manually from the Actions tab
+
+permissions: {}             # only calls an external URL; needs no repo access
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase to keep the project awake
+        env:
+          SUPABASE_URL: https://tfvbvhuisrnhihkrthhj.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_0zMAziwz8R4A15UIFWfbQA_JcFKsjIS
+        run: |
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/page_views?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY") || http_code="000"
+          echo "Supabase responded with HTTP $http_code"
+          case "$http_code" in
+            2*) echo "OK — project is awake." ;;
+            *)  echo "::error::Keep-alive ping failed (HTTP $http_code). The project may be paused — restore it in the Supabase dashboard."; exit 1 ;;
+          esac
