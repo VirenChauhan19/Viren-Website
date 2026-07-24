@@ -92,7 +92,7 @@ function Scene({ kind, screen }) {
         <div className="bubbles">
           <div className="bub me">When is my midterm?</div>
           <div className="bub ai">
-            Your <b>BIO-201 midterm is Oct 14</b>. It is already on your calendar — want a study block the week before?
+            Your <b>BIO-201 midterm is Oct 14</b>. It is already on your calendar. Want a study block the week before?
           </div>
         </div>
         <div className="composer"><span className="ph">Ask about your notes…</span><span className="send">↑</span></div>
@@ -104,7 +104,7 @@ function Scene({ kind, screen }) {
     if (screen === 'week') {
       return (
         <>
-          <div className="sc-head">Viren C. — week of Mar 9</div>
+          <div className="sc-head">Viren C. · week of Mar 9</div>
           <ul className="wk">
             <li><b>Mon</b> Easy run · 8 km</li>
             <li><b>Tue</b> Track · 10 × 400 m</li>
@@ -182,7 +182,7 @@ function Scene({ kind, screen }) {
   if (screen === 'plan') {
     return (
       <>
-        <div className="sc-head">Anaya R. — generate week 3</div>
+        <div className="sc-head">Anaya R. · generate week 3</div>
         <button className="genbtn" type="button" tabIndex={-1}>⚡ Generate plan</button>
         <ul className="wk">
           <li><b>Mon</b> Easy run · 5 km</li>
@@ -198,7 +198,7 @@ function Scene({ kind, screen }) {
   const bars = [40, 58, 50, 72, 66, 88]
   return (
     <>
-      <div className="sc-head">Anaya R. — progress</div>
+      <div className="sc-head">Anaya R. · progress</div>
       <div className="chart">
         {bars.map((h, i) => (
           <span className={`bar bar${i}`} key={i} style={{ height: `${h}%` }} />

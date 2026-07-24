@@ -57,7 +57,7 @@ function RecentTable({ rows }) {
                 {r.is_new_visitor && <em className="va-new">new</em>}
               </span>
               <span className="va-td va-td-page" role="cell">{r.path}</span>
-              <span className="va-td va-td-ref" role="cell">{r.referrer || '—'}</span>
+              <span className="va-td va-td-ref" role="cell">{r.referrer || 'N/A'}</span>
               <span className="va-td va-td-client" role="cell">{[r.device, r.browser, r.os].filter(Boolean).join(' · ')}</span>
             </div>
           ))}
@@ -78,7 +78,7 @@ export default function Dashboard({ rows, prevRows, days, loading }) {
         <StatTile label="Sessions" value={s.kpis.sessions} delta={s.kpis.deltas?.sessions} />
         <StatTile label="New visitors" value={s.kpis.newVisitors} delta={s.kpis.deltas?.newVisitors} />
         <StatTile label="Views today" value={s.kpis.viewsToday} />
-        <StatTile label="Top country" value={s.kpis.topCountry || '—'} />
+        <StatTile label="Top country" value={s.kpis.topCountry || 'N/A'} />
       </div>
 
       <Card title="Traffic" sub="daily page views and unique visitors" aside={<ChartLegend />} wide>

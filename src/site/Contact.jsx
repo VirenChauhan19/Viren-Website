@@ -36,15 +36,15 @@ export default function Contact() {
             onClick={() => trackPageView('/resume')}
           >
             Grab my resume (PDF) ↗
-          </a>{' '}
-          — I&apos;m open to Summer 2027 software and game development internships.
+          </a>.{' '}
+          I&apos;m open to Summer 2027 software and game development internships.
         </p>
 
         <div className="contact-cta">
           <a
             className="btn btn-primary"
             href={`mailto:${profile.email}?subject=${subject}`}
-            title="Opens your mail app — and copies the address, just in case"
+            title="Opens your mail app, and copies the address, just in case"
             onClick={copyEmail}
           >
             ✉ {profile.email}

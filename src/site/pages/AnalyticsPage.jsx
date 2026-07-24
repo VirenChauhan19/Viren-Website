@@ -30,7 +30,7 @@ function SetupPanel() {
       <ol className="va-steps">
         <li>Create a free project at <a href="https://supabase.com" target="_blank" rel="noreferrer">supabase.com</a>.</li>
         <li>In the project&apos;s <b>SQL Editor</b>, paste and run the file <code>supabase/setup.sql</code> from this repo.</li>
-        <li>Under <b>Authentication → Users</b>, add yourself as a user (email + password). Use the email inside <code>setup.sql</code> — only that account can read the data.</li>
+        <li>Under <b>Authentication → Users</b>, add yourself as a user (email + password). Use the email inside <code>setup.sql</code>. Only that account can read the data.</li>
         <li>Under <b>Project Settings → API</b>, copy the <b>Project URL</b> and <b>anon public key</b> into <code>src/analytics/config.js</code>.</li>
         <li>Commit and push. Once deployed, sign in here and the numbers start flowing.</li>
       </ol>
@@ -66,7 +66,7 @@ function LoginPanel() {
   return (
     <div className="va-panel va-login">
       <h2 className="va-panel-title">Just me back here</h2>
-      <p className="va-panel-sub">This is where I peek at the site&apos;s visitor stats. If you&apos;re me — welcome back. If not, the projects page is way more fun.</p>
+      <p className="va-panel-sub">This is where I peek at the site&apos;s visitor stats. If you&apos;re me, welcome back. If not, the projects page is way more fun.</p>
       <form onSubmit={submit}>
         <label>
           <span>Email</span>
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
     } catch (e) {
       const msg = e.message || String(e)
       setError(/relation .* does not exist/i.test(msg)
-        ? `${msg} — run supabase/setup.sql in your Supabase SQL Editor.`
+        ? `${msg}. Run supabase/setup.sql in your Supabase SQL Editor.`
         : msg)
     } finally {
       setLoading(false)
@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
           <span className="kicker">analytics</span>
           <h1 className="section-title">Visitor <span className="hl-cyan">Analytics</span></h1>
           <p className="section-sub">
-            Who&apos;s opening virenchauhan.com — where they&apos;re from, what they read, and how they got here.
+            Who&apos;s opening virenchauhan.com: where they&apos;re from, what they read, and how they got here.
           </p>
         </header>
 

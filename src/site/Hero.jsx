@@ -34,7 +34,7 @@ export default function Hero() {
 
           <h1 className="hero-name">Viren Chauhan</h1>
 
-          <div className="hero-role" aria-label="Software and Game Developer — front-end and UI/UX, full products, gameplay and real-time 3D, applied AI">
+          <div className="hero-role" aria-label="Software and Game Developer: front-end and UI/UX, full products, gameplay and real-time 3D, applied AI">
             <span className="role-prefix">&gt;</span>
             <span className="role-text">
               Software &amp; Game Developer<span className="role-flavor"><span className="role-sep">·</span>{typed}<span className="type-caret" /></span>

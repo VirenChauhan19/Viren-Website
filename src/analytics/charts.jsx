@@ -11,7 +11,7 @@ const GRID = 'rgba(255, 255, 255, 0.07)'
 const CROSSHAIR = 'rgba(255, 255, 255, 0.25)'
 
 export function fmtNum(n) {
-  if (n == null) return '—'
+  if (n == null) return 'N/A'
   if (n >= 10000) return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n)
   return n.toLocaleString()
 }
@@ -261,7 +261,7 @@ export function BarList({ items, unit = 'views' }) {
   return (
     <ul className="va-bars">
       {items.map((it) => (
-        <li key={it.label} title={`${it.label} — ${it.value.toLocaleString()} ${unit} (${Math.round((it.value / total) * 100)}%)`}>
+        <li key={it.label} title={`${it.label}: ${it.value.toLocaleString()} ${unit} (${Math.round((it.value / total) * 100)}%)`}>
           <div className="va-bar-top">
             <span className="va-bar-label">{it.icon ? <span className="va-bar-icon">{it.icon}</span> : null}{it.label}</span>
             <span className="va-bar-value">{fmtNum(it.value)}</span>
@@ -281,7 +281,7 @@ export function StatTile({ label, value, delta, hint }) {
   return (
     <div className="va-tile">
       <span className="va-tile-label">{label}</span>
-      <span className="va-tile-value">{typeof value === 'number' ? fmtNum(value) : (value ?? '—')}</span>
+      <span className="va-tile-value">{typeof value === 'number' ? fmtNum(value) : (value ?? 'N/A')}</span>
       {delta != null && (
         <span className={`va-tile-delta ${dir}`}>
           <span aria-hidden="true">{dir === 'up' ? '▲' : '▼'}</span> {Math.abs(delta)}%
