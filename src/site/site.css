@@ -276,6 +276,13 @@ body { -webkit-tap-highlight-color: transparent; }
 .a-green { --acc: var(--green); }
 .a-gold { --acc: var(--gold); }
 
+/* About: grouped toolbox of the apps/tech I actually use */
+.about-toolbox { margin-top: 46px; }
+.toolbox-title { font-size: 1.18rem; margin: 8px 0 24px; }
+.toolbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 24px 34px; }
+.tool-group-name { display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin-bottom: 11px; }
+.tool-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
 /* ---------- Skills ---------- */
 .skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .skill-branch { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 24px; transition: border-color 0.25s, box-shadow 0.25s; }
@@ -343,6 +350,7 @@ body { -webkit-tap-highlight-color: transparent; }
   border: 1px solid color-mix(in srgb, var(--acc) 30%, transparent);
   background: color-mix(in srgb, var(--acc) 9%, transparent);
 }
+.pill-label { display: block; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px; }
 
 /* Capability checklist (end-to-end ownership) */
 .proj-highlights { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
@@ -635,9 +643,6 @@ body { -webkit-tap-highlight-color: transparent; }
 .type-caret { display: inline-block; width: 9px; height: 1.05em; vertical-align: -0.14em; background: var(--acc); animation: caretBlink 1s steps(1) infinite; }
 @keyframes caretBlink { 50% { opacity: 0; } }
 
-/* Hero parallax: portrait drifts opposite the cursor */
-.hero:hover .portrait { transform: translate(calc(var(--px, 0) * -16px), calc(var(--py, 0) * -16px)); }
-
 /* Display typeface on key headings */
 .contact-title, .proj-name, .tl-role, .branch-head h3 { font-family: var(--display); }
 
@@ -749,7 +754,6 @@ body { -webkit-tap-highlight-color: transparent; }
   .pulse-dot, .scroll-line, .project-card, .type-caret, .tl-item.active .tl-node, .portrait-scan { animation: none; }
   .btn:hover, .project-card:hover, .focus-card:hover, .tl-card:hover, .hero-links a:hover { transform: none; }
   .focus-card { transform: none; }
-  .hero:hover .portrait { transform: none; }
   .feat-card:hover, .next-proj:hover { transform: none; }
   .proj-media video, .proj-media img { transition: none; }
   .project-card:hover .proj-media video, .project-card:hover .proj-media img { transform: none; }
@@ -1045,7 +1049,7 @@ body { -webkit-tap-highlight-color: transparent; }
   border-color: var(--acc);
 }
 
-/* Experience page groups: engineering first, then ops/sport. */
+/* Experience page groups: software first, then ops/sport. */
 .tl-group + .tl-group { margin-top: 40px; }
 .tl-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin: 0 0 20px 2px; }
 .tl-group-head h3 { font-family: var(--display); font-size: 1.12rem; font-weight: 600; letter-spacing: 0.01em; }
@@ -1074,7 +1078,7 @@ body { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ============================================================
-   Availability card. "Open to Summer 2027 SWE & game dev internships ·
+   Availability card. "Open to Summer 2027 software & game dev internships ·
    Atlanta, GA" is too long for a one-line pill on a phone, and also in the
    narrow left hero column between 861px and 1000px. At those widths the 999px
    pill wrapped into a lozenge with the dot stranded on its own line and the

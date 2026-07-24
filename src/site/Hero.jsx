@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { profile, education } from '../data/content.js'
 import { asset } from './asset.js'
@@ -16,14 +15,6 @@ export default function Hero() {
   const cta1 = useMagnetic()
   const cta2 = useMagnetic()
   const cta3 = useMagnetic()
-  const heroRef = useRef(null)
-
-  const onParallax = (e) => {
-    const el = heroRef.current
-    if (!el) return
-    el.style.setProperty('--px', (e.clientX / window.innerWidth - 0.5).toFixed(3))
-    el.style.setProperty('--py', (e.clientY / window.innerHeight - 0.5).toFixed(3))
-  }
 
   const scrollDown = () => {
     const el = document.getElementById('featured')
@@ -31,7 +22,7 @@ export default function Hero() {
   }
 
   return (
-    <section id="home" className="hero" ref={heroRef} onMouseMove={onParallax}>
+    <section id="home" className="hero">
       <div className="hero-inner">
         <div className="hero-main reveal">
           <div className="status-chip">

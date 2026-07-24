@@ -36,11 +36,25 @@ function ProjectCard({ p }) {
         <p className="proj-summary">{p.summary}</p>
 
         {p.disciplines && p.disciplines.length > 0 && (
-          <div className="proj-disciplines">
-            {p.disciplines.map((d) => (
-              <span key={d} className="disc">{d}</span>
-            ))}
-          </div>
+          <>
+            <span className="pill-label">What I did</span>
+            <div className="proj-disciplines">
+              {p.disciplines.map((d) => (
+                <span key={d} className="disc">{d}</span>
+              ))}
+            </div>
+          </>
+        )}
+
+        {p.tech && p.tech.length > 0 && (
+          <>
+            <span className="pill-label">Built with</span>
+            <div className="proj-tech">
+              {p.tech.map((t) => (
+                <span key={t} className="pill">{t}</span>
+              ))}
+            </div>
+          </>
         )}
 
         <div className="proj-links">

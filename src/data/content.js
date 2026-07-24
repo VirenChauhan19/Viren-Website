@@ -3,14 +3,14 @@
 export const profile = {
   name: 'Viren Chauhan',
   title: 'Software & Game Developer · Front-End, Real-Time 3D & Applied AI',
-  seeking: 'Open to Summer 2027 SWE & game dev internships',
+  seeking: 'Open to Summer 2027 software & game dev internships',
   resume: 'Viren-Chauhan-Resume.pdf',
   tagline:
     "I build web apps, games, and tools that people actually use. I like owning the whole thing, from the first idea to the version that ships.",
   about: [
     "I'm a software developer and a game developer, and I care most about how a thing feels to use — the front end of an app or the moment-to-moment feel of a game loop. Right now I'm finishing a B.F.A. in Game Development at SCAD in Atlanta, with a minor in Applied AI.",
     "I like building the whole product, not just one piece of it. That usually means the user flows, the interface, the React code underneath, the APIs, and actually getting it shipped. I've done that for a clinical app with 134 registered users and a private training hub my own cross country team runs on.",
-    "Away from the keyboard I'm a SCAD student athlete with an ultra-endurance background. I grew up around La Ultra: The High, an extreme ultramarathon in the Indian Himalayas, and by its 10th edition I was directing its 55 km category. This summer I'm one of four volunteers on the FIFA World Cup 2026 Anti-Doping team, selected from more than 100,000 applications.",
+    "Away from the keyboard I'm a SCAD student athlete with an ultra-endurance background. I grew up around La Ultra: The High, an extreme ultramarathon in the Indian Himalayas, and by its 10th edition I was directing its 55 km category. This summer I was one of four volunteers on the FIFA World Cup 2026 Anti-Doping team, selected from more than 100,000 applications.",
     "That background taught me to play the long game, keep showing up, and finish what I start.",
   ],
   email: 'chauhan.viren08@gmail.com',
@@ -34,7 +34,7 @@ export const education = [
   },
 ]
 
-// group: 'tech' renders under "Engineering & Design", everything else
+// group: 'tech' renders under "Software & Design", everything else
 // under "Operations, Sport & Leadership" on the experience page.
 export const experience = [
   {
@@ -64,12 +64,12 @@ export const experience = [
   {
     role: 'Volunteer, Anti-Doping Team',
     org: 'FIFA World Cup 2026',
-    dates: 'May 2026 - Present',
+    dates: 'May 2026 - Jul 2026',
     location: 'Atlanta, GA',
     bullets: [
       'Selected as one of only 4 volunteers for the Anti-Doping Team out of more than 100,000 applications.',
-      'Support confidential tournament operations tied to athlete integrity, compliance, and professional event standards.',
-      'Represent FIFA World Cup 2026 in a high-trust role that calls for discretion, reliability, and a sharp eye for detail.',
+      'Supported confidential tournament operations tied to athlete integrity, compliance, and professional event standards.',
+      'Represented FIFA World Cup 2026 in a high-trust role that called for discretion, reliability, and a sharp eye for detail.',
     ],
   },
   {
@@ -229,6 +229,16 @@ export const skills = [
     desc: 'International student ambassador; guest-facing event ops.' },
   { id: 'crisis', branch: 'soft', name: 'Crisis Management',
     desc: 'Athlete cut-off enforcement, on-the-fly disqualifications, real-time medical.' },
+]
+
+// Apps, tools, and tech I actually work in — grouped for the About page toolbox.
+export const stack = [
+  { group: 'Front-End & Web', items: ['React', 'Next.js', 'TypeScript', 'JavaScript', 'Flutter', 'Vite', 'HTML & CSS'] },
+  { group: 'Backend & Data', items: ['Node.js', 'Prisma', 'PostgreSQL', 'Firebase', 'Supabase', 'REST APIs', 'Google Calendar API', 'Cloud Run'] },
+  { group: 'Game & Real-Time 3D', items: ['Unity', 'Unreal Engine', 'C#', 'Niagara VFX', 'PCG'] },
+  { group: '3D Art & Design', items: ['Autodesk Maya', 'Substance Painter', 'Photoshop'] },
+  { group: 'Applied AI', items: ['Retrieval / RAG', 'Embeddings', 'Document Parsing'] },
+  { group: 'Workflow', items: ['Git', 'GitHub'] },
 ]
 
 

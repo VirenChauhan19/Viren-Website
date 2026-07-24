@@ -294,7 +294,7 @@ const INTENTS = [
     test: (q) => /(fifa|world cup|soccer|football)/i.test(q),
     respond: () => ({
       text:
-        "Viren volunteered for the FIFA Club World Cup 2025 in Atlanta on the Ceremonies & Fan Operations team. He's also been selected to volunteer in anti-doping operations at the FIFA World Cup 2026.",
+        "Viren volunteered for the FIFA Club World Cup 2025 in Atlanta on the Ceremonies & Fan Operations team. He also volunteered in anti-doping operations at the FIFA World Cup 2026.",
       src: 'experience',
     }),
   },

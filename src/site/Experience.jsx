@@ -3,9 +3,9 @@ import { motion } from 'framer-motion'
 import { experience } from '../data/content.js'
 import { youtubeWatchUrl } from './asset.js'
 
-// Engineering signal first; the ops/sport track record follows.
+// Software signal first; the ops/sport track record follows.
 const GROUPS = [
-  { id: 'tech', label: 'Engineering & Design', desc: 'Shipped software and client design work.' },
+  { id: 'tech', label: 'Software & Design', desc: 'Shipped software and client design work.' },
   { id: 'ops', label: 'Operations, Sport & Leadership', desc: 'Big events, campus roles, and the endurance world that built the work ethic.' },
 ]
 
@@ -103,7 +103,7 @@ export default function Experience() {
         <span className="kicker">experience</span>
         <h2 className="section-title">Track record</h2>
         <p className="section-sub">
-          Engineering and design first, then everything else that built the work ethic: events,
+          Software and design first, then everything else that built the work ethic: events,
           operations, sport, and film.
         </p>
         <div className="exp-stats">

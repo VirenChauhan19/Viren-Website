@@ -1,4 +1,4 @@
-import { profile, education } from '../data/content.js'
+import { profile, education, stack } from '../data/content.js'
 import { useTilt } from './fx.js'
 
 const FOCUS = [
@@ -56,6 +56,23 @@ export default function About() {
         <div className="focus-stack reveal">
           {FOCUS.map((f) => (
             <FocusCard key={f.k} f={f} />
+          ))}
+        </div>
+      </div>
+
+      <div className="about-toolbox reveal">
+        <span className="kicker">toolbox</span>
+        <h3 className="toolbox-title">Apps &amp; tech I work in</h3>
+        <div className="toolbox-grid">
+          {stack.map((g) => (
+            <div className="tool-group" key={g.group}>
+              <span className="tool-group-name">{g.group}</span>
+              <div className="tool-pills">
+                {g.items.map((it) => (
+                  <span className="pill" key={it}>{it}</span>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
