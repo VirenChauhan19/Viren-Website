@@ -13,9 +13,9 @@ const SCRIPTS = {
     { screen: 'chat',      dur: 4400, cap: <>Ask anything, <b>answered from your own notes</b></> },
   ],
   laultra: [
-    { screen: 'patients',  dur: 3000, cap: <>Manage <b>every patient</b> in one place</> },
-    { screen: 'plan',      dur: 3800, cap: <>Build a <b>personalized plan</b> in one tap</> },
-    { screen: 'progress',  dur: 3400, cap: <>Track <b>real progress</b> over time</> },
+    { screen: 'patients',  dur: 3000, cap: <>Admin view across <b>every registered user</b></> },
+    { screen: 'plan',      dur: 3800, cap: <>A <b>90-day plan</b> that adapts to daily readiness</> },
+    { screen: 'progress',  dur: 3400, cap: <>Trend analytics on <b>readiness over time</b></> },
   ],
   xc: [
     { screen: 'week',     dur: 3600, cap: <>Coaches build <b>each athlete&apos;s week</b></> },
@@ -27,7 +27,7 @@ const SCRIPTS = {
 
 const APP_NAME = {
   study: 'Study Command Center',
-  laultra: 'La Ultra · Patient App',
+  laultra: 'La Ultra · Coaching Platform',
   xc: 'SCAD Distance · Team Hub',
 }
 

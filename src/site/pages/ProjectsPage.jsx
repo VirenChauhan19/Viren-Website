@@ -7,11 +7,12 @@ import Page from '../Page.jsx'
 
 const FILTERS = [
   { id: 'all', label: 'All' },
-  { id: 'ai', label: 'Web & UI/UX' },
-  { id: 'game', label: 'Games' },
+  { id: 'game', label: 'Game Technology' },
+  { id: 'software', label: 'Software & Web' },
+  { id: 'ai', label: 'AI' },
 ]
 
-function ProjectCard({ p }) {
+export function ProjectCard({ p }) {
   const isAi = p.type === 'ai'
   const media = p.media && p.media[0]
 
@@ -28,49 +29,51 @@ function ProjectCard({ p }) {
       <div className="proj-body">
         {p.featured && <span className="featured-badge">★ Featured build</span>}
         <div className="proj-tagline-row">
-          <span className={`type-tag ${isAi ? 'ai' : 'game'}`}>{p.category || (isAi ? 'Web · UI/UX' : 'Game Dev')}</span>
+          <span className={`type-tag ${isAi ? 'ai' : 'game'}`}>{p.category}</span>
           <span className="proj-year">{p.year}</span>
         </div>
-        <h3 className="proj-name">{p.name}</h3>
+        <h2 className="proj-name">
+          <Link to={`/projects/${p.slug}`}>{p.name}</Link>
+        </h2>
         <p className="proj-role">{p.role}</p>
         <p className="proj-summary">{p.summary}</p>
 
-        {p.disciplines && p.disciplines.length > 0 && (
-          <>
-            <span className="pill-label">What I did</span>
-            <div className="proj-disciplines">
-              {p.disciplines.map((d) => (
-                <span key={d} className="disc">{d}</span>
-              ))}
-            </div>
-          </>
+        {p.metric && (
+          <p className="proj-metric">
+            <strong>{p.metric.value}</strong>
+            <span>{p.metric.label}</span>
+          </p>
         )}
 
         {p.tech && p.tech.length > 0 && (
           <>
             <span className="pill-label">Built with</span>
-            <div className="proj-tech">
+            <ul className="proj-tech">
               {p.tech.map((t) => (
-                <span key={t} className="pill">{t}</span>
+                <li key={t} className="pill">{t}</li>
               ))}
-            </div>
+            </ul>
           </>
         )}
 
         <div className="proj-links">
           <Link className="proj-link primary" to={`/projects/${p.slug}`}>
-            View details →
+            Case study <span aria-hidden="true">→</span>
+            <span className="sr-only"> for {p.name}</span>
           </Link>
           {p.live && (
             <a className="proj-link" href={p.live} target="_blank" rel="noreferrer">
-              Live ↗
+              Live Demo <span aria-hidden="true">↗</span>
+              <span className="sr-only"> of {p.name}</span>
             </a>
           )}
           {p.repo && (
             <a className="proj-link" href={p.repo} target="_blank" rel="noreferrer">
-              Code ↗
+              GitHub <span aria-hidden="true">↗</span>
+              <span className="sr-only"> repository for {p.name}</span>
             </a>
           )}
+          {!p.repo && p.accessNote && <span className="proj-access">{p.accessNote}</span>}
         </div>
       </div>
     </article>
@@ -79,25 +82,26 @@ function ProjectCard({ p }) {
 
 export default function ProjectsPage() {
   const [filter, setFilter] = useState('all')
-  const list = projects
-    .filter((p) => filter === 'all' || p.type === filter)
-    .slice()
-    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
+  const list = projects.filter(
+    (p) => filter === 'all' || (p.filters || []).includes(filter),
+  )
 
   return (
     <Page>
       <section className="section projects">
         <div className="section-head reveal">
           <span className="kicker">projects</span>
-          <h2 className="section-title">Things I built</h2>
+          <h1 className="section-title">Systems I built</h1>
           <p className="section-sub">
-            I designed and built every one of these myself. The web apps are embedded live and the
-            games have gameplay clips, so try them right here. Open any project for the full write-up.
+            Gameplay systems in Unreal Engine and Unity, and full-stack products people log into
+            every day. Web apps are embedded live, games have gameplay capture, and every project
+            opens into a case study.
           </p>
-          <div className="filters" role="tablist" aria-label="Filter projects">
+          <div className="filters" role="tablist" aria-label="Filter projects by discipline">
             {FILTERS.map((f) => (
               <button
                 key={f.id}
+                type="button"
                 className={filter === f.id ? 'on' : ''}
                 onClick={() => setFilter(f.id)}
                 role="tab"

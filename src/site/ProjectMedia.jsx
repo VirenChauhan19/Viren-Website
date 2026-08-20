@@ -14,15 +14,19 @@ export function Media({ m, name }) {
         </a>
       )
     }
+    // poster + preload="none" keeps the (large) capture files off the wire
+    // until someone actually presses play.
     return (
       <div className="proj-media">
         <video
           src={asset(m.src)}
+          poster={m.poster ? asset(m.poster) : undefined}
           muted
           loop
           playsInline
           controls
-          preload="metadata"
+          preload="none"
+          aria-label={`${m.caption || name} video`}
           onError={() => setFailed(true)}
         />
       </div>
@@ -33,7 +37,13 @@ export function Media({ m, name }) {
     if (failed) return null
     return (
       <div className="proj-media">
-        <img src={asset(m.src)} alt={m.caption || name} onError={() => setFailed(true)} />
+        <img
+          src={asset(m.src)}
+          alt={m.caption || name}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
       </div>
     )
   }

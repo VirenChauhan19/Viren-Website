@@ -165,20 +165,6 @@ body { -webkit-tap-highlight-color: transparent; }
   pointer-events: none;
 }
 .hero-inner { display: grid; grid-template-columns: 1.35fr 0.9fr; gap: 56px; align-items: center; }
-.status-chip {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.16em;
-  color: var(--text); padding: 7px 14px; border: 1px solid var(--line2); border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02); margin-bottom: 26px;
-}
-.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.5); animation: pulse 2.4s infinite; }
-.chip-sep { color: var(--faint); }
-.chip-muted { color: var(--muted); }
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
-  70% { box-shadow: 0 0 0 7px rgba(56, 189, 248, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-}
 .hero-name {
   font-family: var(--display);
   font-size: clamp(2.9rem, 8vw, 5.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.02;
@@ -186,8 +172,6 @@ body { -webkit-tap-highlight-color: transparent; }
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   margin-bottom: 14px;
 }
-.hero-title { font-family: var(--mono); font-size: clamp(0.95rem, 2.2vw, 1.18rem); color: var(--acc); letter-spacing: 0.01em; margin-bottom: 18px; }
-.hero-tagline { font-size: clamp(1.02rem, 2.2vw, 1.2rem); color: var(--muted); max-width: 52ch; margin-bottom: 30px; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; }
 .hero-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--mono); font-size: 0.84rem; }
 .hero-links a {
@@ -204,7 +188,6 @@ body { -webkit-tap-highlight-color: transparent; }
   transform: translateY(-2px);
 }
 .hero-links a:active { transform: scale(0.97); color: var(--acc); border-color: var(--acc); }
-.hero-loc { color: var(--faint); }
 
 .hero-side { display: flex; flex-direction: column; gap: 16px; }
 .portrait {
@@ -246,11 +229,6 @@ body { -webkit-tap-highlight-color: transparent; }
 .spec-row strong { color: var(--text); font-weight: 600; text-align: right; }
 .spec-row strong.ok { color: var(--green); }
 
-.scroll-cue { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--faint); background: none; border: 0; cursor: pointer; padding: 0; }
-.scroll-label { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.3em; text-transform: uppercase; }
-.scroll-line { width: 1px; height: 38px; background: linear-gradient(var(--acc), transparent); animation: scrollPulse 2s ease-in-out infinite; }
-@keyframes scrollPulse { 0%, 100% { opacity: 0.3; transform: scaleY(0.7); } 50% { opacity: 1; transform: scaleY(1); } }
-
 /* ---------- About ---------- */
 .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 44px; align-items: start; }
 .about-copy p { color: var(--muted); font-size: 1.04rem; }
@@ -270,33 +248,10 @@ body { -webkit-tap-highlight-color: transparent; }
 .focus-tag { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; color: var(--acc); display: block; margin-bottom: 6px; }
 .focus-card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
 
-.a-cyan { --acc: var(--cyan); }
-.a-violet { --acc: var(--violet); }
-.a-amber { --acc: var(--amber); }
-.a-green { --acc: var(--green); }
-.a-gold { --acc: var(--gold); }
 
 /* About: grouped toolbox of the apps/tech I actually use */
-.about-toolbox { margin-top: 46px; }
-.toolbox-title { font-size: 1.18rem; margin: 8px 0 24px; }
-.toolbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 24px 34px; }
-.tool-group-name { display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin-bottom: 11px; }
-.tool-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* ---------- Skills ---------- */
-.skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
-.skill-branch { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 24px; transition: border-color 0.25s, box-shadow 0.25s; }
-.skill-branch:hover { border-color: color-mix(in srgb, var(--acc) 40%, var(--line2)); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); }
-.branch-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
-.branch-bar { width: 4px; align-self: stretch; min-height: 38px; border-radius: 4px; background: var(--acc); }
-.branch-head h3 { font-size: 1.18rem; font-weight: 700; color: var(--text); }
-.branch-desc { font-family: var(--mono); font-size: 0.76rem; color: var(--faint); letter-spacing: 0.02em; }
-.skill-list { display: flex; flex-direction: column; gap: 14px; }
-.skill-node { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.skill-node:last-child { border-bottom: 0; padding-bottom: 0; }
-.skill-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-.skill-name { font-weight: 600; color: var(--text); font-size: 0.98rem; }
-.skill-desc { margin: 0; color: var(--muted); font-size: 0.86rem; }
 
 /* ---------- Projects ---------- */
 .filters { display: inline-flex; gap: 6px; margin-top: 22px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.02); }
@@ -545,11 +500,11 @@ body { -webkit-tap-highlight-color: transparent; }
   .hero-main, .hero-side, .section-head, .project-card, .feat-card, .detail-body { min-width: 0; }
   .hero-side { width: 100%; max-width: 340px; margin: 2px auto 0; }
   .hero-name { overflow-wrap: break-word; }
-  .hero-tagline, .section-sub, .proj-summary, .feat-card p, .detail-summary, .detail-body p {
+  .hero-subtitle, .section-sub, .proj-summary, .feat-card p, .detail-summary, .case-block p, .case-list li {
     max-width: 100%;
     overflow-wrap: break-word;
   }
-  .about-grid, .skills-grid, .project-grid { grid-template-columns: 1fr; }
+  .about-grid, .project-grid { grid-template-columns: 1fr; }
   .project-card.featured {
     grid-column: auto;
     display: flex;
@@ -581,8 +536,6 @@ body { -webkit-tap-highlight-color: transparent; }
   .hero { padding: calc(var(--nav-h) + 36px) 18px 48px; }
   .hero-name { font-size: clamp(2.35rem, 11vw, 2.85rem); line-height: 1.04; }
   .hero-role { font-size: 0.96rem; margin-bottom: 18px; }
-  .hero-tagline { font-size: 1.02rem; }
-  .scroll-cue { display: none; }
   .contact { padding-bottom: 90px; }
   .contact-card { padding: 36px 20px; }
   .browser-view { height: 260px; }
@@ -644,7 +597,7 @@ body { -webkit-tap-highlight-color: transparent; }
 @keyframes caretBlink { 50% { opacity: 0; } }
 
 /* Display typeface on key headings */
-.contact-title, .proj-name, .tl-role, .branch-head h3 { font-family: var(--display); }
+.contact-title, .proj-name, .tl-role { font-family: var(--display); }
 
 /* ---------- Multi-page layout ---------- */
 .site { position: relative; display: flex; flex-direction: column; min-height: 100vh; }
@@ -751,7 +704,7 @@ body { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .pulse-dot, .scroll-line, .project-card, .type-caret, .tl-item.active .tl-node, .portrait-scan { animation: none; }
+  .project-card, .type-caret, .tl-item.active .tl-node, .portrait-scan { animation: none; }
   .btn:hover, .project-card:hover, .focus-card:hover, .tl-card:hover, .hero-links a:hover { transform: none; }
   .focus-card { transform: none; }
   .feat-card:hover, .next-proj:hover { transform: none; }
@@ -981,10 +934,8 @@ body { -webkit-tap-highlight-color: transparent; }
 
 /* ---------- Tablet (861–1080): keep the desktop layout, ease the squeeze ---------- */
 @media (min-width: 861px) and (max-width: 1080px) {
-  /* The left column has to clear the availability line, otherwise the chip
-     wraps and the pill turns into a lozenge. */
+  /* Give the left column extra room so the role line keeps its own row. */
   .hero-inner { grid-template-columns: 1.45fr 1fr; gap: 36px; }
-  .status-chip { font-size: 0.72rem; letter-spacing: 0.1em; }
   .section { padding: 92px 24px; }
   .feat-grid { gap: 16px; }
   .project-grid { gap: 20px; }
@@ -1018,20 +969,15 @@ body { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ============================================================
-   Recruiter kit: availability chip, resume links, experience
-   groups, contact fast path (added 2026-07)
+   Recruiter kit: resume links, experience groups, contact fast path
+   (added 2026-07)
    ============================================================ */
-
-/* Availability chip can hold two segments; let it wrap on narrow screens. */
-.status-chip { flex-wrap: wrap; max-width: 100%; row-gap: 4px; }
 
 /* Hero role line: fixed identity, muted rotating flavor.
    The flavor holds a constant box — wide enough for the longest word (23ch)
    plus the separator and caret — so the typewriter can never grow the line and
    reflow the page under it. Spacing is margins, not literal spaces: an
    inline-block swallows whitespace at its own start. */
-.role-flavor { color: var(--muted); display: inline-block; min-width: 26ch; margin-left: 0.45em; }
-.role-sep { margin-right: 0.4em; }
 
 /* Resume pill in the desktop nav. */
 .nav-links .nav-resume {
@@ -1052,8 +998,8 @@ body { -webkit-tap-highlight-color: transparent; }
 /* Experience page groups: software first, then ops/sport. */
 .tl-group + .tl-group { margin-top: 40px; }
 .tl-group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin: 0 0 20px 2px; }
-.tl-group-head h3 { font-family: var(--display); font-size: 1.12rem; font-weight: 600; letter-spacing: 0.01em; }
-.tl-group-head h3::before { content: '▸ '; color: var(--acc); }
+.tl-group-head h2 { font-family: var(--display); font-size: 1.12rem; font-weight: 600; letter-spacing: 0.01em; }
+.tl-group-head h2::before { content: '▸ '; color: var(--acc); }
 .tl-group-desc { font-family: var(--mono); font-size: 0.78rem; color: var(--faint); }
 
 /* Recruiter fast path on the contact card. */
@@ -1078,52 +1024,13 @@ body { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ============================================================
-   Availability card. "Open to Summer 2027 software & game dev internships ·
-   Atlanta, GA" is too long for a one-line pill on a phone, and also in the
-   narrow left hero column between 861px and 1000px. At those widths the 999px
-   pill wrapped into a lozenge with the dot stranded on its own line and the
-   city on a third, so it becomes a proper card instead.
-   ============================================================ */
-@media (max-width: 560px), (min-width: 861px) and (max-width: 1000px) {
-  .status-chip {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;
-    column-gap: 10px;
-    row-gap: 1px;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 11px 14px;
-    border-radius: 12px;
-    font-size: 0.72rem;
-    line-height: 1.45;
-    letter-spacing: 0.05em;
-    white-space: normal;
-    background: color-mix(in srgb, var(--acc) 6%, rgba(255, 255, 255, 0.02));
-    border-color: color-mix(in srgb, var(--acc) 26%, var(--line2));
-  }
-  .status-chip .pulse-dot { margin-top: 5px; }
-  .status-chip .chip-role { grid-column: 2; }
-  .status-chip .chip-sep { display: none; }
-  .status-chip .chip-muted { grid-column: 2; font-size: 0.68rem; letter-spacing: 0.08em; }
-}
-
-/* ============================================================
    Phone hero. The first screen gets its own layout instead of a squeezed
    desktop one: the rotating role gets its own line, and the CTAs form a grid.
    ============================================================ */
 @media (max-width: 560px) {
-  /* Role: line 1 is the fixed identity, line 2 is the typewriter. Reserving
-     both lines stops the rotating text from reflowing the page as it types. */
-  .hero-role {
-    gap: 8px;
-    min-height: 3.2em;
-    line-height: 1.5;
-  }
-  .role-sep { display: none; }
-  .role-flavor { display: block; margin-left: 0; }
+  .hero-role { gap: 8px; line-height: 1.25; }
 
-  /* Primary CTA leads full-width, the two ghosts share the row under it. */
+  /* Primary CTA leads full-width; Resume, GitHub and LinkedIn pair up below. */
   .hero-cta {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1136,7 +1043,7 @@ body { -webkit-tap-highlight-color: transparent; }
   /* Tighten the vertical rhythm so the portrait is in reach on first paint. */
   .hero { padding-top: calc(var(--nav-h) + 28px); }
   .hero-name { margin-bottom: 10px; }
-  .hero-tagline { margin-bottom: 24px; }
+  .hero-subtitle { margin-bottom: 22px; }
 }
 
 /* index.html sets viewport-fit=cover, so keep content out from under the
@@ -1159,4 +1066,301 @@ body { -webkit-tap-highlight-color: transparent; }
     padding-left: max(18px, env(safe-area-inset-left));
     padding-right: max(18px, env(safe-area-inset-right));
   }
+}
+
+/* ============================================================
+   Positioning pass: Game Technology & Software Developer
+   Hero hierarchy, case studies, architecture diagrams, skills.
+   ============================================================ */
+
+/* ---------- Screen-reader-only + skip link ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 100;
+  font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
+  padding: 10px 16px; border-radius: 0 0 10px 10px;
+  background: var(--acc); color: #06131c;
+  transition: top 0.18s ease;
+}
+.skip-link:focus-visible { top: 0; }
+
+/* ---------- Hero ---------- */
+.hero-role {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: nowrap;
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 3.4vw, 1.85rem);
+  font-weight: 700; letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 10px 0 16px;
+  min-height: 0;
+}
+.hero-role .role-prefix { font-family: var(--mono); color: var(--acc); opacity: 0.9; font-size: 0.7em; flex: 0 0 auto; }
+.hero-role .role-text { color: var(--text); min-width: 0; }
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.1vw, 1.1rem);
+  color: var(--muted);
+  max-width: 56ch;
+  margin: 0 0 22px;
+}
+
+.hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; padding: 0; }
+.hero-tag {
+  font-family: var(--mono); font-size: 0.76rem; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--text);
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--acc) 26%, var(--line2));
+  background: color-mix(in srgb, var(--acc) 7%, transparent);
+}
+
+.hero-status {
+  display: inline-flex; align-items: center; gap: 9px; flex-wrap: nowrap;
+  font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.01em;
+  color: var(--text);
+  margin: 4px 0 0; padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--acc) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--acc) 8%, transparent);
+  max-width: 100%;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto;
+  background: var(--acc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 18%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .status-dot { animation: tlPulse 2.6s infinite; }
+}
+
+/* Spec panel is a definition list now */
+.spec-panel dt {
+  font-family: var(--mono); color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+}
+.spec-panel dd { margin: 0; color: var(--text); font-weight: 600; text-align: right; font-size: 0.86rem; }
+.spec-typed { font-family: var(--mono); color: var(--acc); }
+
+/* ---------- Featured cards ---------- */
+.feat-metric {
+  display: block; font-family: var(--mono); font-size: 0.76rem;
+  color: var(--muted); margin: 0 0 14px;
+}
+.feat-metric strong { color: var(--acc); font-size: 0.95rem; }
+
+.featured-cta { flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Project cards ---------- */
+.proj-name a { color: inherit; }
+.proj-name a:hover { color: var(--acc); }
+
+.proj-metric {
+  display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+  margin: 0 0 16px; padding: 10px 14px;
+  border-left: 2px solid var(--acc);
+  background: color-mix(in srgb, var(--acc) 6%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.proj-metric strong { font-family: var(--mono); font-size: 1.02rem; color: var(--acc); }
+.proj-metric span { font-size: 0.82rem; color: var(--muted); }
+
+.proj-access {
+  display: inline-flex; align-items: center;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em;
+  color: var(--faint); padding: 9px 0;
+}
+
+/* ---------- Case study ---------- */
+.detail-cta-top {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  margin: 0 0 30px;
+}
+.detail-metric { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+.detail-metric strong { color: var(--acc); }
+
+.case-body { min-width: 0; }
+.case-block { margin: 0 0 34px; }
+.case-block:last-child { margin-bottom: 0; }
+.case-h {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--acc);
+  margin: 0 0 14px; padding-bottom: 9px;
+  border-bottom: 1px solid var(--line);
+}
+.case-block > p { color: var(--muted); font-size: 1.02rem; margin: 0 0 1em; }
+.case-block > p:last-child { margin-bottom: 0; }
+
+.case-list { display: flex; flex-direction: column; gap: 10px; }
+.case-list li {
+  position: relative; padding-left: 20px;
+  color: var(--muted); font-size: 0.96rem; line-height: 1.6;
+}
+.case-list li::before {
+  content: ''; position: absolute; left: 0; top: 0.62em;
+  width: 6px; height: 6px; border-radius: 2px; background: var(--acc); opacity: 0.7;
+}
+.case-list.checks li::before {
+  content: '\2713'; width: auto; height: auto; top: 0;
+  background: none; border-radius: 0; color: var(--acc); font-weight: 700; opacity: 1;
+}
+
+.case-challenges { display: flex; flex-direction: column; gap: 20px; }
+.case-challenges li {
+  padding: 18px 20px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface);
+}
+.case-challenges h3 {
+  font-family: var(--display); font-size: 1.02rem; font-weight: 700;
+  color: var(--text); margin: 0 0 10px;
+}
+.case-challenges p { margin: 0 0 8px; color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+.case-challenges p:last-child { margin-bottom: 0; }
+.ch-k {
+  display: inline-block; min-width: 68px;
+  font-family: var(--mono); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--faint); margin-right: 8px;
+}
+.ch-s .ch-k { color: var(--acc); }
+
+/* ---------- Architecture diagram ---------- */
+.arch { margin: 0; }
+.arch-flow { display: flex; flex-direction: column; align-items: stretch; }
+.arch-step { display: flex; flex-direction: column; align-items: center; }
+.arch-arrow {
+  font-family: var(--mono); font-size: 1rem; line-height: 1;
+  color: color-mix(in srgb, var(--acc) 60%, var(--faint));
+  padding: 7px 0;
+}
+.arch-node {
+  width: 100%; text-align: center;
+  padding: 13px 16px;
+  border: 1px solid color-mix(in srgb, var(--acc) 24%, var(--line2));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--acc) 5%, var(--surface));
+}
+.arch-label {
+  display: block; font-family: var(--mono); font-size: 0.86rem; font-weight: 700;
+  color: var(--text); letter-spacing: 0.01em;
+}
+.arch-note {
+  display: block; margin-top: 5px;
+  font-size: 0.78rem; color: var(--muted); line-height: 1.5;
+}
+.arch-step.fan .arch-node { border-style: dashed; background: rgba(255, 255, 255, 0.02); }
+.arch-step.fan .arch-note {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 9px;
+}
+.arch-chip {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--muted); padding: 3px 9px;
+  border: 1px solid var(--line2); border-radius: 999px;
+  background: var(--bg2);
+}
+.arch-cap {
+  margin-top: 12px; text-align: center;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--faint);
+}
+
+/* ---------- Systems grid (project sidebar) ---------- */
+.side-h {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--faint); margin: 0 0 12px;
+}
+.sys-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.sys {
+  font-family: var(--mono); font-size: 0.74rem;
+  color: var(--text); padding: 6px 11px;
+  border: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line2));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--acc) 6%, transparent);
+}
+
+/* ---------- Skills: clean badges, no percentage bars ---------- */
+.skill-groups { display: flex; flex-direction: column; gap: 30px; }
+.skill-group {
+  display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  gap: 20px 34px; align-items: start;
+  padding-bottom: 30px; border-bottom: 1px solid var(--line);
+}
+.skill-group:last-child { border-bottom: 0; padding-bottom: 0; }
+.skill-group-head h3 {
+  font-family: var(--display); font-size: 1.16rem; font-weight: 700; color: var(--text);
+}
+.skill-group-head p { margin: 7px 0 0; font-size: 0.86rem; color: var(--faint); line-height: 1.55; }
+.skill-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+  color: var(--text); padding: 7px 13px;
+  border: 1px solid var(--line2); border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, color 0.2s;
+}
+.badge:hover { border-color: color-mix(in srgb, var(--acc) 45%, var(--line2)); color: var(--acc); }
+
+/* ---------- About ---------- */
+.about-copy p:first-child { color: var(--text); font-size: 1.14rem; }
+.edu-row .edu-minor { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; margin-top: 3px; }
+.focus-stack { list-style: none; padding: 0; margin: 0; }
+
+.ai-note {
+  margin-top: 46px; padding: 24px 26px;
+  border: 1px solid var(--line); border-left: 2px solid var(--acc);
+  border-radius: 0 14px 14px 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+.ai-note p { margin: 10px 0 0; color: var(--muted); font-size: 1rem; max-width: 74ch; line-height: 1.65; }
+
+/* ---------- Footer ---------- */
+.footer-seeking {
+  display: block; font-family: var(--mono); font-size: 0.74rem;
+  color: var(--acc); margin-top: 7px;
+}
+.footer-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.footer-links a {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+  padding: 8px 12px; border-radius: 8px; border: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.footer-links a:hover { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 34%, transparent); }
+.footer-links .footer-resume {
+  color: var(--text); font-weight: 700;
+  border-color: color-mix(in srgb, var(--acc) 40%, var(--line2));
+}
+.footer-links .footer-resume:hover { color: var(--acc); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .skill-group { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .footer-links { justify-content: center; }
+  .case-challenges li { padding: 16px 17px; }
+}
+
+@media (max-width: 480px) {
+  .hero-role { font-size: clamp(1.15rem, 6.4vw, 1.5rem); gap: 8px; }
+  .hero-subtitle { font-size: 0.98rem; }
+  .hero-tag { font-size: 0.72rem; padding: 5px 10px; }
+  .hero-tags { gap: 7px; margin-bottom: 22px; }
+  .hero-status { font-size: 0.72rem; padding: 8px 12px; line-height: 1.45; }
+  .spec-panel dd { font-size: 0.8rem; max-width: 64%; }
+  .arch-node { padding: 11px 13px; }
+  .arch-label { font-size: 0.8rem; }
+  .arch-note { font-size: 0.74rem; }
+  .detail-cta-top { gap: 10px; }
+  .detail-cta-top .btn { flex: 1 1 auto; justify-content: center; }
+  .case-h { font-size: 0.68rem; letter-spacing: 0.12em; }
+  .case-block > p, .case-list li { font-size: 0.95rem; }
+  .ch-k { display: block; min-width: 0; margin: 0 0 3px; }
+  .ai-note { padding: 20px; }
+  .badge { font-size: 0.74rem; padding: 6px 11px; }
+  .proj-metric { padding: 9px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot { animation: none; }
+  .skip-link { transition: none; }
 }

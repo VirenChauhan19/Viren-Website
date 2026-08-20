@@ -22,7 +22,7 @@ export default function Contact() {
     <section id="contact" className="section contact">
       <div className="contact-card reveal">
         <span className="kicker">contact</span>
-        <h2 className="contact-title">Say hello.</h2>
+        <h1 className="contact-title">Say hello.</h1>
         <p className="contact-lead">
           Want to work on something together, talk shop, or just say hi? Email is the best way to
           reach me, and I always write back.
@@ -37,7 +37,7 @@ export default function Contact() {
           >
             Grab my resume (PDF) ↗
           </a>.{' '}
-          I&apos;m open to Summer 2027 software and game development internships.
+          {profile.seeking}.
         </p>
 
         <div className="contact-cta">
@@ -47,7 +47,7 @@ export default function Contact() {
             title="Opens your mail app, and copies the address, just in case"
             onClick={copyEmail}
           >
-            ✉ {profile.email}
+            <span aria-hidden="true">✉</span> {profile.email}
           </a>
           <a
             className="btn btn-ghost"

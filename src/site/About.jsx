@@ -1,24 +1,36 @@
-import { profile, education, stack } from '../data/content.js'
+import { profile, education } from '../data/content.js'
 import { useTilt } from './fx.js'
 
 const FOCUS = [
-  { k: 'fe', tag: 'Front-End & UI/UX', accent: 'cyan', desc: 'React apps, design systems, and responsive, accessible interfaces. I sweat the UX and the small details.' },
-  { k: 'swe', tag: 'Software Development', accent: 'violet', desc: 'Component architecture, state, APIs, auth, and getting things deployed. Plus smart features when a project needs them.' },
-  { k: 'game', tag: 'Game Development', accent: 'amber', desc: 'Gameplay programming, 2D and 3D physics, enemy AI, and real-time 3D scenes.' },
+  {
+    k: 'game',
+    tag: 'Game Technology',
+    desc: 'Gameplay systems, VFX integration, and profiling in Unreal Engine 5 and Unity, written in Blueprints and C#.',
+  },
+  {
+    k: 'swe',
+    tag: 'Software Development',
+    desc: 'Full-stack products: data models, auth and role permissions, APIs, front end, and the deploy that puts them in front of real users.',
+  },
+  {
+    k: 'ai',
+    tag: 'Applied AI',
+    desc: 'LLM features behind server-side proxies, document parsing, and grounded assistants that answer from real source material.',
+  },
 ]
 
 function FocusCard({ f }) {
   const t = useTilt(7)
   return (
-    <div
-      className={`focus-card a-${f.accent}`}
+    <li
+      className="focus-card"
       ref={t.ref}
       onMouseMove={t.onMouseMove}
       onMouseLeave={t.onMouseLeave}
     >
       <span className="focus-tag">{f.tag}</span>
       <p>{f.desc}</p>
-    </div>
+    </li>
   )
 }
 
@@ -26,10 +38,10 @@ export default function About() {
   return (
     <section id="about" className="section about">
       <div className="section-head reveal">
-        <span className="kicker">01 / about</span>
-        <h2 className="section-title">
-          I build the <span className="hl-cyan">whole thing</span>, not just one piece.
-        </h2>
+        <span className="kicker">about</span>
+        <h1 className="section-title">
+          I build <span className="hl-cyan">systems</span>, not screenshots.
+        </h1>
       </div>
 
       <div className="about-grid">
@@ -39,12 +51,13 @@ export default function About() {
           ))}
 
           <div className="about-edu">
-            {education.map((e, i) => (
-              <div className="edu-row" key={i}>
-                <span className="edu-k">EDU</span>
+            {education.map((e) => (
+              <div className="edu-row" key={e.school}>
+                <span className="edu-k" aria-hidden="true">EDU</span>
                 <div>
-                  <strong>{e.degree}</strong>
-                  <span>{e.school} · {e.location}</span>
+                  <strong>{e.school}</strong>
+                  <span>{e.degree}</span>
+                  {e.minor && <span className="edu-minor">{e.minor}</span>}
                   {e.grad && <span className="edu-grad">Expected graduation {e.grad}</span>}
                   {e.detail && <small>{e.detail}</small>}
                 </div>
@@ -53,28 +66,16 @@ export default function About() {
           </div>
         </div>
 
-        <div className="focus-stack reveal">
+        <ul className="focus-stack reveal">
           {FOCUS.map((f) => (
             <FocusCard key={f.k} f={f} />
           ))}
-        </div>
+        </ul>
       </div>
 
-      <div className="about-toolbox reveal">
-        <span className="kicker">toolbox</span>
-        <h3 className="toolbox-title">Apps &amp; tech I work in</h3>
-        <div className="toolbox-grid">
-          {stack.map((g) => (
-            <div className="tool-group" key={g.group}>
-              <span className="tool-group-name">{g.group}</span>
-              <div className="tool-pills">
-                {g.items.map((it) => (
-                  <span className="pill" key={it}>{it}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="ai-note reveal">
+        <span className="kicker">ai-assisted development</span>
+        <p>{profile.aiAssisted}</p>
       </div>
     </section>
   )

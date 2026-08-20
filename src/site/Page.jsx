@@ -7,6 +7,7 @@ export default function Page({ children, className = '' }) {
   useReveal()
   return (
     <motion.main
+      id="main"
       className={`page ${className}`}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}

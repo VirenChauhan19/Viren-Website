@@ -1,52 +1,32 @@
-import { skills } from '../data/content.js'
+import { skillGroups } from '../data/content.js'
 
-// Front-end and software focus; games are where the systems thinking started.
-const BRANCHES = [
-  { id: 'tools', label: 'Front-End & Software', accent: 'cyan', desc: 'React, TypeScript / Next.js, UI/UX, C# / engine scripting, Flutter, Firebase, Git.' },
-  { id: 'ai', label: 'Applied AI', accent: 'violet', desc: 'Retrieval, document parsing, API glue, deployed tools.' },
-  { id: 'game', label: 'Game Development', accent: 'amber', desc: 'Gameplay, physics, enemy AI, level design.' },
-  { id: 'soft', label: 'Leadership & Field', accent: 'green', desc: 'Field leadership, ops, communication, crisis management.' },
-]
-
-function Branch({ b }) {
-  const nodes = skills.filter((n) => n.branch === b.id)
-  return (
-    <div className={`skill-branch a-${b.accent} reveal`}>
-      <div className="branch-head">
-        <span className="branch-bar" />
-        <div>
-          <h3>{b.label}</h3>
-          <span className="branch-desc">{b.desc}</span>
-        </div>
-      </div>
-      <ul className="skill-list">
-        {nodes.map((n) => (
-          <li key={n.id} className="skill-node">
-            <div className="skill-top">
-              <span className="skill-name">{n.name}</span>
-            </div>
-            <p className="skill-desc">{n.desc}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
+// Clean badges, grouped by category. Deliberately no proficiency bars or
+// percentages: every item here is something used in a shipped project,
+// a public repo, or coursework listed on the resume.
 export default function Skills() {
   return (
-    <section id="skills" className="section skills">
+    <section id="skills" className="section skills" aria-labelledby="skills-h">
       <div className="section-head reveal">
-        <span className="kicker">02 / skills</span>
-        <h2 className="section-title">What I work with</h2>
+        <span className="kicker">technical skills</span>
+        <h2 className="section-title" id="skills-h">What I work with</h2>
         <p className="section-sub">
-          Two tracks, one builder: web software and games. The systems thinking transfers both ways, and each side makes the other sharper.
+          Grouped by what it is for, not ranked by a made-up percentage.
         </p>
       </div>
 
-      <div className="skills-grid">
-        {BRANCHES.map((b) => (
-          <Branch key={b.id} b={b} />
+      <div className="skill-groups">
+        {skillGroups.map((g) => (
+          <div className="skill-group reveal" key={g.id}>
+            <div className="skill-group-head">
+              <h3>{g.label}</h3>
+              <p>{g.note}</p>
+            </div>
+            <ul className="skill-badges">
+              {g.items.map((it) => (
+                <li key={it} className="badge">{it}</li>
+              ))}
+            </ul>
+          </div>
         ))}
       </div>
     </section>

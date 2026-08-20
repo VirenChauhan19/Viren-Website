@@ -8,9 +8,8 @@ import { asset } from './asset.js'
 const LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/projects', label: 'Projects' },
-  { to: '/about', label: 'About' },
   { to: '/experience', label: 'Experience' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/about', label: 'About' },
 ]
 
 // Only the site owner sees this tab: it appears when a Supabase
@@ -53,6 +52,7 @@ export default function Nav() {
 
   return (
     <header className="nav">
+      <a className="skip-link" href="#main">Skip to content</a>
       <div className="nav-inner">
         <NavLink to="/" end className="nav-brand" onClick={onBrand}>
           <img className="nav-logo" src={asset(profile.photo)} alt="" aria-hidden="true" />
@@ -69,7 +69,7 @@ export default function Nav() {
         </button>
 
         <LayoutGroup>
-          <nav className={`nav-links ${open ? 'open' : ''}`}>
+          <nav className={`nav-links ${open ? 'open' : ''}`} aria-label="Primary">
             {links.map((l) => (
               <NavLink
                 key={l.to}
@@ -104,6 +104,7 @@ export default function Nav() {
               {linkedin && (
                 <a href={linkedin} target="_blank" rel="noreferrer" onClick={close}>LinkedIn ↗</a>
               )}
+              <NavLink to="/contact" onClick={close}>Contact</NavLink>
               <a href={`mailto:${profile.email}`} onClick={close}>Email ↗</a>
             </div>
           </nav>

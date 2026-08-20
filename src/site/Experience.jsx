@@ -5,7 +5,7 @@ import { youtubeWatchUrl } from './asset.js'
 
 // Software signal first; the ops/sport track record follows.
 const GROUPS = [
-  { id: 'tech', label: 'Software & Design', desc: 'Shipped software and client design work.' },
+  { id: 'tech', label: 'Software & Game Technology', desc: 'Shipped software, systems work, and client design work.' },
   { id: 'ops', label: 'Operations, Sport & Leadership', desc: 'Big events, campus roles, and the endurance world that built the work ethic.' },
 ]
 
@@ -101,10 +101,10 @@ export default function Experience() {
     <section id="experience" className="section experience">
       <div className="section-head reveal">
         <span className="kicker">experience</span>
-        <h2 className="section-title">Track record</h2>
+        <h1 className="section-title">Track record</h1>
         <p className="section-sub">
-          Software and design first, then everything else that built the work ethic: events,
-          operations, sport, and film.
+          Software and game technology first, then everything else that built the work ethic:
+          events, operations, sport, and film.
         </p>
         <div className="exp-stats">
           <span className="exp-stat"><strong>{total}</strong> roles</span>
@@ -119,7 +119,7 @@ export default function Experience() {
         return (
           <div key={g.id} className="tl-group">
             <div className="tl-group-head reveal">
-              <h3>{g.label}</h3>
+              <h2>{g.label}</h2>
               <span className="tl-group-desc">{g.desc}</span>
             </div>
             <Timeline items={items} />
