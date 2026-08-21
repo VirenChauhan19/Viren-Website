@@ -69,3 +69,21 @@ create policy "owner can read page views"
 
 create index if not exists page_views_created_at_idx
   on public.page_views (created_at desc);
+
+-- ------------------------------------------------------------
+-- Defence in depth on the grants themselves.
+--
+-- The policies above are what actually protect the data, and they do work:
+-- an anon request to read, update, or delete a row comes back with nothing,
+-- because row level security denies by default when no policy matches.
+--
+-- But the anon role was still holding select, update and delete GRANTS on the
+-- table, so those policies were the single thing standing between a public key
+-- and the data. One careless policy edit later (a "for all", a "using (true)")
+-- and there would be nothing underneath to catch it.
+--
+-- The browser only ever inserts. Reading is done by the owner through the
+-- dashboard, which runs as the authenticated role, so anon needs nothing else.
+-- Now a leak takes two independent mistakes instead of one.
+revoke all on public.page_views from anon;
+grant insert on public.page_views to anon;

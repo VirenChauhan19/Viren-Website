@@ -34,7 +34,13 @@ jobs:
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY") || http_code="000"
           echo "Supabase responded with HTTP $http_code"
+          # 2xx means the read was allowed. 401 and 403 mean PostgREST reached
+          # Postgres and Postgres refused, which is exactly what the hardened
+          # grants at the bottom of supabase/setup.sql produce: anon may insert
+          # and nothing else. Either way the database answered, which is all
+          # this job needs to prove. A paused project fails to connect or
+          # returns 5xx instead, and still turns the run red.
           case "$http_code" in
-            2*) echo "OK — project is awake." ;;
-            *)  echo "::error::Keep-alive ping failed (HTTP $http_code). The project may be paused — restore it in the Supabase dashboard."; exit 1 ;;
+            2*|401|403) echo "OK, the project is awake." ;;
+            *)  echo "::error::Keep-alive ping failed (HTTP $http_code). The project may be paused. Restore it in the Supabase dashboard."; exit 1 ;;
           esac
