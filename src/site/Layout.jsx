@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { profile } from '../data/content.js'
 import { asset } from './asset.js'
+import { metaForPath } from './seo.js'
 import { usePageTracking, trackPageView } from '../analytics/tracker.js'
 import Nav from './Nav.jsx'
 import Home from './pages/Home.jsx'
@@ -22,10 +23,30 @@ function ScrollToTop() {
   return null
 }
 
+function setHeadTag(selector, attribute, value) {
+  const el = document.head.querySelector(selector)
+  if (el) el.setAttribute(attribute, value)
+}
+
+// The served HTML already carries the right tags for whichever page the visitor
+// landed on, because scripts/prerender.js bakes them in per route. This keeps
+// the tab title, description, and canonical honest for every route change after
+// that, so bookmarks and browser history read correctly.
+function useDocumentMeta() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const meta = metaForPath(pathname)
+    document.title = meta.title
+    setHeadTag('meta[name="description"]', 'content', meta.description)
+    setHeadTag('link[rel="canonical"]', 'href', meta.canonical)
+  }, [pathname])
+}
+
 export default function Layout() {
   const location = useLocation()
   const year = new Date().getFullYear()
   usePageTracking()
+  useDocumentMeta()
 
   return (
     <div className="site">

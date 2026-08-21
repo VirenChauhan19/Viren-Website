@@ -1,20 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import prerender from './scripts/prerender.js'
 
-// GitHub Pages serves 404.html for unknown paths. Copying the built SPA
-// shell there lets BrowserRouter deep links (/projects/x) load directly.
-const spaFallback = {
-  name: 'spa-github-pages-404',
-  closeBundle() {
-    try {
-      copyFileSync(resolve('dist/index.html'), resolve('dist/404.html'))
-    } catch { /* dev server: nothing built yet */ }
-  },
-}
-
+// prerender() writes a real HTML file per route (so GitHub Pages answers 200
+// instead of falling through to 404.html), gives each one its own title and
+// social card, and emits 404.html, sitemap.xml and robots.txt.
 export default defineConfig({
-  plugins: [react(), spaFallback],
+  plugins: [react(), prerender()],
   base: '/',
 })

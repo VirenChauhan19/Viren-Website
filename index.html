@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
+
+    <!-- seo:start -->
+    <!--
+      Everything between the seo markers is regenerated for each route at build
+      time by scripts/prerender.js, so /projects/starwave ships its own title,
+      description, and poster card rather than inheriting the homepage's. What
+      is written below is the homepage copy, and what the dev server shows on
+      every route. Edit shared wording in src/site/seo.js.
+    -->
+    <title>Viren Chauhan | Game Technology &amp; Software Developer</title>
     <meta
       name="description"
       content="Game Technology & Software Developer building game systems, developer tools, AI-powered products, and interactive experiences with Unreal Engine, Unity, C#, C++, and modern software technologies."
@@ -52,6 +62,7 @@
         ]
       }
     </script>
+    <!-- seo:end -->
 
     <!-- Old links used hash routes (/#/projects/x). Rewrite them to real paths
          before the router mounts so bookmarks and shared links keep working. -->
@@ -72,7 +83,6 @@
     />
     <link rel="icon" type="image/jpeg" href="%BASE_URL%headshot.jpeg" />
     <link rel="apple-touch-icon" href="%BASE_URL%headshot.jpeg" />
-    <title>Viren Chauhan | Game Technology & Software Developer</title>
   </head>
   <body>
     <div id="root"></div>
