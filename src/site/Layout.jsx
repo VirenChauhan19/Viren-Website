@@ -80,7 +80,6 @@ export default function Layout() {
           <div className="footer-brand">
             <span className="brand-mark">VIREN<span className="dotexe">.exe</span></span>
             <span className="footer-tag">{profile.title}</span>
-            <span className="footer-seeking">{profile.seeking}</span>
           </div>
 
           <nav className="footer-links" aria-label="Footer">

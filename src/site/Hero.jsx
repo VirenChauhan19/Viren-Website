@@ -68,10 +68,6 @@ export default function Hero() {
             )}
           </div>
 
-          <p className="hero-status">
-            <span className="status-dot" aria-hidden="true" />
-            <span>{profile.seeking}</span>
-          </p>
         </div>
 
         <aside className="hero-side reveal">

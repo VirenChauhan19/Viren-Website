@@ -10,7 +10,6 @@ export const profile = {
     'I build game systems, developer tools, and intelligent software using C#, C++, Unreal Engine, Unity, and modern web technologies.',
   // Rotating suffix for the typed line under the title. Personality, not claims.
   typed: ['game systems', 'developer tools', 'intelligent software'],
-  seeking: 'Seeking Software, Game Technology & AI Internships · 2027',
   resume: 'Viren-Chauhan-Resume.pdf',
   // Hero technology chips. Mirrors the Technical Skills block on the resume.
   heroTags: ['C#', 'C++', 'Unreal Engine', 'Unity', 'Python', 'Applied AI'],

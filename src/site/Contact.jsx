@@ -36,8 +36,7 @@ export default function Contact() {
             onClick={() => trackPageView('/resume')}
           >
             Grab my resume (PDF) ↗
-          </a>.{' '}
-          {profile.seeking}.
+          </a>.
         </p>
 
         <div className="contact-cta">
