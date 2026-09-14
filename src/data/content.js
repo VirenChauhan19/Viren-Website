@@ -5,7 +5,7 @@
 
 export const profile = {
   name: 'Viren Chauhan',
-  title: 'Game Technology & Software Developer',
+  title: 'Game & Software Developer',
   subtitle:
     'I build game systems, developer tools, and intelligent software using C#, C++, Unreal Engine, Unity, and modern web technologies.',
   // Rotating suffix for the typed line under the title. Personality, not claims.
@@ -46,7 +46,7 @@ export const education = [
   },
 ]
 
-// group: 'tech' renders under "Software & Game Technology", everything else
+// group: 'tech' renders under "Software & Game Development", everything else
 // under "Operations, Sport & Leadership" on the experience page.
 export const experience = [
   {
@@ -199,7 +199,7 @@ export const skillGroups = [
   },
   {
     id: 'game',
-    label: 'Game Technology',
+    label: 'Game Development',
     note: 'Gameplay systems, VFX, and profiling in Unreal Engine 5 and Unity.',
     items: [
       'Unreal Engine 5',

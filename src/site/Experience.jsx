@@ -5,7 +5,7 @@ import { youtubeWatchUrl } from './asset.js'
 
 // Software signal first; the ops/sport track record follows.
 const GROUPS = [
-  { id: 'tech', label: 'Software & Game Technology', desc: 'Shipped software, systems work, and client design work.' },
+  { id: 'tech', label: 'Software & Game Development', desc: 'Shipped software, systems work, and client design work.' },
   { id: 'ops', label: 'Operations, Sport & Leadership', desc: 'Big events, campus roles, and the endurance world that built the work ethic.' },
 ]
 

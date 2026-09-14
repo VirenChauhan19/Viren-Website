@@ -14,7 +14,7 @@ import { profile, projects } from '../data/content.js'
 export const ORIGIN = 'https://virenchauhan.com'
 
 const SITE_DESCRIPTION =
-  'Game Technology & Software Developer building game systems, developer tools, AI-powered products, and interactive experiences with Unreal Engine, Unity, C#, C++, and modern software technologies.'
+  'Game & Software Developer building game systems, developer tools, AI-powered products, and interactive experiences with Unreal Engine, Unity, C#, C++, and modern software technologies.'
 
 // Editorial, not derivable from the data: the topics worth claiming in
 // structured data. Keep it to things the projects actually demonstrate.

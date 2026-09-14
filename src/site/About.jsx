@@ -4,7 +4,7 @@ import { useTilt } from './fx.js'
 const FOCUS = [
   {
     k: 'game',
-    tag: 'Game Technology',
+    tag: 'Game Development',
     desc: 'Gameplay systems, VFX integration, and profiling in Unreal Engine 5 and Unity, written in Blueprints and C#.',
   },
   {
