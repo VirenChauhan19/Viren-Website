@@ -9,7 +9,6 @@ const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'game', label: 'Game Development' },
   { id: 'software', label: 'Software & Web' },
-  { id: 'ai', label: 'AI' },
 ]
 
 export function ProjectCard({ p }) {
