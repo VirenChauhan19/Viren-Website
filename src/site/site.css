@@ -1302,6 +1302,76 @@ body { -webkit-tap-highlight-color: transparent; }
 }
 .badge:hover { border-color: color-mix(in srgb, var(--acc) 45%, var(--line2)); color: var(--acc); }
 
+/* ScreenMate carries the home page's award treatment into the collection. */
+.project-card.screenmate-spotlight {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-color: #bc925670;
+  background: linear-gradient(120deg, #bc925615, transparent 75%), #10141b;
+}
+.project-card.screenmate-spotlight:hover { border-color: #e9bf82; }
+.screenmate-award {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 28px;
+  padding: 28px 32px; border-bottom: 1px solid #bc925640;
+  background: linear-gradient(120deg, #bc925615, transparent 75%);
+}
+.screenmate-award .award-rank strong { font-size: clamp(3rem, 5vw, 4.5rem); }
+.screenmate-award .award-rank span { font-size: 0.7rem; }
+.screenmate-award-copy { min-width: 0; flex: 1; }
+.screenmate-award-copy .kicker { color: #e9bf82; font-size: 0.65rem; letter-spacing: 0.1em; margin-bottom: 8px; }
+.screenmate-award-copy p { font-family: var(--display); font-size: clamp(1.1rem, 2.4vw, 1.55rem); font-weight: 600; margin: 0 0 6px; line-height: 1.3; }
+.screenmate-award-copy > span:last-child { color: var(--muted); font-size: 0.85rem; }
+.screenmate-award > a { color: #e9bf82; font-size: 0.78rem; text-decoration: underline; text-underline-offset: 4px; }
+.screenmate-spotlight > .youtube-media { align-self: center; margin: 28px 0 28px 28px; border: 1px solid #bc925630; border-radius: 12px; overflow: hidden; }
+.screenmate-spotlight .proj-body { padding: 28px; }
+.screenmate-spotlight .proj-name { font-size: 1.8rem; }
+.screenmate-spotlight .proj-metric { border-color: #e9bf82; background: #bc925610; }
+.screenmate-spotlight .proj-metric strong { color: #e9bf82; }
+.screenmate-spotlight .proj-link.primary { background: #e9bf82; border-color: #e9bf82; color: #21180b; }
+@media (max-width: 860px) {
+  .project-card.screenmate-spotlight { grid-template-columns: minmax(0, 1fr); }
+  .screenmate-award { flex-wrap: wrap; gap: 20px; padding: 24px; }
+  .screenmate-award > a { flex-basis: 100%; }
+  .screenmate-spotlight > .youtube-media { margin: 24px 24px 0; }
+  .screenmate-spotlight .proj-body { padding: 24px; }
+}
+@media (max-width: 480px) {
+  .screenmate-award { padding: 20px; }
+  .screenmate-award-copy { flex-basis: 100%; }
+  .screenmate-spotlight > .youtube-media { margin: 20px 20px 0; }
+  .screenmate-spotlight .proj-body { padding: 20px; }
+}
+
+/* Global hackathon recognition */
+.award-section { padding-top: 0; }
+.award-callout {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px;
+  padding: clamp(24px, 4vw, 44px); border: 1px solid #bc925650; border-radius: 20px;
+  background: linear-gradient(120deg, #bc925615, transparent 75%);
+}
+.award-rank { display: flex; flex-direction: column; justify-content: center; color: #e9bf82; }
+.award-rank strong { font-size: clamp(3.5rem, 7vw, 6rem); line-height: 1; letter-spacing: -0.06em; }
+.award-rank span { margin-top: 10px; font-family: var(--mono); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.15em; }
+.award-copy { min-width: 0; }
+.award-copy .kicker { color: #e9bf82; line-height: 1.7; }
+.award-copy h2 { margin: 12px 0; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.2; }
+.award-copy p { color: var(--muted); line-height: 1.65; margin: 8px 0; max-width: 65ch; }
+.award-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.project-award { margin: 24px 0; padding: 22px; border: 1px solid #bc925650; border-radius: 14px; background: #bc925610; }
+.project-award strong, .project-award a { color: #e9bf82; }
+.project-award p { color: var(--muted); margin: 10px 0; line-height: 1.6; }
+.project-award a { text-decoration: underline; text-underline-offset: 4px; }
+.youtube-media { min-width: 0; background: var(--bg2); }
+.proj-media.youtube-player { aspect-ratio: 16 / 9; }
+.youtube-player iframe { display: block; width: 100%; height: 100%; position: absolute; inset: 0; border: 0; }
+.youtube-fallback { display: block; padding: 12px 18px; color: var(--muted); font-size: 0.85rem; text-decoration: underline; text-underline-offset: 4px; }
+.youtube-fallback:hover { color: var(--text); }
+@media (max-width: 600px) {
+  .award-callout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .award-rank { flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 16px; }
+  .award-links .btn { width: 100%; justify-content: center; white-space: normal; }
+}
+
 /* ---------- About ---------- */
 .about-copy p:first-child { color: var(--text); font-size: 1.14rem; }
 .edu-row .edu-minor { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; margin-top: 3px; }

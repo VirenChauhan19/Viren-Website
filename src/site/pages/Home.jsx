@@ -5,9 +5,8 @@ import { trackPageView } from '../../analytics/tracker.js'
 import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 
-// Game technology first, then the shipped product with real users, then the
-// systems-heavy Unity build. Same order a recruiter should read them in.
-const FEATURED = ['dynamic-weather-system', 'la-ultra-running-plans', 'starwave']
+// Lead with the global hackathon award, followed by game systems and shipped software.
+const FEATURED = ['screenmate', 'dynamic-weather-system', 'la-ultra-running-plans']
 
 function FeatCard({ p }) {
   return (
@@ -31,15 +30,32 @@ function FeatCard({ p }) {
 
 export default function Home() {
   const feats = FEATURED.map((s) => projects.find((p) => p.slug === s)).filter(Boolean)
+  const screenmate = projects.find((p) => p.slug === 'screenmate')
 
   return (
     <Page className="home">
       <Hero />
 
+      <section className="section award-section" aria-labelledby="award-title">
+        <div className="award-callout">
+          <div className="award-rank"><strong>3rd</strong><span>globally</span></div>
+          <div className="award-copy">
+            <span className="kicker">{screenmate.award.organizer} · 687 submitted projects</span>
+            <h2 id="award-title">ScreenMate takes the global podium.</h2>
+            <p>{screenmate.award.event}</p>
+            <p>A browser agent that researches, helps complete forms, and keeps you in control of sensitive decisions.</p>
+            <div className="award-links">
+              <Link className="btn btn-primary" to="/projects/screenmate">Explore ScreenMate <span aria-hidden="true">→</span></Link>
+              <a className="btn btn-ghost" href={screenmate.award.url} target="_blank" rel="noreferrer">Winner announcement <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="section featured" id="featured" aria-labelledby="featured-h">
         <div className="section-head reveal">
           <span className="kicker">selected work</span>
-          <h2 className="section-title" id="featured-h">Systems I built</h2>
+          <h2 className="section-title" id="featured-h">Things I’ve built</h2>
         </div>
         <div className="feat-grid">
           {feats.map((p) => (

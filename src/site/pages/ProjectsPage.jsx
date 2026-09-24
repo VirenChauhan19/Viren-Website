@@ -16,7 +16,18 @@ export function ProjectCard({ p }) {
   const media = p.media && p.media[0]
 
   return (
-    <article className={`project-card ${isAi ? 'ai' : 'game'}${p.featured ? ' featured' : ''}`}>
+    <article className={`project-card ${isAi ? 'ai' : 'game'}${p.featured ? ' featured' : ''}${p.slug === 'screenmate' ? ' screenmate-spotlight' : ''}`}>
+      {p.slug === 'screenmate' && p.award && (
+        <div className="screenmate-award">
+          <div className="award-rank"><strong>3rd</strong><span>globally</span></div>
+          <div className="screenmate-award-copy">
+            <span className="kicker">{p.award.organizer} · 687 submitted projects</span>
+            <p>ScreenMate takes the global podium.</p>
+            <span>{p.award.event}</span>
+          </div>
+          <a href={p.award.url} target="_blank" rel="noreferrer">Winner announcement <span aria-hidden="true">↗</span></a>
+        </div>
+      )}
       {p.demo ? (
         <AppDemo kind={p.demo} title={p.name} />
       ) : media ? (
@@ -56,6 +67,7 @@ export function ProjectCard({ p }) {
         )}
 
         <div className="proj-links">
+          {p.video && <a className="proj-link" href={p.video} target="_blank" rel="noreferrer">Watch demo ↗</a>}
           <Link className="proj-link primary" to={`/projects/${p.slug}`}>
             Case study <span aria-hidden="true">→</span>
             <span className="sr-only"> for {p.name}</span>

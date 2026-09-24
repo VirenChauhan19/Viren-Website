@@ -56,7 +56,16 @@ export default function ProjectDetail() {
         <h1 className="detail-title reveal">{p.name}</h1>
         <p className="detail-role reveal">{p.role}</p>
 
+        {p.award && (
+          <div className="project-award">
+            <strong>3rd place globally · 687 submitted projects</strong>
+            <p>{p.award.organizer} · {p.award.event}</p>
+            <a href={p.award.url} target="_blank" rel="noreferrer">Read the winner announcement ↗</a>
+          </div>
+        )}
+
         <div className="detail-cta-top reveal">
+          {p.video && <a className="btn btn-primary" href={p.video} target="_blank" rel="noreferrer">Watch demo ↗</a>}
           {p.live && (
             <a className="btn btn-primary" href={p.live} target="_blank" rel="noreferrer">
               Live Demo <span aria-hidden="true">↗</span>

@@ -5,6 +5,26 @@ export function Media({ m, name }) {
   const [failed, setFailed] = useState(false)
   if (!m) return null
 
+  if (m.type === 'youtube') {
+    return (
+      <div className="youtube-media">
+        <div className="proj-media youtube-player">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${m.id}`}
+            title={`${name} demo video`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+        <a className="youtube-fallback" href={`https://www.youtube.com/watch?v=${m.id}`} target="_blank" rel="noreferrer">
+          Watch on YouTube <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    )
+  }
+
   if (m.type === 'video') {
     if (failed) {
       return (
