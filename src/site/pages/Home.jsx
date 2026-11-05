@@ -4,9 +4,10 @@ import { asset } from '../asset.js'
 import { trackPageView } from '../../analytics/tracker.js'
 import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
+import { Media } from '../ProjectMedia.jsx'
 
-// Lead with the global hackathon award, followed by game systems and shipped software.
-const FEATURED = ['screenmate', 'dynamic-weather-system', 'la-ultra-running-plans']
+// Highlight the latest spatial AI build alongside the award winner and game systems.
+const FEATURED = ['worldos', 'screenmate', 'dynamic-weather-system']
 
 function FeatCard({ p }) {
   return (
@@ -31,6 +32,7 @@ function FeatCard({ p }) {
 export default function Home() {
   const feats = FEATURED.map((s) => projects.find((p) => p.slug === s)).filter(Boolean)
   const screenmate = projects.find((p) => p.slug === 'screenmate')
+  const worldos = projects.find((p) => p.slug === 'worldos')
 
   return (
     <Page className="home">
@@ -48,6 +50,27 @@ export default function Home() {
               <Link className="btn btn-primary" to="/projects/screenmate">Explore ScreenMate <span aria-hidden="true">→</span></Link>
               <a className="btn btn-ghost" href={screenmate.award.url} target="_blank" rel="noreferrer">Winner announcement <span aria-hidden="true">↗</span></a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section worldos-section" aria-labelledby="worldos-title">
+        <div className="worldos-spotlight">
+          <div className="worldos-copy">
+            <span className="kicker">Latest build · Meta AI Hackathon</span>
+            <h2 id="worldos-title">WorldOS</h2>
+            <p className="worldos-tagline">See your space. Design what comes next.</p>
+            <p>{worldos.summary}</p>
+            <ul className="worldos-highlights" aria-label="WorldOS highlights">
+              <li>Photo to room concept</li>
+              <li>36 editable pieces</li>
+              <li>3D + AR previews</li>
+            </ul>
+            <Link className="btn btn-primary" to="/projects/worldos">Explore WorldOS <span aria-hidden="true">→</span></Link>
+          </div>
+          <div className="worldos-film">
+            <Media m={worldos.media[0]} name={worldos.name} />
+            <p>Watch the one-minute demo · Recorded AI examples and actual iPhone footage</p>
           </div>
         </div>
       </section>

@@ -229,6 +229,41 @@ body { -webkit-tap-highlight-color: transparent; }
 .spec-row strong { color: var(--text); font-weight: 600; text-align: right; }
 .spec-row strong.ok { color: var(--green); }
 
+/* ---------- WorldOS spotlight and project gallery ---------- */
+.worldos-section { padding-top: 0; }
+.worldos-spotlight {
+  display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 32px;
+  align-items: center; padding: clamp(22px, 3vw, 40px);
+  border: 1px solid #b9d77955; border-radius: 20px;
+  background: linear-gradient(130deg, #24483b80, #13292330 75%);
+}
+.worldos-copy { min-width: 0; }
+.worldos-copy .kicker { color: #c8e692; line-height: 1.7; }
+.worldos-copy h2 { font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); margin: 12px 0; line-height: 1.1; }
+.worldos-copy p { color: var(--muted); line-height: 1.7; margin: 12px 0; }
+.worldos-copy .worldos-tagline { color: var(--text); font-size: 1.14rem; }
+.worldos-highlights { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 22px 0; }
+.worldos-highlights li { color: #d9eab8; border: 1px solid #b9d77935; background: #b9d7790a; border-radius: 8px; padding: 7px 10px; font-size: 0.78rem; }
+.worldos-film { min-width: 0; }
+.worldos-film .proj-media { border: 1px solid #b9d77935; border-radius: 12px; }
+.worldos-film > p { color: var(--muted); font-size: 0.78rem; line-height: 1.6; margin: 12px 0 0; }
+.proj-media.contain-media { aspect-ratio: 16 / 9; background: #10251f; }
+.proj-media.contain-media video { display: block; object-fit: contain; }
+.project-card:hover .contain-media video { transform: none; }
+.case-gallery { margin: 48px 0; }
+.case-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.case-gallery figure { min-width: 0; margin: 0; }
+.case-gallery a { display: block; border: 1px solid var(--line2); border-radius: 12px; overflow: hidden; background: var(--bg2); }
+.case-gallery img { display: block; width: 100%; height: auto; }
+.case-gallery figcaption { margin-top: 12px; color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+@media (max-width: 860px) {
+  .worldos-spotlight { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+@media (max-width: 600px) {
+  .worldos-copy .btn { width: 100%; justify-content: center; }
+  .case-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ---------- About ---------- */
 .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 44px; align-items: start; }
 .about-copy p { color: var(--muted); font-size: 1.04rem; }

@@ -271,6 +271,87 @@ export const skills = skillGroups.flatMap((g) =>
 // aliases: older slugs that should still resolve, so shared links keep working.
 export const projects = [
   {
+    slug: 'worldos',
+    name: 'WorldOS',
+    type: 'ai',
+    filters: ['software'],
+    featured: true,
+    year: '2026',
+    category: 'Applied AI · Spatial Design & AR',
+    role: 'Builder: product, full-stack development, AI integration, and AR',
+    summary: 'A phone-first AI interior design assistant that turns a room photo and a goal into an editable concept, with explained layouts, a 3D studio, and AR previews on supported devices.',
+    metric: { value: '36 pieces', label: 'in an editable furniture, lighting, and decor catalog' },
+    repo: 'https://github.com/VirenChauhan19/WorldOS',
+    video: 'projects/worldos/WorldOS-One-Minute-Demo.mp4',
+    media: [{
+      type: 'video',
+      src: 'projects/worldos/WorldOS-One-Minute-Demo.mp4',
+      poster: 'projects/worldos/worldos-poster.jpg',
+      captions: 'projects/worldos/worldos-captions.vtt',
+      caption: 'WorldOS one-minute demo: room planning, object recognition, and AR previews',
+      muted: false,
+      loop: false,
+      contain: true,
+    }],
+    gallery: [
+      {
+        src: 'projects/worldos/interior-studio.png',
+        caption: 'The 3D interior studio: an editable scene, a 36-piece catalog, and individual furniture and lighting controls.',
+      },
+      {
+        src: 'projects/worldos/floor-plan.png',
+        caption: 'The same design in floor-plan view, with wall, ceiling, and floor pieces arranged in one editable layout.',
+      },
+    ],
+    tech: ['React', 'TypeScript', 'Python', 'FastAPI', 'Muse Spark', 'SAM 3.1', 'MediaPipe', 'Capacitor', 'Swift', 'ARKit', 'RealityKit', 'WebXR'],
+    systems: ['Photo-to-layout planning', 'Scene understanding', 'Object recognition', 'Geometry validation', '3D and floor-plan editing', 'Supported AR previews', 'Saved spaces', 'Export and restore'],
+    disciplines: ['Product & UX', 'Full-stack development', 'AI integration', 'Spatial interaction', 'Cross-platform AR'],
+    study: {
+      overview: 'Built for the Meta AI Hackathon, WorldOS connects understanding a real space with designing what comes next. Start with a room photograph and a goal, explore a proposed layout, edit the pieces, and keep a design you can return to.',
+      problem: 'Inspiration pictures do not show how a new layout relates to your existing room. Planning a space means deciding what should stay, where new pieces belong, and how to explore those choices before moving furniture.',
+      built: [
+        'A photo room designer using Muse Spark for room interpretation, layout proposals, and placement explanations, with editable photo, floor-plan, and 3D views.',
+        'Detailed prompted object localization with SAM 3.1, plus a separate MediaPipe path for fast local camera labels.',
+        'A 36-piece interior catalog covering furniture, lighting, wall decor, and window pieces, with editable dimensions, finishes, positions, mounting heights, undo, and redo.',
+        'Geometry checks for modeled boundaries, overlaps, gaps, and reserved areas, kept separate from AI suggestions.',
+        'AR paths using native ARKit and RealityKit, browser WebXR on compatible devices, and USDZ export for Apple Quick Look previews.',
+        'Saved spaces, local drafts, export and restore, and recovery of interrupted room-design jobs without resubmitting inference.',
+      ],
+      architecture: {
+        caption: 'From a real photograph to an editable spatial concept.',
+        flow: [
+          { label: 'Photo + goal', note: 'capture a room and describe the intended change' },
+          { label: 'Scene understanding', note: 'Muse Spark reasoning and SAM 3.1 object localization' },
+          { label: 'Editable design', note: 'validated proposals, modeled geometry checks, and user corrections' },
+          { label: 'Explore + save', note: 'photo, floor plan, 3D, supported AR, and reusable spaces' },
+        ],
+      },
+      challenges: [
+        {
+          t: 'Turning AI suggestions into something editable',
+          p: 'A visual model can propose a plausible arrangement without establishing that every piece fits the modeled room.',
+          s: 'Validate structured model responses, check layout geometry in application code, and let the user correct labels and dimensions before refining the concept.',
+        },
+        {
+          t: 'Keeping designs through interrupted work',
+          p: 'Reloads, connection failures, and interrupted AI requests can lose a room draft or repeat an expensive operation.',
+          s: 'Persist device drafts and room-job identities, reconnect to queued work, and provide explicit export and restore for saved designs.',
+        },
+        {
+          t: 'Supporting different AR platforms',
+          p: 'Native AR, WebXR, and Apple Quick Look expose different placement and editing capabilities.',
+          s: 'Use explicit capability checks and platform-specific paths, while keeping the editable design separate from session-only physical placements.',
+        },
+      ],
+      result: [
+        'A connected room-design prototype with photo, floor-plan, and 3D views, editable interior scenes, and saved projects.',
+        'A one-minute narrated demo combining recorded AI examples with actual iPhone footage, including an Apple Quick Look preview.',
+        'The documented feature build passed 756 frontend tests, release checks, and unsigned iPhone/iPad compilation.',
+        'Photo-derived dimensions remain estimates. Physical fit, placement accuracy, and the native AR path still require physical-device validation.',
+      ],
+    },
+  },
+  {
     slug: 'screenmate',
     name: 'ScreenMate',
     type: 'ai',

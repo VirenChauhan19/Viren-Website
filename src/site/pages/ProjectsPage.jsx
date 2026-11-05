@@ -4,6 +4,7 @@ import { projects } from '../../data/content.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
 import AppDemo from '../AppDemo.jsx'
 import Page from '../Page.jsx'
+import { asset } from '../asset.js'
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -67,7 +68,7 @@ export function ProjectCard({ p }) {
         )}
 
         <div className="proj-links">
-          {p.video && <a className="proj-link" href={p.video} target="_blank" rel="noreferrer">Watch demo ↗</a>}
+          {p.video && <a className="proj-link" href={asset(p.video)} target="_blank" rel="noreferrer">Watch demo ↗</a>}
           <Link className="proj-link primary" to={`/projects/${p.slug}`}>
             Case study <span aria-hidden="true">→</span>
             <span className="sr-only"> for {p.name}</span>

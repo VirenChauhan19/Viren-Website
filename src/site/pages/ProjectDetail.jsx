@@ -4,6 +4,7 @@ import { Media, LiveEmbed } from '../ProjectMedia.jsx'
 import AppDemo from '../AppDemo.jsx'
 import ArchDiagram from '../ArchDiagram.jsx'
 import Page from '../Page.jsx'
+import { asset } from '../asset.js'
 
 function Block({ title, children }) {
   if (!children) return null
@@ -65,7 +66,7 @@ export default function ProjectDetail() {
         )}
 
         <div className="detail-cta-top reveal">
-          {p.video && <a className="btn btn-primary" href={p.video} target="_blank" rel="noreferrer">Watch demo ↗</a>}
+          {p.video && <a className="btn btn-primary" href={asset(p.video)} target="_blank" rel="noreferrer">Watch demo ↗</a>}
           {p.live && (
             <a className="btn btn-primary" href={p.live} target="_blank" rel="noreferrer">
               Live Demo <span aria-hidden="true">↗</span>
@@ -194,6 +195,22 @@ export default function ProjectDetail() {
             </div>
           </aside>
         </div>
+
+        {p.gallery?.length > 0 && (
+          <section className="case-gallery reveal" aria-labelledby="gallery-title">
+            <h2 id="gallery-title" className="case-h">Inside the build</h2>
+            <div className="case-gallery-grid">
+              {p.gallery.map((item) => (
+                <figure key={item.src}>
+                  <a href={asset(item.src)} target="_blank" rel="noreferrer" aria-label={`Open full-size screenshot: ${item.caption}`}>
+                    <img src={asset(item.src)} alt={item.caption} loading="lazy" decoding="async" />
+                  </a>
+                  <figcaption>{item.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
 
         <Link to={`/projects/${next.slug}`} className="next-proj reveal">
           <span>Next project</span>

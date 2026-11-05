@@ -37,18 +37,22 @@ export function Media({ m, name }) {
     // poster + preload="none" keeps the (large) capture files off the wire
     // until someone actually presses play.
     return (
-      <div className="proj-media">
+      <div className={`proj-media${m.contain ? ' contain-media' : ''}`}>
         <video
           src={asset(m.src)}
           poster={m.poster ? asset(m.poster) : undefined}
-          muted
-          loop
+          muted={m.muted ?? true}
+          loop={m.loop ?? true}
           playsInline
           controls
           preload="none"
           aria-label={`${m.caption || name} video`}
           onError={() => setFailed(true)}
-        />
+        >
+          {m.captions && (
+            <track kind="captions" src={asset(m.captions)} srcLang="en" label="English" />
+          )}
+        </video>
       </div>
     )
   }
