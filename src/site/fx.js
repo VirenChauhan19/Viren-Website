@@ -99,23 +99,27 @@ export function useScrollProgress() {
 }
 
 // Reveal-on-scroll, re-runs on each page mount (multi-page friendly).
-export function useReveal() {
+export function useReveal(ref) {
   useEffect(() => {
-    const els = Array.from(document.querySelectorAll('.reveal:not(.is-in)'))
-    if (!('IntersectionObserver' in window) || els.length === 0) {
+    const root = ref?.current || document
+    const els = Array.from(root.querySelectorAll('.reveal:not(.is-in), .career-highlights, .career-honors, .career-entry, .career-outro, .atl-preview figure'))
+    els.forEach((el) => el.classList.add('reveal'))
+    if (reduced() || !('IntersectionObserver' in window) || els.length === 0) {
       els.forEach((el) => el.classList.add('is-in'))
       return undefined
     }
     const io = new IntersectionObserver(
       (entries) => {
+        let stagger = 0
         entries.forEach((e) => {
           if (e.isIntersecting) {
+            e.target.style.setProperty('--reveal-delay', `${Math.min(stagger++, 3) * 55}ms`)
             e.target.classList.add('is-in')
             io.unobserve(e.target)
           }
         })
       },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+      { rootMargin: '0px 0px -24px 0px', threshold: 0 },
     )
     els.forEach((el) => io.observe(el))
     return () => io.disconnect()

@@ -10,7 +10,7 @@ export default function Skills() {
         <span className="kicker">technical skills</span>
         <h2 className="section-title" id="skills-h">What I work with</h2>
         <p className="section-sub">
-          Grouped by what it is for, not ranked by a made-up percentage.
+          The languages, tools, and frameworks I use across software, games, and applied AI.
         </p>
       </div>
 

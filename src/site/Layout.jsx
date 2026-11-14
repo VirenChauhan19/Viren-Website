@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
+import './motion.css'
 import { Link } from 'react-router-dom'
 import { profile } from '../data/content.js'
 import { asset } from './asset.js'
@@ -16,12 +17,6 @@ import ContactPage from './pages/ContactPage.jsx'
 
 // Private analytics dashboard: lazy so visitors never download it.
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx'))
-
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-  return null
-}
 
 function setHeadTag(selector, attribute, value) {
   const el = document.head.querySelector(selector)
@@ -49,11 +44,10 @@ export default function Layout() {
   useDocumentMeta()
 
   return (
-    <div className="site">
+    <MotionConfig reducedMotion="user"><div className="site">
       <div className="bg-scan" aria-hidden="true" />
 
       <Nav />
-      <ScrollToTop />
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
@@ -105,6 +99,6 @@ export default function Layout() {
           </div>
         </div>
       </footer>
-    </div>
+    </div></MotionConfig>
   )
 }

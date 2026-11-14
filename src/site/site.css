@@ -1469,3 +1469,53 @@ body { -webkit-tap-highlight-color: transparent; }
   .status-dot { animation: none; }
   .skip-link { transition: none; }
 }
+
+/* Experience: calm editorial rows with a dedicated date column. */
+.career-intro { max-width: 760px; margin-bottom: 72px; }
+.career-intro .section-title { margin: 18px 0 22px; font-size: clamp(2.5rem, 5.5vw, 4.3rem); letter-spacing: -0.055em; line-height: 1.08; }
+.career-intro > p { max-width: 59ch; color: var(--muted); font-size: 1.06rem; line-height: 1.8; }
+.career-index { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 30px; }
+.career-index a { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid var(--line2); font-size: 0.84rem; transition: color 160ms, border-color 160ms; }
+.career-index a span { color: var(--acc); font: 0.7rem var(--mono); }
+.career-index a:hover { color: var(--acc); border-color: var(--acc); }
+.career-group { scroll-margin-top: calc(var(--nav-h) + 32px); }
+.career-group + .career-group { margin-top: 68px; }
+.career-group-head { display: flex; align-items: baseline; gap: 18px; padding-bottom: 24px; border-bottom: 1px solid var(--line2); }
+.career-number { color: var(--acc); font: 0.75rem var(--mono); }
+.career-group-head h2 { font: 600 clamp(1.2rem, 3vw, 1.55rem) var(--display); letter-spacing: -0.03em; }
+.career-group-head p { color: var(--muted); font-size: 0.87rem; margin: 7px 0 0; }
+.career-list { list-style: none; padding: 0; margin: 0; }
+.career-entry { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; padding: 30px 0; border-bottom: 1px solid var(--line); }
+.career-period { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding-top: 3px; color: var(--muted); font: 0.75rem/1.7 var(--mono); }
+.career-current { display: inline-flex; align-items: center; gap: 7px; color: var(--acc); font: 0.7rem var(--sans); }
+.career-current i { width: 5px; height: 5px; background: currentColor; border-radius: 50%; }
+.career-role { min-width: 0; }
+.career-role summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; cursor: pointer; list-style: none; border-radius: 4px; }
+.career-role summary::-webkit-details-marker { display: none; }
+.career-heading { min-width: 0; }
+.career-org { display: block; color: var(--acc); font-size: 0.8rem; margin-bottom: 9px; }
+.career-heading h3 { font: 600 clamp(1.05rem, 2.5vw, 1.3rem)/1.4 var(--display); letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.career-location { display: block; margin-top: 8px; font-size: 0.76rem; color: var(--muted); }
+.career-toggle { position: relative; flex: 0 0 30px; width: 30px; height: 30px; border: 1px solid var(--line2); border-radius: 50%; color: var(--muted); transition: border-color 160ms, color 160ms; }
+.career-toggle::before, .career-toggle::after { content: ''; position: absolute; background: currentColor; top: 14px; left: 10px; width: 8px; height: 1px; }
+.career-toggle::after { transform: rotate(90deg); }
+.career-role[open] .career-toggle::after { transform: rotate(0); }
+.career-role summary:hover .career-toggle { color: var(--acc); border-color: var(--acc); }
+.career-body { max-width: 68ch; padding: 20px 48px 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.8; }
+.career-body p { margin-bottom: 12px; }
+.career-body ul { display: grid; gap: 12px; }
+.career-body li { position: relative; padding-left: 16px; }
+.career-body li::before { content: ''; position: absolute; left: 0; top: 12px; width: 4px; height: 4px; border-radius: 50%; background: var(--faint); }
+.career-media { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.career-media a { color: var(--text); text-decoration: underline; text-decoration-color: var(--line2); text-underline-offset: 5px; }
+.career-media a:hover { color: var(--acc); }
+.career-media a span { color: var(--acc); margin-left: 6px; }
+@media (max-width: 680px) {
+  .career-intro { margin-bottom: 48px; }
+  .career-intro > p { font-size: 0.95rem; }
+  .career-entry { grid-template-columns: 1fr; gap: 12px; padding: 24px 0; }
+  .career-period { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .career-body { padding-right: 0; font-size: 0.87rem; }
+  .career-group + .career-group { margin-top: 48px; }
+  .career-group-head { gap: 12px; }
+}

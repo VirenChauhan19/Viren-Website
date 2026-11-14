@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { motion, LayoutGroup } from 'framer-motion'
+import { motion, LayoutGroup, useReducedMotion } from 'framer-motion'
 import { profile } from '../data/content.js'
 import { hasStoredSession, trackPageView } from '../analytics/tracker.js'
 import { asset } from './asset.js'
+import './navigation-polish.css'
 
 const LINKS = [
   { to: '/', label: 'Home', end: true },
@@ -17,6 +18,7 @@ const LINKS = [
 const OWNER_LINK = { to: '/analytics', label: 'Analytics' }
 
 export default function Nav() {
+  const reducedMotion = useReducedMotion()
   const [open, setOpen] = useState(false)
   const [owner, setOwner] = useState(hasStoredSession)
   const close = () => setOpen(false)
@@ -81,7 +83,7 @@ export default function Nav() {
                 {({ isActive }) => (
                   <>
                     <span>{l.label}</span>
-                    {isActive && <motion.span className="nav-underline" layoutId="nav-underline" />}
+                    {isActive && <motion.span className="nav-underline" layoutId="nav-underline" transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 34 }} />}
                   </>
                 )}
               </NavLink>

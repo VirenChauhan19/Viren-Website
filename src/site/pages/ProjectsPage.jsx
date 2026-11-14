@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { projects } from '../../data/content.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
 import AppDemo from '../AppDemo.jsx'
+import AtlantaIdentity from '../AtlantaIdentity.jsx'
 import Page from '../Page.jsx'
 import { asset } from '../asset.js'
 
@@ -10,6 +11,7 @@ const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'game', label: 'Game Development' },
   { id: 'software', label: 'Software & Web' },
+  { id: 'design', label: 'UX & Design' },
 ]
 
 export function ProjectCard({ p }) {
@@ -29,7 +31,7 @@ export function ProjectCard({ p }) {
           <a href={p.award.url} target="_blank" rel="noreferrer">Winner announcement <span aria-hidden="true">↗</span></a>
         </div>
       )}
-      {p.demo ? (
+      {p.slug === 'atlanta-united' ? <AtlantaIdentity /> : p.demo ? (
         <AppDemo kind={p.demo} title={p.name} />
       ) : media ? (
         <Media m={media} name={p.name} />

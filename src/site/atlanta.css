@@ -1,0 +1,18 @@
+.atl-identity{position:relative;isolation:isolate;overflow:hidden;min-height:280px;padding:clamp(24px,5vw,64px);display:flex;flex-direction:column;justify-content:space-between;gap:40px;background:#180b0e;color:#fff;border:1px solid #714434}
+.atl-stripes{position:absolute;z-index:-1;inset:0;background:repeating-linear-gradient(110deg,transparent 0,transparent 11%,#861c2b 11%,#861c2b 20%,transparent 20%,transparent 27%);opacity:.48;mask-image:linear-gradient(to right,transparent,#000)}
+.atl-eyebrow,.atl-footer{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#decba5}
+.atl-identity>strong{font-family:var(--display);font-size:clamp(32px,5vw,66px);line-height:1.12;letter-spacing:-.045em;font-weight:600}
+.atl-identity>strong>span{color:#cbb17e;font-weight:400}
+.atl-footer{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid #b9a06a55;padding-top:20px}
+.detail-section>.atl-identity{margin:24px 0 48px}
+.atl-preview{margin:0 0 64px;padding-bottom:48px;border-bottom:1px solid #b9a06a55}
+.atl-preview-note{padding:16px 20px;border:1px solid #b9a06a55;background:#b9a06a0d;color:#decba5;font:11px/1.7 var(--mono);letter-spacing:.04em;margin-bottom:40px}
+.atl-preview h2{font:600 clamp(30px,4.5vw,56px)/1.12 var(--display);letter-spacing:-.04em;margin:18px 0 24px}
+.atl-preview p{color:var(--muted);line-height:1.8;max-width:760px}
+.atl-preview .atl-preview-lead{font-size:18px}
+.atl-preview h3{font:500 clamp(22px,3vw,30px)/1.3 var(--display);margin:40px 0 16px}
+.atl-preview img{display:block;width:100%;height:auto;border:1px solid var(--line2);border-radius:8px;margin-top:24px}
+.atl-preview-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;border-block:1px solid var(--line2);padding:24px 0;margin-top:32px}
+.atl-preview-facts span,.atl-preview-facts strong{display:block}.atl-preview-facts span{font:11px var(--mono);color:#cbb17e;margin-bottom:12px}.atl-preview-facts strong{font-size:15px;font-weight:500}
+.atl-preview-grid,.atl-preview-ending{display:grid;grid-template-columns:1fr 1fr;gap:32px}.atl-preview figure{margin:0}.atl-preview h4{font:500 18px var(--display);margin:22px 0 12px}.atl-preview figcaption p{font-size:14px}.atl-preview-ending{margin-top:48px;padding:24px;border:1px solid var(--line2);background:var(--bg2)}.atl-preview-ending h3{margin-top:16px}
+@media(max-width:650px){.atl-preview-grid,.atl-preview-ending,.atl-preview-facts{grid-template-columns:1fr}.atl-preview-facts{gap:22px}.atl-preview-ending{padding:20px}}

@@ -6,8 +6,8 @@ import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 import { Media } from '../ProjectMedia.jsx'
 
-// Highlight the latest spatial AI build alongside the award winner and game systems.
-const FEATURED = ['worldos', 'screenmate', 'dynamic-weather-system']
+// Lead selected work with ScreenMate, followed by spatial AI and game systems.
+const FEATURED = ['screenmate', 'worldos', 'dynamic-weather-system']
 
 function FeatCard({ p }) {
   return (

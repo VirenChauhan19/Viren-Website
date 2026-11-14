@@ -1,0 +1,21 @@
+:root{--ease-settle:cubic-bezier(.22,1,.36,1);--motion-quick:180ms;--motion-medium:320ms}
+/* Short travel, gentle settling, and a bounded stagger across each viewport. */
+.site .reveal{transform:translateY(16px);transition:opacity 560ms var(--ease-settle),transform 560ms var(--ease-settle);transition-delay:var(--reveal-delay,0ms)}
+.site .reveal.is-in{opacity:1;transform:none}
+.site .btn,.site .feat-card,.site .project-card,.site .next-proj{transition:transform var(--motion-medium) var(--ease-settle),border-color var(--motion-quick) ease,box-shadow var(--motion-medium) ease,background var(--motion-quick) ease}
+.site .btn:active{transform:translateY(1px) scale(.985)}
+.site .proj-media img,.site .proj-media video{transition:transform 650ms var(--ease-settle)}
+.site .back-link,.site .proj-link,.site .career-case-link{transition:color var(--motion-quick),border-color var(--motion-quick),background var(--motion-quick)}
+.site .btn span[aria-hidden],.site .career-case-link span,.site .feat-go .arr{display:inline-block;transition:transform var(--motion-medium) var(--ease-settle)}
+.site .career-role[open] .career-body{animation:detail-settle 280ms var(--ease-settle) both}
+@keyframes detail-settle{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+@media(hover:hover) and (pointer:fine){.site .btn:hover span[aria-hidden],.site .career-case-link:hover span,.site .feat-card:hover .arr{transform:translateX(3px)}.site .project-card:hover,.site .feat-card:hover{transform:translateY(-4px)}}
+@media(max-width:760px){.site .feat-grid .reveal{opacity:1;transform:none;transition:none}}
+/* Focus should never land on visually hidden content. */
+.site .reveal:focus-within{opacity:1;transform:none;transition-delay:0ms}
+@media(prefers-reduced-motion:reduce){
+  html:focus-within,html{scroll-behavior:auto}
+  .site *,.site *::before,.site *::after{animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:0ms!important;transition-delay:0ms!important}
+  .site .reveal{opacity:1;transform:none}
+  .site .project-card:hover,.site .feat-card:hover,.site .btn:active,.site .btn:hover span[aria-hidden],.site .career-case-link:hover span,.site .feat-card:hover .arr{transform:none}
+}

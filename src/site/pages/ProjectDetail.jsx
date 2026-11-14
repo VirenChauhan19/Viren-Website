@@ -2,6 +2,8 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { projects } from '../../data/content.js'
 import { Media, LiveEmbed } from '../ProjectMedia.jsx'
 import AppDemo from '../AppDemo.jsx'
+import AtlantaIdentity from '../AtlantaIdentity.jsx'
+import AtlantaPreview from '../AtlantaPreview.jsx'
 import ArchDiagram from '../ArchDiagram.jsx'
 import Page from '../Page.jsx'
 import { asset } from '../asset.js'
@@ -97,6 +99,8 @@ export default function ProjectDetail() {
           </div>
         )}
 
+        {p.slug === 'atlanta-united' && <AtlantaIdentity />}
+        {import.meta.env.DEV && p.slug === 'atlanta-united' && <AtlantaPreview />}
         <div className="detail-grid">
           <div className="case-body">
             <p className="detail-summary reveal">{p.summary}</p>
@@ -109,7 +113,7 @@ export default function ProjectDetail() {
               {cs.problem && <p>{cs.problem}</p>}
             </Block>
 
-            <Block title="What I Built">
+            <Block title={cs.builtTitle || 'What I Built'}>
               {cs.built && cs.built.length > 0 && (
                 <ul className="case-list">
                   {cs.built.map((b, i) => <li key={i}>{b}</li>)}

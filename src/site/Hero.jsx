@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { profile, education } from '../data/content.js'
 import { asset } from './asset.js'
-import { useTypewriter, useMagnetic } from './fx.js'
+import { useMagnetic } from './fx.js'
+import './navigation-polish.css'
 import { trackPageView } from '../analytics/tracker.js'
+
+const FOCUSES = ['Software Development', 'Game Development', 'Applied AI']
 
 // The 10-second read: name, what I am, what I build with, and every link a
 // recruiter needs, without scrolling.
@@ -10,7 +14,29 @@ export default function Hero() {
   const github = profile.links.find((l) => l.label === 'GitHub')?.url
   const linkedin = profile.links.find((l) => l.label === 'LinkedIn')?.url
   const edu = education[0]
-  const typed = useTypewriter(profile.typed)
+  const [focusText, setFocusText] = useState('')
+  useEffect(() => {
+    let word = 0
+    let count = 0
+    let deleting = false
+    let timer
+    const tick = () => {
+      count += deleting ? -1 : 1
+      setFocusText(FOCUSES[word].slice(0, count))
+      let delay = deleting ? 35 : 75
+      if (!deleting && count === FOCUSES[word].length) {
+        deleting = true
+        delay = 1800
+      } else if (deleting && count === 0) {
+        deleting = false
+        word = (word + 1) % FOCUSES.length
+        delay = 350
+      }
+      timer = setTimeout(tick, delay)
+    }
+    timer = setTimeout(tick, 400)
+    return () => clearTimeout(timer)
+  }, [])
   const cta1 = useMagnetic()
   const cta2 = useMagnetic()
 
@@ -21,7 +47,6 @@ export default function Hero() {
           <h1 className="hero-name">Viren Chauhan</h1>
 
           <p className="hero-role">
-            <span className="role-prefix" aria-hidden="true">&gt;</span>
             <span className="role-text">{profile.title}</span>
           </p>
 
@@ -88,28 +113,28 @@ export default function Hero() {
           </div>
           <dl className="spec-panel">
             <div className="spec-row">
-              <dt>building</dt>
-              <dd className="spec-typed">
-                {typed}
-                <span className="type-caret" aria-hidden="true" />
+              <dt>Focus</dt>
+              <dd className="spec-focus spec-focus-rotating">
+                <span className="sr-only">Software Development, Game Development, and Applied AI</span>
+                <span className="focus-window" aria-hidden="true"><span>{focusText}<i className="focus-cursor" /></span></span>
               </dd>
             </div>
             <div className="spec-row">
-              <dt>studying</dt>
+              <dt>Degree</dt>
               <dd>{edu?.degree}</dd>
             </div>
             <div className="spec-row">
-              <dt>minor</dt>
+              <dt>Minor</dt>
               <dd>Applied AI</dd>
             </div>
             {edu?.grad && (
               <div className="spec-row">
-                <dt>graduating</dt>
+                <dt>Graduation</dt>
                 <dd>{edu.grad}</dd>
               </div>
             )}
             <div className="spec-row">
-              <dt>based in</dt>
+              <dt>Based in</dt>
               <dd>{profile.location}</dd>
             </div>
           </dl>

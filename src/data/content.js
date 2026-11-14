@@ -34,6 +34,11 @@ export const profile = {
   photo: 'headshot.jpeg',
 }
 
+export const academicHonors = [
+  { title: 'NAIA Scholar-Athlete', sport: "Men’s Track & Field", season: 'Spring 2026' },
+  { title: 'Academic All-Sun Conference', sport: "Men’s Cross Country", season: 'Fall 2026' },
+]
+
 export const education = [
   {
     school: 'Savannah College of Art and Design (SCAD)',
@@ -50,15 +55,15 @@ export const education = [
 // under "Operations, Sport & Leadership" on the experience page.
 export const experience = [
   {
-    role: 'Independent Developer · Shipped Software',
-    org: 'Self-directed',
+    role: 'Independent Software Developer',
+    org: 'Independent Projects',
     dates: '2025 - Present',
     location: 'Atlanta, GA',
     group: 'tech',
     bullets: [
-      'Designed, built, and shipped three production web apps solo: a coaching platform with 134 registered users, a private operations platform the SCAD Atlanta distance team runs on, and a study tool that parses PDF syllabi and syncs deadlines to Google Calendar.',
-      'Own the full stack on every build: UX and UI, Next.js or React front ends, Prisma + PostgreSQL or Firebase data layers, auth and role permissions, server-side API proxies, and deployment.',
-      'Also built this portfolio site: React + Vite with hand-rolled, privacy-friendly visitor analytics on Supabase.',
+      'Design, develop, and deploy full-stack web applications, owning the work from interface design and application architecture to database integration and deployment.',
+      'Built a running coaching platform with 134 registered users, a private training and operations platform for the SCAD distance team, and a study tool that extracts syllabus deadlines and syncs them to Google Calendar.',
+      'Implement responsive interfaces, authentication, role-based access, and API integrations using React, Next.js, PostgreSQL, Prisma, and Firebase across projects.',
     ],
   },
   {
@@ -115,26 +120,8 @@ export const experience = [
       'Support major campus housing events and assist community directors with day-to-day administrative operations.',
     ],
   },
-  {
-    role: 'SCADfit Front Desk',
-    org: 'Savannah College of Art and Design',
-    dates: 'Aug 2025 - Dec 2025',
-    location: 'Atlanta, GA',
-    bullets: [
-      'Checked students and members in at the campus fitness center and kept the front desk running through every shift.',
-      'Handled equipment checkout, facility access, and day-to-day questions so the gym stayed smooth and welcoming.',
-    ],
-  },
-  {
-    role: 'Intramurals and Recreational Assistant',
-    org: 'Savannah College of Art and Design',
-    dates: 'Aug 2025 - Nov 2025',
-    location: 'Atlanta, GA',
-    bullets: [
-      'Helped run intramural sports and recreational programs, from setup and sign-ups to keeping games organized and on schedule.',
-      'Supported students throughout activities and events, keeping things safe, fair, and fun.',
-    ],
-  },
+
+
   {
     role: 'Event Operations Volunteer',
     org: 'FIFA Club World Cup',
@@ -271,15 +258,51 @@ export const skills = skillGroups.flatMap((g) =>
 // aliases: older slugs that should still resolve, so shared links keep working.
 export const projects = [
   {
+    slug: 'screenmate',
+    featured: true,
+    name: 'ScreenMate',
+    type: 'ai',
+    filters: ['software'],
+    year: '2026',
+    category: 'Applied AI · Browser Agent',
+    role: 'Builder · Atlanta chapter',
+    summary: 'Built for AI Tinkerers’ Agents Everywhere Hackathon with OpenAI, where it placed 3rd globally. ScreenMate understands the page you are on, researches what is needed, and helps complete forms while pausing for your input on sensitive decisions.',
+    metric: { value: '3rd globally', label: 'among 687 submitted projects' },
+    award: {
+      event: 'Agents Everywhere Hackathon with OpenAI',
+      organizer: 'AI Tinkerers',
+      url: 'https://lnkd.in/p/e6uQi3x6',
+    },
+    repo: 'https://github.com/VirenChauhan19/SCREENMATE',
+    video: 'https://www.youtube.com/watch?v=4y2j9cLt5gw',
+    media: [{ type: 'youtube', id: '4y2j9cLt5gw', caption: 'Watch the ScreenMate demo' }],
+    tech: ['Next.js', 'TypeScript', 'Chrome Extension', 'OpenRouter', 'Exa'],
+    systems: ['Live form context', 'Selective web research', 'Verified field updates', 'Human approval'],
+    study: {
+      overview: 'Developed for AI Tinkerers’ Agents Everywhere Hackathon with OpenAI, representing the Atlanta chapter. ScreenMate brings an agent into the browser through a Chrome extension and a Next.js demo portal. Both use the same agent and policy layer.',
+      problem: 'Copying information between a form and a chat assistant loses the context of the page: existing answers, empty fields, and validation errors.',
+      built: [
+        'An agent that reads current form state and plans its next actions.',
+        'Exa research when a response needs information beyond the user profile.',
+        'Field updates verified by reading the application state again.',
+        'A policy layer that hands sensitive questions back to the user, followed by a review of changes before submission.',
+      ],
+      result: [
+        'Third place globally at AI Tinkerers’ Agents Everywhere Hackathon with OpenAI.',
+        'Selected from 687 submitted projects, with 15 global finalists.',
+        'Built by Viren Chauhan, representing the Atlanta chapter.',
+      ],
+    },
+  },
+  {
     slug: 'worldos',
     name: 'WorldOS',
     type: 'ai',
     filters: ['software'],
-    featured: true,
     year: '2026',
     category: 'Applied AI · Spatial Design & AR',
     role: 'Builder: product, full-stack development, AI integration, and AR',
-    summary: 'A phone-first AI interior design assistant that turns a room photo and a goal into an editable concept, with explained layouts, a 3D studio, and AR previews on supported devices.',
+    summary: 'Built for the Meta AI Hackathon. WorldOS is a phone-first AI interior design assistant that turns a room photo and a goal into an editable concept, with explained layouts, a 3D studio, and AR previews on supported devices.',
     metric: { value: '36 pieces', label: 'in an editable furniture, lighting, and decor catalog' },
     repo: 'https://github.com/VirenChauhan19/WorldOS',
     video: 'projects/worldos/WorldOS-One-Minute-Demo.mp4',
@@ -348,42 +371,6 @@ export const projects = [
         'A one-minute narrated demo combining recorded AI examples with actual iPhone footage, including an Apple Quick Look preview.',
         'The documented feature build passed 756 frontend tests, release checks, and unsigned iPhone/iPad compilation.',
         'Photo-derived dimensions remain estimates. Physical fit, placement accuracy, and the native AR path still require physical-device validation.',
-      ],
-    },
-  },
-  {
-    slug: 'screenmate',
-    name: 'ScreenMate',
-    type: 'ai',
-    filters: ['software'],
-    year: '2026',
-    category: 'Applied AI · Browser Agent',
-    role: 'Builder · Atlanta chapter',
-    summary: 'A browser agent that understands the page you are on, researches what is needed, and helps complete forms while pausing for your input on sensitive decisions.',
-    metric: { value: '3rd globally', label: 'among 687 submitted projects' },
-    award: {
-      event: 'Agents Everywhere Hackathon with OpenAI',
-      organizer: 'AI Tinkerers',
-      url: 'https://lnkd.in/p/e6uQi3x6',
-    },
-    repo: 'https://github.com/VirenChauhan19/SCREENMATE',
-    video: 'https://www.youtube.com/watch?v=4y2j9cLt5gw',
-    media: [{ type: 'youtube', id: '4y2j9cLt5gw', caption: 'Watch the ScreenMate demo' }],
-    tech: ['Next.js', 'TypeScript', 'Chrome Extension', 'OpenRouter', 'Exa'],
-    systems: ['Live form context', 'Selective web research', 'Verified field updates', 'Human approval'],
-    study: {
-      overview: 'ScreenMate brings an agent into the browser through a Chrome extension and a Next.js demo portal. Both use the same agent and policy layer.',
-      problem: 'Copying information between a form and a chat assistant loses the context of the page: existing answers, empty fields, and validation errors.',
-      built: [
-        'An agent that reads current form state and plans its next actions.',
-        'Exa research when a response needs information beyond the user profile.',
-        'Field updates verified by reading the application state again.',
-        'A policy layer that hands sensitive questions back to the user, followed by a review of changes before submission.',
-      ],
-      result: [
-        'Third place globally at AI Tinkerers’ Agents Everywhere Hackathon with OpenAI.',
-        'Selected from 687 submitted projects, with 15 global finalists.',
-        'Built by Viren Chauhan, representing the Atlanta chapter.',
       ],
     },
   },
@@ -480,6 +467,29 @@ export const projects = [
     live: null,
     repo: null,
     accessNote: 'Coursework project · source not public',
+  },
+  {
+    slug: 'atlanta-united',
+    name: 'SCADpro × Atlanta United',
+    type: 'design',
+    filters: ['design'],
+    year: '2026',
+    category: 'UX/UI · Industry collaboration',
+    role: 'UX/UI Lead · January–March 2026',
+    summary: 'Leading UX/UI within a multidisciplinary SCADpro team, translating an industry partner’s requirements into interactive experiences through prototyping, critique, and stakeholder feedback.',
+    accessNote: 'Selected details are confidential under NDA.',
+    disciplines: ['UX/UI leadership', 'Interaction design', 'Prototyping', 'Cross-disciplinary collaboration'],
+    study: {
+      overview: 'An industry-partner collaboration between SCADpro and Atlanta United FC. My role focused on UX/UI and communicating design decisions across design, technology, and client teams.',
+      problem: 'Translate product requirements into intuitive interactions while aligning the experience with feedback from a multidisciplinary team and industry stakeholders.',
+      builtTitle: 'My contribution',
+      built: [
+        'Led UX/UI work within the broader team’s creative process.',
+        'Prototyped and refined interactive experiences through iterative critiques and stakeholder feedback.',
+        'Communicated design decisions across design, technology, and client teams.',
+      ],
+      result: ['Contributed UX/UI work to the team’s final presentation for Atlanta United FC.', 'Project concepts and detailed deliverables are covered by an NDA.'],
+    },
   },
   {
     slug: 'la-ultra-running-plans',
