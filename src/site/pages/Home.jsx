@@ -6,14 +6,13 @@ import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 import { Media } from '../ProjectMedia.jsx'
 
-// Lead selected work with ScreenMate, followed by spatial AI and game systems.
-const FEATURED = ['screenmate', 'worldos', 'dynamic-weather-system']
+const FEATURED = ['screenmate', 'worldos', 'atlanta-united']
 
 function FeatCard({ p }) {
   return (
     <Link
       to={`/projects/${p.slug}`}
-      className={`feat-card ${p.type === 'ai' ? 'ai' : 'game'}${p.featured ? ' is-featured' : ''} reveal`}
+      className={`feat-card ${p.type}${p.featured ? ' is-featured' : ''} reveal`}
     >
       {p.featured && <span className="feat-flag">★ Featured</span>}
       <span className="feat-cat">{p.category}</span>
