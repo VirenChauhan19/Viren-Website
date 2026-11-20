@@ -6,7 +6,7 @@ import Hero from '../Hero.jsx'
 import Page from '../Page.jsx'
 import { Media } from '../ProjectMedia.jsx'
 
-const FEATURED = ['screenmate', 'worldos', 'atlanta-united']
+const FEATURED = ['screenmate', 'worldos', 'send-that-package']
 
 function FeatCard({ p }) {
   return (
