@@ -130,24 +130,6 @@
   align-items: start;
   margin-bottom: 10px;
 }
-.proj-category {
-  position: relative;
-  padding-inline-start: 12px;
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 600;
-  line-height: 1.5;
-}
-.proj-category::before {
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0.55em;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--acc);
-  content: '';
-}
 .proj-tagline-row .proj-year {
   color: var(--muted);
   font: 0.76rem/1.5 var(--sans);
