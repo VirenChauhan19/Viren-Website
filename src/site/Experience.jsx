@@ -49,7 +49,7 @@ export default function Experience() {
   return (
     <section id="experience" className="section experience career">
       <header className="career-intro">
-        <div className="career-intro-top"><span className="kicker">Experience / Viren Chauhan</span><a className="career-resume" href={asset(profile.resume)} target="_blank" rel="noreferrer">View résumé <span aria-hidden="true">↗</span></a></div>
+        <div className="career-intro-top"><span className="kicker">Experience / Viren Chauhan</span><a className="career-resume" href={asset(profile.resume)} target="_blank" rel="noreferrer">View resume <span aria-hidden="true">↗</span></a></div>
         <div className="career-hero-layout"><h1 className="section-title">Built through<br /><em>doing.</em></h1>
         <div className="career-hero-copy"><span className="career-overline">Code. Teams. Real responsibility.</span><p>From shipping software to leading race operations in the Himalayas. Every role has shaped how I build, collaborate, and follow through.</p><span className="career-homebase">Based in Atlanta · Shaped by the Himalayas</span></div></div>
         <div className="career-highlights" aria-label="Experience highlights">
