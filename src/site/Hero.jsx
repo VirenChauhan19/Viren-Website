@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { profile, education } from '../data/content.js'
 import { asset } from './asset.js'
-import { useMagnetic } from './fx.js'
 import './navigation-polish.css'
 import { trackPageView } from '../analytics/tracker.js'
 
@@ -37,9 +36,6 @@ export default function Hero() {
     timer = setTimeout(tick, 400)
     return () => clearTimeout(timer)
   }, [])
-  const cta1 = useMagnetic()
-  const cta2 = useMagnetic()
-
   return (
     <section id="home" className="hero">
       <div className="hero-inner">
@@ -59,35 +55,26 @@ export default function Hero() {
           </ul>
 
           <div className="hero-cta">
-            <Link
-              className="btn btn-primary"
-              to="/projects"
-              ref={cta1.ref}
-              onMouseMove={cta1.onMouseMove}
-              onMouseLeave={cta1.onMouseLeave}
-            >
-              View Projects <span className="arr" aria-hidden="true">→</span>
+            <Link className="action-link primary" to="/projects">
+              View projects <span aria-hidden="true">→</span>
             </Link>
             <a
-              className="btn btn-ghost"
+              className="action-link secondary"
               href={asset(profile.resume)}
               target="_blank"
               rel="noreferrer"
-              ref={cta2.ref}
-              onMouseMove={cta2.onMouseMove}
-              onMouseLeave={cta2.onMouseLeave}
               onClick={() => trackPageView('/resume')}
             >
               Resume <span aria-hidden="true">↗</span>
               <span className="sr-only">(opens PDF in a new tab)</span>
             </a>
             {github && (
-              <a className="btn btn-ghost" href={github} target="_blank" rel="noreferrer">
+              <a className="action-link" href={github} target="_blank" rel="noreferrer">
                 GitHub <span aria-hidden="true">↗</span>
               </a>
             )}
             {linkedin && (
-              <a className="btn btn-ghost" href={linkedin} target="_blank" rel="noreferrer">
+              <a className="action-link" href={linkedin} target="_blank" rel="noreferrer">
                 LinkedIn <span aria-hidden="true">↗</span>
               </a>
             )}

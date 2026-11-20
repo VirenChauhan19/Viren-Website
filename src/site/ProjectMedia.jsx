@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { asset } from './asset.js'
 
-export function Media({ m, name }) {
+export function Media({ m, name, autoPlay = false }) {
   const [failed, setFailed] = useState(false)
   if (!m) return null
 
@@ -10,9 +10,10 @@ export function Media({ m, name }) {
       <div className="youtube-media">
         <div className="proj-media youtube-player">
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${m.id}`}
+            src={`https://www.youtube-nocookie.com/embed/${m.id}${autoPlay ? '?autoplay=1' : ''}`}
             title={`${name} demo video`}
-            loading="lazy"
+            loading={autoPlay ? 'eager' : 'lazy'}
+            ref={autoPlay ? (frame) => frame?.focus({ preventScroll: true }) : undefined}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen

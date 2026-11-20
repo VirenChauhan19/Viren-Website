@@ -61,23 +61,6 @@ export function useTilt(max = 8) {
   return { ref, onMouseMove, onMouseLeave }
 }
 
-// Buttons that lean toward the cursor while hovered.
-export function useMagnetic(strength = 0.32) {
-  const ref = useRef(null)
-  const onMouseMove = useCallback((e) => {
-    const el = ref.current
-    if (!el || reduced() || isTouch()) return
-    const r = el.getBoundingClientRect()
-    const x = e.clientX - (r.left + r.width / 2)
-    const y = e.clientY - (r.top + r.height / 2)
-    el.style.transform = `translate(${(x * strength).toFixed(1)}px, ${(y * strength).toFixed(1)}px)`
-  }, [strength])
-  const onMouseLeave = useCallback(() => {
-    if (ref.current) ref.current.style.transform = ''
-  }, [])
-  return { ref, onMouseMove, onMouseLeave }
-}
-
 // Fraction of the page scrolled, 0..1.
 export function useScrollProgress() {
   const [p, setP] = useState(0)

@@ -267,6 +267,7 @@ export const projects = [
     category: 'Applied AI · Browser Agent',
     role: 'Builder · Atlanta chapter',
     summary: 'Built for AI Tinkerers’ Agents Everywhere Hackathon with OpenAI, where it placed 3rd globally. ScreenMate understands the page you are on, researches what is needed, and helps complete forms while pausing for your input on sensitive decisions.',
+    cardSummary: 'A browser agent that reads the page you’re on, researches missing information, and helps complete forms. It pauses for your input on sensitive decisions.',
     metric: { value: '3rd globally', label: 'among 687 submitted projects' },
     award: {
       event: 'Agents Everywhere Hackathon with OpenAI',
@@ -275,7 +276,12 @@ export const projects = [
     },
     repo: 'https://github.com/VirenChauhan19/SCREENMATE',
     video: 'https://www.youtube.com/watch?v=4y2j9cLt5gw',
-    media: [{ type: 'youtube', id: '4y2j9cLt5gw', caption: 'Watch the ScreenMate demo' }],
+    media: [{
+      type: 'youtube',
+      id: '4y2j9cLt5gw',
+      cardPoster: 'projects/screenmate/screenmate-poster.jpg',
+      caption: 'Watch the ScreenMate demo',
+    }],
     tech: ['Next.js', 'TypeScript', 'Chrome Extension', 'OpenRouter', 'Exa'],
     systems: ['Live form context', 'Selective web research', 'Verified field updates', 'Human approval'],
     study: {
@@ -371,6 +377,99 @@ export const projects = [
         'A one-minute narrated demo combining recorded AI examples with actual iPhone footage, including an Apple Quick Look preview.',
         'The documented feature build passed 756 frontend tests, release checks, and unsigned iPhone/iPad compilation.',
         'Photo-derived dimensions remain estimates. Physical fit, placement accuracy, and the native AR path still require physical-device validation.',
+      ],
+    },
+  },
+  {
+    slug: 'send-that-package',
+    name: 'Send That Package',
+    type: 'game',
+    filters: ['game'],
+    year: '2026',
+    category: 'Unreal Engine · Multiplayer Gameplay',
+    role: 'Gameplay Engineer (Multiplayer & Networking Focus)',
+    summary:
+      'A fast-paced, two-player cooperative game where players sort, carry, and deliver packages before time runs out. Across three levels, players coordinate their movements, handle different package types, and use conveyor belts to complete deliveries.',
+    metric: { value: 'Senior Studio', label: 'SCAD Atlanta' },
+    tech: [
+      'Unreal Engine 5.7',
+      'Blueprint Visual Scripting',
+      'Multiplayer Replication',
+      'RPCs',
+      'RepNotify',
+      'UMG',
+      'Enhanced Input',
+      'Perforce',
+    ],
+    systems: [
+      'LAN multiplayer',
+      'Package interactions',
+      'Conveyor placement',
+      'Scoring and delivery objectives',
+      'Gameplay phases and level transitions',
+      'Multiplayer HUD and pause menus',
+      'Controller input',
+    ],
+    media: [
+      {
+        type: 'video',
+        src: 'projects/send-that-package/level-1.mp4',
+        poster: 'projects/send-that-package/level-1-poster.jpg',
+        caption: 'Level 1 gameplay',
+        loop: false,
+        contain: true,
+      },
+      {
+        type: 'video',
+        src: 'projects/send-that-package/level-2.mp4',
+        poster: 'projects/send-that-package/level-2-poster.jpg',
+        caption: 'Level 2 gameplay',
+        loop: false,
+        contain: true,
+      },
+    ],
+    mediaSource: {
+      label: 'Original footage on Mixtsuregdev',
+      url: 'https://inorychanqq.wixsite.com/mixtsuregdev/portfolio-collections/my-portfolio/my-project',
+    },
+    study: {
+      overview:
+        'We built Send That Package in Unreal Engine 5.7 for Senior Studio at SCAD Atlanta. I worked on core gameplay mechanics and focused on moving the game from local co-op to multiplayer over LAN.',
+      contributions: [
+        {
+          title: 'Multiplayer & Networking',
+          items: [
+            'Converted local two-player co-op into client-server multiplayer over LAN.',
+            'Replicated package interactions, player actions, scores, and gameplay state using server RPCs, multicast events, and RepNotify variables.',
+            'Worked on multiplayer level transitions, synchronized pause, and gameplay phase changes.',
+            'Debugged client-server synchronization issues across two computers.',
+          ],
+        },
+        {
+          title: 'Gameplay Engineering',
+          items: [
+            'Worked on package pickup, carrying, throwing, and delivery in multiplayer.',
+            'Implemented and refined conveyor belt placement and rotation.',
+            'Integrated gameplay mechanics with replicated scoring, timers, and delivery objectives.',
+            'Debugged collision, physics, and package movement issues.',
+          ],
+        },
+        {
+          title: 'UI & Controller Integration',
+          items: [
+            'Integrated multiplayer HUD elements for scores, timers, and delivery progress.',
+            'Worked on synchronized pause menus and level completion screens.',
+            'Implemented controller inputs for gameplay interactions, conveyor placement, and menu navigation.',
+            'Tested gameplay with a keyboard and PlayStation controllers.',
+          ],
+        },
+      ],
+      challenges: [
+        {
+          t: 'Converting Local Co-op to LAN Multiplayer',
+          p: 'The original Blueprint systems assumed both players shared one device. Moving to two computers meant coordinating gameplay state across the server and clients.',
+          s: 'I reworked the Blueprints around server-authoritative gameplay logic and debugged replication for package interactions, conveyor placement, UI updates, and level transitions so both players saw consistent gameplay.',
+        },
       ],
     },
   },

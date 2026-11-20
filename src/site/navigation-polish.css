@@ -9,5 +9,5 @@
 .site .hero-role{font-family:var(--sans);font-weight:500;letter-spacing:-.025em;font-size:clamp(19px,2.3vw,25px);color:#b9d9e8}
 .site .hero-subtitle{line-height:1.85}.site .hero-tag{font-family:var(--sans);letter-spacing:0;font-weight:500}
 .site .spec-panel{padding:6px 20px;margin-top:24px}.site .spec-panel .spec-row{padding:13px 0;align-items:baseline;gap:18px}.site .spec-panel dt{font-family:var(--sans);font-size:12px;letter-spacing:0;text-transform:none;color:var(--muted)}.site .spec-panel dd{font-family:var(--sans);font-size:13px;font-weight:500;line-height:1.65}.site .spec-panel .spec-focus{color:#b9d9e8;line-height:1.9}
-.site .hero-cta .btn,.site .filters button{font-family:var(--sans);letter-spacing:0;font-weight:600}.site .filters button{font-size:13px;padding:10px 18px}.site .footer-links a{font-family:var(--sans);letter-spacing:0}
+.site .footer-links a{font-family:var(--sans);letter-spacing:0}
 @media(max-width:860px){.site .nav-links>a,.site .nav-links>a.nav-resume{font-family:var(--sans);font-size:26px;letter-spacing:-.035em;line-height:1.5;padding:20px 8px}.site .nav-links>a::before{display:none}.site .nav-links>a.active{background:transparent;color:#b9d9e8}.site .nav-menu-foot a{font-size:14px;letter-spacing:0}.site .nav-links .nav-underline{display:none}}

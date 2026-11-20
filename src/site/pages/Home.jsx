@@ -86,19 +86,20 @@ export default function Home() {
         </div>
         <div className="swipe-hint" aria-hidden="true">swipe →</div>
         <div className="featured-cta reveal">
-          <Link to="/projects" className="btn btn-primary">
-            View all projects <span className="arr" aria-hidden="true">→</span>
+          <Link to="/projects" className="action-link primary">
+            View all projects <span aria-hidden="true">→</span>
           </Link>
           <a
-            className="btn btn-ghost"
+            className="action-link secondary"
             href={asset(profile.resume)}
             target="_blank"
             rel="noreferrer"
             onClick={() => trackPageView('/resume')}
           >
             Resume <span aria-hidden="true">↗</span>
+            <span className="sr-only">(opens PDF in a new tab)</span>
           </a>
-          <Link to="/contact" className="btn btn-ghost">Get in touch</Link>
+          <Link to="/contact" className="action-link">Get in touch</Link>
         </div>
       </section>
     </Page>

@@ -87,12 +87,29 @@ export default function ProjectDetail() {
           )}
         </div>
 
-        {(p.demo || media || (p.live && p.embed !== false)) && (
+        {!p.demo && p.media?.length > 1 ? (
+          <section className="detail-gameplay reveal" aria-labelledby="gameplay-heading">
+            <h2 className="case-h" id="gameplay-heading">Gameplay footage</h2>
+            <div className="detail-media-grid">
+              {p.media.map((item) => (
+                <figure key={item.src} className="detail-media">
+                  <Media m={item} name={p.name} />
+                  {item.caption && <figcaption>{item.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+            {p.mediaSource && (
+              <a className="proj-link" href={p.mediaSource.url} target="_blank" rel="noreferrer">
+                {p.mediaSource.label} <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </section>
+        ) : (p.demo || media || (p.live && p.embed !== false)) && (
           <div className="detail-media reveal">
             {p.demo ? (
               <AppDemo kind={p.demo} title={p.name} />
             ) : media ? (
-              <Media m={media} name={p.name} />
+              <Media key={media.src || media.id} m={media} name={p.name} />
             ) : (
               <LiveEmbed url={p.live} name={p.name} />
             )}
@@ -120,6 +137,19 @@ export default function ProjectDetail() {
                 </ul>
               )}
             </Block>
+
+            {cs.contributions?.length > 0 && (
+              <Block title="My Contributions">
+                {cs.contributions.map(({ title, items }) => (
+                  <div className="case-contribution" key={title}>
+                    <h3>{title}</h3>
+                    <ul className="case-list">
+                      {items.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </Block>
+            )}
 
             {cs.architecture && (
               <Block title="Architecture">
